@@ -14,7 +14,12 @@ msgstr ""
 "Language-Team: French (https://www.transifex.com/torchbox/teams/8009/fr/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: fr\n"
+<<<<<<< HEAD
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+=======
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
+"1000000 == 0 ? 1 : 2;\n"
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 msgid "Add a comment"
 msgstr "Ajouter un commentaire"

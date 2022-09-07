@@ -243,6 +243,13 @@ class TestLocaleSelectorOnList(TestCase, WagtailTestUtils):
             response, 'aria-label="French" class="u-link is-live w-no-underline">'
         )
 
+<<<<<<< HEAD
+=======
+        self.assertNotContains(
+            response, 'aria-label="French" class="u-link is-live w-no-underline">'
+        )
+
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
         # Check that the add URLs don't include the locale
         add_url = reverse("wagtailsnippets_tests_advert:add")
         self.assertContains(

@@ -12,7 +12,10 @@ Here are some Wagtail-specific types that you might include as fields in your mo
 ```{eval-rst}
 .. module:: wagtail.admin.panels
    :noindex:
+<<<<<<< HEAD:docs/reference/pages/panels.md
 ```
+=======
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845:docs/reference/pages/panels.rst
 
 ### FieldPanel
 

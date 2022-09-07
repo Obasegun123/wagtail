@@ -1,6 +1,7 @@
 Changelog
 =========
 
+<<<<<<< HEAD
 4.0 (xx.xx.xxxx) - IN DEVELOPMENT
 ~~~~~~~~~~~~~~~~
 
@@ -29,6 +30,37 @@ Changelog
  * Fix: Ensure that custom document or image models support custom tag models (Matt Westcott)
  * Fix: Ensure comments use translated values for their placeholder text (Stefan Hammer)
  * Fix: Ensure the upgrade notification, shown to admins on the dashboard if Wagtail is out of date, content is translatable (LB (Ben) Johnston)
+=======
+3.0.3 (05.09.2022)
+~~~~~~~~~~~~~~~~~~
+
+ * Fix: On the Locked Pages report, limit the "locked by" filter to just users who have locked pages (Stefan Hammer)
+ * Fix: Prevent JavaScript error when using StreamField on views without commenting support, such as snippets (Jacob Topp-Mugglestone)
+
+
+3.0.2 (30.08.2022)
+~~~~~~~~~~~~~~~~~~
+
+ * Fix: Ensure string representation of `FormSubmission` returns a string (LB (Ben Johnston))
+ * Fix: Fix `updatemodulepaths` command for Python 3.7 (Matt Westcott)
+ * Fix: Fix issue where comments could not be added in StreamField that were already already saved (Jacob Topp-Mugglestone)
+ * Fix: Remove outdated reference to Image.LoaderError (Matt Westcott)
+
+
+3.0.1 (16.06.2022)
+~~~~~~~~~~~~~~~~~~
+
+ * Add warning when `WAGTAILADMIN_BASE_URL` is not configured (Matt Westcott)
+ * Fix: Ensure `TabbedInterface` will not show a tab if no panels are visible due to permissions (Paarth Agarwal)
+ * Fix: Specific snippets list language picker was not properly styled (Sage Abdullah)
+ * Fix: Ensure the upgrade notification request for the latest release, which can be disabled via the `WAGTAIL_ENABLE_UPDATE_CHECK` sends the referrer origin with `strict-origin-when-cross-origin` (Karl Hobley)
+ * Fix: Fix misaligned spinner icon on page action button (LB (Ben Johnston))
+ * Fix: Ensure radio buttons / checkboxes display vertically under Django 4.0 (Matt Westcott)
+ * Fix: Prevent failures when splitting blocks at the start or end of a block, or with highlighted text (Jacob Topp-Mugglestone)
+ * Fix: Allow scheduled publishing to complete when the initial editor did not have publish permission (Matt Westcott)
+ * Fix: Stop emails from breaking when `WAGTAILADMIN_BASE_URL` is absent due to the request object not being available (Matt Westcott)
+ * Fix: Make try/except on sending email less broad so that legitimate template rendering errors are exposed (Matt Westcott)
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 
 3.0 (16.05.2022)
@@ -110,6 +142,17 @@ Changelog
  * Fix: Ensure `wagtail updatemodulepaths` works when system locale is not UTF-8 (Matt Westcott)
  * Fix: Re-establish focus trap for Pages explorer in slim sidebar (Thibaud Colas)
  * Fix: Ensure the icon font loads correctly when `STATIC_URL` is not `"/static/"` (Jacob Topp-Mugglestone)
+<<<<<<< HEAD
+=======
+
+
+2.16.3 (05.09.2022)
+~~~~~~~~~~~~~~~~~~~
+
+ * Fix: Ensure the upgrade notification request for the latest release, which can be disabled via the `WAGTAIL_ENABLE_UPDATE_CHECK` sends the referrer origin with `strict-origin-when-cross-origin` (Karl Hobley)
+ * Fix: On the Locked Pages report, limit the "locked by" filter to just users who have locked pages (Stefan Hammer)
+ * Fix: Ensure Python 3.10 compatibility when using Elasticsearch backend (Przemysław Buczkowski, Matt Westcott)
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 
 2.16.2 (11.04.2022)
@@ -196,6 +239,14 @@ Changelog
  * Fix: Ensure subsequent changes to styles files are picked up by Gulp watch (Jason Attwood)
  * Fix: Ensure that programmatic page moves are correctly logged as 'move' and not 'reorder' in some cases (Andy Babic)
  * Fix: Add missing translation usage in Workflow templates (Anuja Verma, Saurabh Kumar)
+
+
+2.15.6 (05.09.2022)
+~~~~~~~~~~~~~~~~~~~
+
+ * Fix: Ensure the upgrade notification request for the latest release, which can be disabled via the `WAGTAIL_ENABLE_UPDATE_CHECK` sends the referrer origin with `strict-origin-when-cross-origin` (Karl Hobley)
+ * Fix: On the Locked Pages report, limit the "locked by" filter to just users who have locked pages (Stefan Hammer)
+ * Fix: Ensure Python 3.10 compatibility when using Elasticsearch backend (Przemysław Buczkowski, Matt Westcott)
 
 
 2.15.5 (11.04.2022)

@@ -1,2 +1,12 @@
 @import '../../../../../../client/scss/settings';
 @import '../../../../../../client/scss/tools';
+<<<<<<< HEAD
+=======
+
+@include media-breakpoint-down(sm) {
+  .breadcrumb {
+    margin-inline-start: 30px;
+    margin-inline-end: -20px;
+  }
+}
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845

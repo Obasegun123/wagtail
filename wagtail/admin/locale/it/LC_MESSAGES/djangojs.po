@@ -14,7 +14,12 @@ msgstr ""
 "Language-Team: Italian (https://www.transifex.com/torchbox/teams/8009/it/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: it\n"
+<<<<<<< HEAD
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+=======
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 msgid "Add a comment"
 msgstr "Aggiungi un commento"
@@ -49,6 +54,12 @@ msgstr "Elimina"
 msgid "Delete error"
 msgstr "Errore eliminazione"
 
+<<<<<<< HEAD
+=======
+msgid "Deleting"
+msgstr "Eliminazione in corso"
+
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 msgid "Edit"
 msgstr "Modifica"
 
@@ -142,6 +153,12 @@ msgstr "Mostra errore"
 msgid "Show latest content"
 msgstr "Mostra gli ultimi contenuti"
 
+<<<<<<< HEAD
+=======
+msgid "Split block"
+msgstr "Dividi blocco"
+
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 msgid ""
 "The editor just crashed. Content has been reset to the last saved version."
 msgstr ""

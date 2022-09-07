@@ -4,6 +4,7 @@
 {% block titletag %}{{ title }}{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
     <header class="header" role="banner">
         <div class="row">
             <div class="left">
@@ -11,6 +12,15 @@
                     <h1 class="header__title">
                         {% if header_icon %}{% icon name=header_icon %}{% endif %}
                         {{ title }}{% if subtitle %} <span class="header__subtitle">{{ subtitle }}</span>{% endif %}
+=======
+    <header role="banner">
+        <div class="row">
+            <div class="left">
+                <div class="col">
+                    <h1>
+                        {% if header_icon %}{% icon name=header_icon %}{% endif %}
+                        {{ title }}{% if subtitle %} <span>{{ subtitle }}</span>{% endif %}
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
                     </h1>
                 </div>
             </div>

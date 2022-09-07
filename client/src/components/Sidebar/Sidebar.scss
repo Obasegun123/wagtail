@@ -36,7 +36,11 @@
 
 .sidebar,
 .sidebar-loading {
+<<<<<<< HEAD
   @apply w-fixed w-flex w-flex-col w-h-full w-bg-primary w-z-sidebar w-transition-sidebar;
+=======
+  @apply w-fixed w-flex w-flex-col w-h-full w-bg-primary w-z-[300] w-transition-sidebar;
+>>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
   width: $menu-width;
   inset-inline-start: 0;
 

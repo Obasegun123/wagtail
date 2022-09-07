@@ -367,12 +367,12 @@ class TestExtractPanelDefinitionsFromModelClass(TestCase):
         )
 
 
-class TestTabbedInterface(TestCase, WagtailTestUtils):
+class TestTabbedInterface(TestCase):
     def setUp(self):
         self.request = RequestFactory().get("/")
-        user = self.create_superuser(username="admin")
+        user = AnonymousUser()  # technically, Anonymous users cannot access the admin
         self.request.user = user
-        self.user = self.login()
+
         # a custom tabbed interface for EventPage
         self.event_page_tabbed_interface = TabbedInterface(
             [
@@ -390,12 +390,6 @@ class TestTabbedInterface(TestCase, WagtailTestUtils):
                         InlinePanel("speakers", label="Speakers"),
                     ],
                     heading="Speakers",
-                ),
-                ObjectList(
-                    [
-                        FieldPanel("cost", permission="superuser"),
-                    ],
-                    heading="Secret",
                 ),
             ]
         ).bind_to_model(EventPage)
@@ -446,7 +440,7 @@ class TestTabbedInterface(TestCase, WagtailTestUtils):
     def test_required_fields(self):
         # get_form_options should report the set of form fields to be rendered recursively by children of TabbedInterface
         result = set(self.event_page_tabbed_interface.get_form_options()["fields"])
-        self.assertEqual(result, {"title", "date_from", "date_to", "cost"})
+        self.assertEqual(result, {"title", "date_from", "date_to"})
 
     def test_render_form_content(self):
         EventPageForm = self.event_page_tabbed_interface.get_form_class()
@@ -465,58 +459,6 @@ class TestTabbedInterface(TestCase, WagtailTestUtils):
         # rendered output should NOT include fields that are in the model but not represented
         # in the panel definition
         self.assertNotIn("signup_link", result)
-
-    def test_tabs_permissions(self):
-        """
-        test that three tabs show when the current user has permission to see all three
-        test that two tabs show when the current user does not have permission to see all three
-        """
-
-        EventPageForm = self.event_page_tabbed_interface.get_form_class()
-        event = EventPage(title="Abergavenny sheepdog trials")
-        form = EventPageForm(instance=event)
-
-        # when signed in as a superuser all three tabs should be visible
-        tabbed_interface = self.event_page_tabbed_interface.get_bound_panel(
-            instance=event,
-            form=form,
-            request=self.request,
-        )
-        result = tabbed_interface.render_html()
-        self.assertIn(
-            '<a id="tab-label-event-details" href="#tab-event-details" class="w-tabs__tab shiny" role="tab" aria-selected="false" tabindex="-1">',
-            result,
-        )
-        self.assertIn(
-            '<a id="tab-label-speakers" href="#tab-speakers" class="w-tabs__tab " role="tab" aria-selected="false" tabindex="-1">',
-            result,
-        )
-        self.assertIn(
-            '<a id="tab-label-secret" href="#tab-secret" ',
-            result,
-        )
-
-        # Login as non superuser to check that the third tab does not show
-        user = AnonymousUser()  # technically, Anonymous users cannot access the admin
-        self.request.user = user
-        tabbed_interface = self.event_page_tabbed_interface.get_bound_panel(
-            instance=event,
-            form=form,
-            request=self.request,
-        )
-        result = tabbed_interface.render_html()
-        self.assertIn(
-            '<a id="tab-label-event-details" href="#tab-event-details" class="w-tabs__tab shiny" role="tab" aria-selected="false" tabindex="-1">',
-            result,
-        )
-        self.assertIn(
-            '<a id="tab-label-speakers" href="#tab-speakers" class="w-tabs__tab " role="tab" aria-selected="false" tabindex="-1">',
-            result,
-        )
-        self.assertNotIn(
-            '<a id="tab-label-secret" href="#tab-secret" ',
-            result,
-        )
 
 
 class TestObjectList(TestCase):

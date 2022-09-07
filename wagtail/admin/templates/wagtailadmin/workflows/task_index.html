@@ -2,7 +2,6 @@
 {% load i18n wagtailadmin_tags %}
 
 {% block content %}
-<<<<<<< HEAD
     <header class="header" role="banner">
         <div class="row">
             <div class="left">
@@ -11,14 +10,6 @@
                         {% if view.header_icon %}{% icon name=view.header_icon %}{% endif %}
                         {{ view.page_title }}{% if view.subtitle %} <span class="header__subtitle">{{ view.subtitle }}</span>{% endif %}
                     </h1>
-=======
-    <header role="banner">
-        <div class="row">
-            <div class="left">
-                <div class="col">
-                    <h1>{% if view.header_icon %}{% icon name=view.header_icon %}{% endif %}
-                        {{ view.page_title }}{% if view.subtitle %} <span>{{ view.subtitle }}</span>{% endif %}</h1>
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
                 </div>
             </div>
             <div class="right">

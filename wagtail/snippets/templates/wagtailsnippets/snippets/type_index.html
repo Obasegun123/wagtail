@@ -18,7 +18,6 @@
 
 {% block content %}
 
-<<<<<<< HEAD
     <header class="header">
         <div class="row">
             <div class="left">
@@ -29,17 +28,6 @@
                     </h1>
                     {% if is_searchable and search_url %}
                         <form class="col search-form" action="{{ search_url }}" method="get" novalidate>
-=======
-    <header>
-        <div class="row">
-            <div class="left">
-                <div class="col">
-                    <h1>{% icon name="snippet" %}
-                        {% blocktrans trimmed with snippet_type_name_plural=model_opts.verbose_name_plural|capfirst %}Snippets <span>{{ snippet_type_name_plural }}</span>{% endblocktrans %}</h1>
-
-                    {% if is_searchable %}
-                        <form class="col search-form" action="{% url 'wagtailsnippets:list' model_opts.app_label model_opts.model_name %}" method="get" novalidate>
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
                             <ul class="fields">
                                 {% for field in search_form %}
                                     {% include "wagtailadmin/shared/field_as_li.html" with field=field field_classes="field-small iconfield" icon="search" %}

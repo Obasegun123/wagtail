@@ -81,7 +81,6 @@ module.exports = {
       },
       transitionProperty: {
         sidebar:
-<<<<<<< HEAD
           'inset-inline-start, padding-inline-start, width, transform, margin-top, min-height',
       },
       zIndex: {
@@ -98,12 +97,6 @@ module.exports = {
       },
       animation: {
         'fade-in': 'fade-in 150ms both',
-=======
-          'left, inset-inline-start, padding-inline-start, width, transform, margin-top, min-height',
-      },
-      zIndex: {
-        header: '100',
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
       },
     },
   },

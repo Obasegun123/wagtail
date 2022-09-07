@@ -20,8 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: it\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
-"1 : 2;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Wagtail redirects"
 msgstr "Reindirizzi Wagtail"
@@ -106,9 +105,6 @@ msgstr "temporaneo"
 msgid "redirect"
 msgstr "reindirizzamento"
 
-msgid "redirects"
-msgstr "redirezioni"
-
 msgid "Add redirect"
 msgstr "Aggiungi reindirizzamento"
 
@@ -121,21 +117,6 @@ msgstr "Reindirizzamenti"
 msgid "Import redirects"
 msgstr "Importa reindirizzamenti"
 
-<<<<<<< HEAD
-=======
-msgid ""
-"<p>Select a file where redirects are separated into rows and contains the "
-"columns representing <code>from</code> and <code>to</code> (they can be "
-"named anything).</p> <p>After submitting you will be taken to a confirmation "
-"view where you can customize your redirects before import.</p>"
-msgstr ""
-" <p>Seleziona un file dove i reindirizzamenti sono separati in righe e che "
-"contenga le colonne che rappresentano <code>da</code> e <code>verso</code> "
-"(possono essere chiamate in qualsiasi modo).</p> <p>Dopo l'invio verrai "
-"indirizzato a una visualizzazione di conferma in cui puoi personalizzare i "
-"tuoi reindirizzamenti prima dell'importazione.</p>"
-
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 msgid "Import"
 msgstr "Importa"
 
@@ -209,16 +190,6 @@ msgid "No redirects found."
 msgstr "Nessun reindirizzamento trovato"
 
 #, python-format
-<<<<<<< HEAD
-=======
-msgid "There is %(counter)s match"
-msgid_plural "There are %(counter)s matches"
-msgstr[0] "C'è %(counter)s corrispondenza"
-msgstr[1] "Ci sono %(counter)s corrispondenze"
-msgstr[2] "Ci sono %(counter)s corrispondenze"
-
-#, python-format
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 msgid "Sorry, no redirects match \"<em>%(query_string)s</em>\""
 msgstr ""
 "Spiacente, nessun reindirizzamento corrispondente a \"<em>%(query_string)s</"
@@ -273,7 +244,6 @@ msgid "Imported %(total)d redirect"
 msgid_plural "Imported %(total)d redirects"
 msgstr[0] "%(total)d reindirizzamento importato"
 msgstr[1] "%(total)d reindirizzamenti importati"
-msgstr[2] "%(total)d reindirizzamenti importati"
 
 msgid "Export Redirects"
 msgstr "Esporta reindirizzamenti"

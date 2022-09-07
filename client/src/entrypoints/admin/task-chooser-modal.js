@@ -57,31 +57,6 @@ const TASK_CHOOSER_MODAL_ONLOAD_HANDLERS = {
 
     ajaxifyLinks(modal.body);
     ajaxifyTaskCreateTab(modal, jsonData);
-<<<<<<< HEAD
-=======
-
-    $('form.task-search', modal.body).on('submit', search);
-
-    // eslint-disable-next-line func-names
-    $('#id_q').on('input', function () {
-      if (request) {
-        request.abort();
-      }
-      clearTimeout($.data(this, 'timer'));
-      const wait = setTimeout(search, 50);
-      $(this).data('timer', wait);
-    });
-
-    // eslint-disable-next-line func-names
-    $('#id_task_type').on('change', function () {
-      if (request) {
-        request.abort();
-      }
-      clearTimeout($.data(this, 'timer'));
-      const wait = setTimeout(search, 50);
-      $(this).data('timer', wait);
-    });
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
   },
   task_chosen(modal, jsonData) {
     modal.respond('taskChosen', jsonData.result);

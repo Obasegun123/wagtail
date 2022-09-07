@@ -591,7 +591,6 @@ Contributors
 * Kyle J. Roux
 * Vaibhav Shukla
 * Rishank Kanaparti
-<<<<<<< HEAD
 * Daniel Kirkham
 * Luz Paz
 * Simon Krull
@@ -600,9 +599,6 @@ Contributors
 * Christian Franke
 * Tom Hu
 * Thiago Costa de Souza
-=======
-* Przemysław Buczkowski
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 Translators
 ===========

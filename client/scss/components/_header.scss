@@ -3,14 +3,6 @@
 
 header {
   @apply w-text-primary w-mb-8;
-<<<<<<< HEAD
-=======
-
-  padding-top: 0.5rem;
-  padding-bottom: 1.5rem;
-  padding-inline-start: 110px;
-  padding-inline-end: 20px;
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
   a {
     @apply w-text-primary w-underline;
@@ -28,12 +20,6 @@ header {
 
     > svg.icon {
       position: absolute;
-<<<<<<< HEAD
-=======
-      // Remove once we drop support for Safari 13.
-      // stylelint-disable-next-line property-disallowed-list
-      left: -1.5em;
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
       inset-inline-start: -1.5em;
       top: 0.125em;
       max-width: 1em;
@@ -95,12 +81,6 @@ header {
     position: absolute;
     top: 0;
     height: 100%;
-<<<<<<< HEAD
-=======
-    // Remove once we drop support for Safari 13.
-    // stylelint-disable-next-line property-disallowed-list
-    left: 0.7em;
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
     inset-inline-start: 0.7em;
   }
 
@@ -190,7 +170,6 @@ header {
 
 @include media-breakpoint-up(sm) {
   header {
-<<<<<<< HEAD
     .row {
       padding-top: 1.5rem;
       padding-inline-start: 90px;
@@ -205,11 +184,6 @@ header {
       padding-top: 1.5rem;
       margin-top: 0;
     }
-=======
-    padding-top: 1.5rem;
-    padding-inline-start: 90px;
-    padding-inline-end: 90px;
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
     .left {
       float: left;

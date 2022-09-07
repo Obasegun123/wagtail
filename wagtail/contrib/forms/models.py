@@ -59,7 +59,7 @@ class AbstractFormSubmission(models.Model):
         }
 
     def __str__(self):
-        return f"{self.form_data}"
+        return self.form_data
 
     class Meta:
         abstract = True

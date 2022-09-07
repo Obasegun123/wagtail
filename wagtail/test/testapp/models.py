@@ -951,12 +951,7 @@ StandardChild.edit_handler = TabbedInterface(
         ObjectList(
             StandardChild.settings_panels, heading="Settings", classname="settings"
         ),
-        ObjectList(
-            [
-                HelpPanel("remember to check for asteroids"),
-            ],
-            heading="Dinosaurs",
-        ),
+        ObjectList([], heading="Dinosaurs"),
     ],
     base_form_class=WagtailAdminPageForm,
 )

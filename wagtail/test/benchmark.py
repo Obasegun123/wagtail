@@ -27,7 +27,7 @@ class Benchmark:
                 )
             )
 
-        print(  # noqa
+        print(
             "time min:",
             min(timings),
             "max:",
@@ -35,7 +35,7 @@ class Benchmark:
             "avg:",
             sum(timings) / len(timings),
         )  # NOQA
-        print(  # noqa
+        print(
             "memory min:",
             min(memory_usage),
             "max:",

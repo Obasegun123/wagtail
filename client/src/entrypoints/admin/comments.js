@@ -143,25 +143,11 @@ window.comments = (() => {
     }
   }
 
-  class MissingElementError extends Error {
-    constructor(element, ...params) {
-      super(...params);
-      this.name = 'MissingElementError';
-      this.element = element;
-    }
-  }
-
   class FieldLevelCommentWidget {
     constructor({ fieldNode, commentAdditionNode, annotationTemplateNode }) {
       this.fieldNode = fieldNode;
       this.contentpath = getContentPath(fieldNode);
-      if (!commentAdditionNode) {
-        throw new MissingElementError(commentAdditionNode);
-      }
       this.commentAdditionNode = commentAdditionNode;
-      if (!annotationTemplateNode) {
-        throw new MissingElementError(annotationTemplateNode);
-      }
       this.annotationTemplateNode = annotationTemplateNode;
       this.shown = false;
     }
@@ -264,40 +250,15 @@ window.comments = (() => {
     }
   }
 
-  function onNextEnable(fn) {
-    // Run a function once, when comments are enabled
-    const { selectEnabled } = commentApp.selectors;
-    const getEnabled = () => selectEnabled(commentApp.store.getState());
-    let enabled = getEnabled();
-    if (enabled) {
-      // If we're starting off enabled, run the function immediately
-      fn();
-      return;
-    }
-    const unsubscribe = commentApp.store.subscribe(() => {
-      // Otherwise, subscribe to updates and run the function when comments change to enabled
-      const newEnabled = getEnabled();
-      if (newEnabled && !enabled) {
-        enabled = newEnabled;
-        unsubscribe();
-        fn();
-      }
-    });
-  }
-
   function initAddCommentButton(buttonElement) {
-    const initWidget = () => {
-      const widget = new FieldLevelCommentWidget({
-        fieldNode: buttonElement.closest('[data-contentpath]'),
-        commentAdditionNode: buttonElement,
-        annotationTemplateNode: document.querySelector('#comment-icon'),
-      });
-      if (widget.contentpath) {
-        widget.register();
-      }
-    };
-    // Our template node may not exist yet - let's hold off until comments are loaded and enabled
-    onNextEnable(initWidget);
+    const widget = new FieldLevelCommentWidget({
+      fieldNode: buttonElement.closest('[data-contentpath]'),
+      commentAdditionNode: buttonElement,
+      annotationTemplateNode: document.querySelector('#comment-icon'),
+    });
+    if (widget.contentpath) {
+      widget.register();
+    }
   }
 
   function initCommentsInterface(formElement) {

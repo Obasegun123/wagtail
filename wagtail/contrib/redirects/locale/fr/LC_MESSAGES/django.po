@@ -25,8 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
-"1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "Wagtail redirects"
 msgstr "Règles de Redirections Wagtail"
@@ -215,10 +214,6 @@ msgid "There is %(counter)s match"
 msgid_plural "There are %(counter)s matches"
 msgstr[0] "Il y a %(counter)s correspondance"
 msgstr[1] "Il y a %(counter)s correspondances"
-<<<<<<< HEAD
-=======
-msgstr[2] "Il y a %(counter)s correspondances"
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
 
 #, python-format
 msgid "Sorry, no redirects match \"<em>%(query_string)s</em>\""
@@ -274,7 +269,6 @@ msgid "Imported %(total)d redirect"
 msgid_plural "Imported %(total)d redirects"
 msgstr[0] "%(total)d règle de redirection importée"
 msgstr[1] "%(total)d règles de redirection importées"
-msgstr[2] "%(total)d règles de redirection importées"
 
 msgid "Export Redirects"
 msgstr "Exporter les règles de redirection"

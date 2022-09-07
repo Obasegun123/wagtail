@@ -73,7 +73,6 @@ function onSelectAllChange(e) {
     document.querySelector(BULK_ACTION_FOOTER).classList.add('hidden');
   } else {
     toggleMoreActionsDropdownBtn(false);
-<<<<<<< HEAD
   }
 }
 
@@ -110,8 +109,6 @@ function onClickIndividualCheckbox(event) {
       individualCheckboxList[i].dispatchEvent(changeEvent);
     }
     checkedState.prevCheckedObject = event.target.dataset.objectId;
-=======
->>>>>>> 24fdc703fd4a99074ed7524de76ba9b39b586845
   }
 }
 

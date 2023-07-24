@@ -1,3 +1,5 @@
+(template_components)=
+
 # Template components
 
 Working with objects that know how to render themselves as elements on an HTML template is a common pattern seen throughout the Wagtail admin. For example, the admin homepage is a view provided by the central `wagtail.admin` app, but brings together information panels sourced from various other modules of Wagtail, such as images and documents (potentially along with others provided by third-party packages). These panels are passed to the homepage via the [`construct_homepage_panels`](construct_homepage_panels) hook, and each one is responsible for providing its own HTML rendering. In this way, the module providing the panel has full control over how it appears on the homepage.
@@ -51,7 +53,6 @@ class WelcomePanel(Component):
         return format_html("<h1>{}</h1>", "Welcome to my app!")
 ```
 
-
 ## Passing context to the template
 
 The `get_context_data` method can be overridden to pass context variables to the template. As with `render_html`, this receives the context dictionary from the calling template:
@@ -74,7 +75,6 @@ class WelcomePanel(Component):
 <h1>Welcome to my app, {{ username }}!</h1>
 ```
 
-
 ## Adding media definitions
 
 Like Django form widgets, components can specify associated JavaScript and CSS resources using either an inner `Media` class or a dynamic `media` property:
@@ -88,7 +88,6 @@ class WelcomePanel(Component):
             'all': ('my_app/css/welcome-panel.css',)
         }
 ```
-
 
 ## Using components on your own templates
 
@@ -137,7 +136,7 @@ def welcome_page(request):
     })
 ```
 
-``my_app/welcome.html``:
+`my_app/welcome.html`:
 
 ```html+django
 {% extends "wagtailadmin/base.html" %}

@@ -13,10 +13,10 @@ from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 from wagtail.admin import messages, signals
 from wagtail.admin.action_menu import PageActionMenu
-from wagtail.admin.side_panels import PageSidePanels
+from wagtail.admin.ui.side_panels import PageSidePanels
+from wagtail.admin.utils import get_valid_next_url_from_request
 from wagtail.admin.views.generic import HookResponseMixin
-from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
-from wagtail.models import Locale, Page, PageSubscription, UserPagePermissionsProxy
+from wagtail.models import Locale, Page, PageSubscription
 
 
 def add_subpage(request, parent_page_id):
@@ -170,7 +170,7 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
         self.parent_page.add_child(instance=self.page)
 
         # Save revision
-        self.page.save_revision(user=self.request.user, log_action=False)
+        self.page.save_revision(user=self.request.user, log_action=True)
 
         # Save subscription settings
         self.subscription.page = self.page
@@ -179,7 +179,8 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
         # Notification
         messages.success(
             self.request,
-            _("Page '{0}' created.").format(self.page.get_admin_display_title()),
+            _("Page '%(page_title)s' created.")
+            % {"page_title": self.page.get_admin_display_title()},
         )
 
         response = self.run_hook("after_create_page", self.request, self.page)
@@ -196,7 +197,7 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
         self.parent_page.add_child(instance=self.page)
 
         # Save revision
-        revision = self.page.save_revision(user=self.request.user, log_action=False)
+        revision = self.page.save_revision(user=self.request.user, log_action=True)
 
         # Save subscription settings
         self.subscription.page = self.page
@@ -220,9 +221,8 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
         if self.page.go_live_at and self.page.go_live_at > timezone.now():
             messages.success(
                 self.request,
-                _("Page '{0}' created and scheduled for publishing.").format(
-                    self.page.get_admin_display_title()
-                ),
+                _("Page '%(page_title)s' created and scheduled for publishing.")
+                % {"page_title": self.page.get_admin_display_title()},
                 buttons=[self.get_edit_message_button()],
             )
         else:
@@ -232,9 +232,8 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
             buttons.append(self.get_edit_message_button())
             messages.success(
                 self.request,
-                _("Page '{0}' created and published.").format(
-                    self.page.get_admin_display_title()
-                ),
+                _("Page '%(page_title)s' created and published.")
+                % {"page_title": self.page.get_admin_display_title()},
                 buttons=buttons,
             )
 
@@ -252,7 +251,7 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
         self.parent_page.add_child(instance=self.page)
 
         # Save revision
-        self.page.save_revision(user=self.request.user, log_action=False)
+        self.page.save_revision(user=self.request.user, log_action=True)
 
         # Submit
         workflow = self.page.get_workflow()
@@ -271,9 +270,8 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
 
         messages.success(
             self.request,
-            _("Page '{0}' created and submitted for moderation.").format(
-                self.page.get_admin_display_title()
-            ),
+            _("Page '%(page_title)s' created and submitted for moderation.")
+            % {"page_title": self.page.get_admin_display_title()},
             buttons=buttons,
         )
 
@@ -328,10 +326,18 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
             request=self.request, instance=self.page, form=self.form
         )
         action_menu = PageActionMenu(
-            self.request, view="create", parent_page=self.parent_page
+            self.request,
+            view="create",
+            parent_page=self.parent_page,
+            lock=None,
+            locked_for_user=False,
         )
         side_panels = PageSidePanels(
-            self.request, self.page, comments_enabled=self.form.show_comments_toggle
+            self.request,
+            self.page,
+            preview_enabled=True,
+            comments_enabled=self.form.show_comments_toggle,
+            show_schedule_publishing_toggle=self.form.show_schedule_publishing_toggle,
         )
 
         context.update(
@@ -342,7 +348,6 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
                 "edit_handler": bound_panel,
                 "action_menu": action_menu,
                 "side_panels": side_panels,
-                "preview_modes": self.page.preview_modes,
                 "form": self.form,
                 "next": self.next_url,
                 "has_unsaved_changes": self.has_unsaved_changes,
@@ -376,7 +381,6 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
                 ]
 
             else:
-                user_perms = UserPagePermissionsProxy(self.request.user)
                 translations = [
                     {
                         "locale": translation.locale,
@@ -392,7 +396,9 @@ class CreateView(TemplateResponseMixin, ContextMixin, HookResponseMixin, View):
                     for translation in self.parent_page.get_translations()
                     .only("id", "locale")
                     .select_related("locale")
-                    if user_perms.for_page(translation).can_add_subpage()
+                    if translation.permissions_for_user(
+                        self.request.user
+                    ).can_add_subpage()
                     and self.page_class
                     in translation.specific_class.creatable_subpage_models()
                     and self.page_class.can_create_at(translation)

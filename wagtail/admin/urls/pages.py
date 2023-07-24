@@ -34,9 +34,10 @@ urlpatterns = [
     ),
     path(
         "usage/<slug:content_type_app_name>/<slug:content_type_model_name>/",
-        usage.content_type_use,
+        usage.ContentTypeUseView.as_view(),
         name="type_use",
     ),
+    path("<int:page_id>/usage/", usage.UsageView.as_view(), name="usage"),
     path("<int:page_id>/edit/", edit.EditView.as_view(), name="edit"),
     path(
         "<int:page_id>/edit/preview/",
@@ -46,19 +47,15 @@ urlpatterns = [
     path("<int:page_id>/view_draft/", preview.view_draft, name="view_draft"),
     path("<int:parent_page_id>/add_subpage/", create.add_subpage, name="add_subpage"),
     path("<int:page_id>/delete/", delete.delete, name="delete"),
-    path("<int:page_id>/unpublish/", unpublish.unpublish, name="unpublish"),
+    path("<int:page_id>/unpublish/", unpublish.Unpublish.as_view(), name="unpublish"),
     path(
         "<int:page_id>/convert_alias/",
         convert_alias.convert_alias,
         name="convert_alias",
     ),
-    path("search/", search.search, name="search"),
+    path("search/", search.SearchView.as_view(), name="search"),
+    path("search/results/", search.SearchResultsView.as_view(), name="search_results"),
     path("<int:page_to_move_id>/move/", move.move_choose_destination, name="move"),
-    path(
-        "<int:page_to_move_id>/move/<int:viewed_page_id>/",
-        move.move_choose_destination,
-        name="move_choose_destination",
-    ),
     path(
         "<int:page_to_move_id>/move/<int:destination_id>/confirm/",
         move.move_confirm,
@@ -82,17 +79,17 @@ urlpatterns = [
     ),
     path(
         "workflow/confirm_cancellation/<int:page_id>/",
-        workflow.confirm_workflow_cancellation,
+        workflow.ConfirmWorkflowCancellation.as_view(),
         name="confirm_workflow_cancellation",
     ),
     path(
         "workflow/preview/<int:page_id>/<int:task_id>/",
-        workflow.preview_revision_for_task,
+        workflow.PreviewRevisionForTask.as_view(),
         name="workflow_preview",
     ),
     path(
         "workflow/status/<int:page_id>/",
-        workflow.workflow_status,
+        workflow.WorkflowStatus.as_view(),
         name="workflow_status",
     ),
     path(
@@ -111,12 +108,12 @@ urlpatterns = [
         name="preview_for_moderation",
     ),
     path("<int:page_id>/privacy/", page_privacy.set_privacy, name="set_privacy"),
-    path("<int:page_id>/lock/", lock.lock, name="lock"),
-    path("<int:page_id>/unlock/", lock.unlock, name="unlock"),
+    path("<int:page_id>/lock/", lock.LockView.as_view(), name="lock"),
+    path("<int:page_id>/unlock/", lock.UnlockView.as_view(), name="unlock"),
     path("<int:page_id>/revisions/", revisions.revisions_index, name="revisions_index"),
     path(
         "<int:page_id>/revisions/<int:revision_id>/view/",
-        revisions.revisions_view,
+        revisions.RevisionsView.as_view(),
         name="revisions_view",
     ),
     path(
@@ -126,22 +123,22 @@ urlpatterns = [
     ),
     path(
         "<int:page_id>/revisions/<int:revision_id>/unschedule/",
-        revisions.revisions_unschedule,
+        revisions.RevisionsUnschedule.as_view(),
         name="revisions_unschedule",
     ),
     re_path(
         r"^(\d+)/revisions/compare/(live|earliest|\d+)\.\.\.(live|latest|\d+)/$",
-        revisions.revisions_compare,
+        revisions.RevisionsCompare.as_view(),
         name="revisions_compare",
     ),
     path(
         "<int:page_id>/workflow_history/",
-        history.workflow_history,
+        history.WorkflowHistoryView.as_view(),
         name="workflow_history",
     ),
     path(
         "<int:page_id>/workflow_history/detail/<int:workflow_state_id>/",
-        history.workflow_history_detail,
+        history.WorkflowHistoryDetailView.as_view(),
         name="workflow_history_detail",
     ),
     path("<int:page_id>/history/", history.PageHistoryView.as_view(), name="history"),

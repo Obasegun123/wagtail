@@ -10,10 +10,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:45+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-21 15:51+0000\n"
-"Last-Translator: Kyungil Choi <hanpama@gmail.com>, 2015,2017,2019-2020\n"
-"Language-Team: Korean (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Jihan Chung <jihanchung20@gmail.com>, 2015\n"
+"Language-Team: Korean (http://app.transifex.com/torchbox/wagtail/language/"
 "ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,12 +25,12 @@ msgid "Wagtail core"
 msgstr "웨그테일 코어"
 
 #, python-format
-msgid "The minimum number of items is %d"
-msgstr "항목은 최소 %d개 이상이어야 합니다"
+msgid "The minimum number of items is %(min_num)d"
+msgstr "항목은 최소 %(min_num)d개 이상이어야 합니다"
 
 #, python-format
-msgid "The maximum number of items is %d"
-msgstr "항목은 최대 개수는 %d개입니다"
+msgid "The maximum number of items is %(max_num)d"
+msgstr "항목은 최대 개수는 %(max_num)d개입니다"
 
 msgid "Move up"
 msgstr "위로 이동"
@@ -63,6 +63,57 @@ msgstr "입력한 비밀번호가 올바르지 않습니다. 다시 시도해 �
 msgid "Comment"
 msgstr "댓글"
 
+msgid "Locked"
+msgstr "잠겨 있는"
+
+msgid "Unlocked"
+msgstr "잠금 풀림"
+
+msgid "live"
+msgstr "라이브"
+
+msgid "has unpublished changes"
+msgstr "게시되지 않은 변경 있음"
+
+msgid "first published at"
+msgstr "최초 게시일시:"
+
+msgid "last published at"
+msgstr "최종 게시일시: "
+
+msgid "go live date/time"
+msgstr "라이브 날짜/시간으로 이동"
+
+msgid "expiry date/time"
+msgstr "만료 날짜/시간"
+
+msgid "expired"
+msgstr "만료"
+
+msgid "scheduled"
+msgstr "예약됨"
+
+msgid "draft"
+msgstr "초안"
+
+msgid "live + scheduled"
+msgstr "라이브 + 예약됨"
+
+msgid "live + draft"
+msgstr "라이브 + 초안"
+
+msgid "Default"
+msgstr "기본값"
+
+msgid "locked"
+msgstr "잠김"
+
+msgid "locked at"
+msgstr "잠긴 시간:"
+
+msgid "locked by"
+msgstr "잠근 사람:"
+
 msgid "title"
 msgstr "제목"
 
@@ -82,12 +133,6 @@ msgstr ""
 msgid "content type"
 msgstr "콘텐트 타입"
 
-msgid "live"
-msgstr "라이브"
-
-msgid "has unpublished changes"
-msgstr "게시되지 않은 변경 있음"
-
 msgid "URL path"
 msgstr "URL 경로"
 
@@ -101,50 +146,8 @@ msgid ""
 "Whether a link to this page will appear in automatically generated menus"
 msgstr "이 페이지에 대한 링크가 자동적으로 생성된 메뉴에 나타날 것입니다."
 
-msgid "go live date/time"
-msgstr "라이브 날짜/시간으로 이동"
-
-msgid "expiry date/time"
-msgstr "만료 날짜/시간"
-
-msgid "expired"
-msgstr "만료"
-
-msgid "locked"
-msgstr "잠김"
-
-msgid "locked at"
-msgstr "잠긴 시간:"
-
-msgid "locked by"
-msgstr "잠근 사람:"
-
-msgid "first published at"
-msgstr "최초 게시일시:"
-
-msgid "last published at"
-msgstr "최종 게시일시: "
-
 msgid "latest revision created at"
 msgstr "최근 수정안 작성일:"
-
-msgid "This slug is already in use"
-msgstr "이 슬러그는 이미 사용되고 있습니다"
-
-msgid "scheduled"
-msgstr "예약됨"
-
-msgid "draft"
-msgstr "초안"
-
-msgid "live + scheduled"
-msgstr "라이브 + 예약됨"
-
-msgid "live + draft"
-msgstr "라이브 + 초안"
-
-msgid "Default"
-msgstr "기본값"
 
 msgid "page"
 msgstr "페이지"
@@ -166,12 +169,6 @@ msgstr "컨텐트 JSON"
 
 msgid "approved go live at"
 msgstr "라이브 승인 일시:"
-
-msgid "page revision"
-msgstr "페이지 수정안"
-
-msgid "page revisions"
-msgstr "페이지 수정안"
 
 msgid "Add/edit pages you own"
 msgstr "페이지 추가/수정"
@@ -351,15 +348,6 @@ msgstr "이 페이지에 접근하려면 비밀번호가 필요합니다."
 msgid "Continue"
 msgstr "계속"
 
-msgid "English"
-msgstr "영어"
-
-msgid "French"
-msgstr "프랑스어"
-
-msgid "German"
-msgstr "독일어"
-
 msgid "Create"
 msgstr "생성"
 
@@ -374,12 +362,6 @@ msgstr "출시된"
 
 msgid "Unpublish"
 msgstr "게시 해제"
-
-msgid "Locked"
-msgstr "잠겨 있는"
-
-msgid "Unlocked"
-msgstr "잠금 풀림"
 
 msgid "Reject"
 msgstr "거절"

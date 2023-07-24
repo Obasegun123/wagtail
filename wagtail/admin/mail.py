@@ -7,9 +7,9 @@ from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.translation import override
 
-from wagtail.admin.auth import users_with_page_permission
 from wagtail.coreutils import camelcase_to_underscore
-from wagtail.models import GroupApprovalTask, TaskState, WorkflowState
+from wagtail.models import GroupApprovalTask, Page, TaskState, WorkflowState
+from wagtail.permission_policies.pages import PagePermissionPolicy
 from wagtail.users.models import UserProfile
 
 logger = logging.getLogger("wagtail.admin")
@@ -54,6 +54,9 @@ def send_mail(subject, message, recipient_list, from_email=None, **kwargs):
         "headers": {
             "Auto-Submitted": "auto-generated",
         },
+        "bcc": kwargs.get("bcc", None),
+        "cc": kwargs.get("cc", None),
+        "reply_to": kwargs.get("reply_to", None),
     }
     mail = EmailMultiAlternatives(
         subject, message, from_email, recipient_list, **multi_alt_kwargs
@@ -72,12 +75,12 @@ def send_moderation_notification(revision, notification, excluded_user=None):
         include_superusers = getattr(
             settings, "WAGTAILADMIN_NOTIFICATION_INCLUDE_SUPERUSERS", True
         )
-        recipient_users = users_with_page_permission(
-            revision.content_object, "publish", include_superusers
+        recipient_users = PagePermissionPolicy().users_with_permission_for_instance(
+            "publish", revision.content_object, include_superusers
         )
     elif notification in ["rejected", "approved"]:
         # Get submitter
-        recipient_users = [revision.user]
+        recipient_users = [revision.user] if revision.user else []
     else:
         return False
 
@@ -121,20 +124,20 @@ def send_notification(recipient_users, notification, extra_context):
         # Send emails
         sent_count = 0
         for recipient in email_recipients:
+            # update context with this recipient
+            context["user"] = recipient
+
+            # Translate text to the recipient language settings
+            with override(recipient.wagtail_userprofile.get_preferred_language()):
+                # Get email subject and content
+                email_subject = render_to_string(template_subject, context).strip()
+                email_content = render_to_string(template_text, context).strip()
+
+            kwargs = {}
+            if getattr(settings, "WAGTAILADMIN_NOTIFICATION_USE_HTML", False):
+                kwargs["html_message"] = render_to_string(template_html, context)
+
             try:
-                # update context with this recipient
-                context["user"] = recipient
-
-                # Translate text to the recipient language settings
-                with override(recipient.wagtail_userprofile.get_preferred_language()):
-                    # Get email subject and content
-                    email_subject = render_to_string(template_subject, context).strip()
-                    email_content = render_to_string(template_text, context).strip()
-
-                kwargs = {}
-                if getattr(settings, "WAGTAILADMIN_NOTIFICATION_USE_HTML", False):
-                    kwargs["html_message"] = render_to_string(template_html, context)
-
                 # Send email
                 send_mail(
                     email_subject,
@@ -257,31 +260,28 @@ class EmailNotificationMixin:
 
                 # Send emails
                 for recipient in recipients:
+                    # update context with this recipient
+                    context["user"] = recipient
+
+                    # Translate text to the recipient language settings
+                    with override(
+                        recipient.wagtail_userprofile.get_preferred_language()
+                    ):
+                        # Get email subject and content
+                        email_subject = render_to_string(
+                            template_set["subject"], context
+                        ).strip()
+                        email_content = render_to_string(
+                            template_set["text"], context
+                        ).strip()
+
+                    kwargs = {}
+                    if getattr(settings, "WAGTAILADMIN_NOTIFICATION_USE_HTML", False):
+                        kwargs["html_message"] = render_to_string(
+                            template_set["html"], context
+                        )
+
                     try:
-
-                        # update context with this recipient
-                        context["user"] = recipient
-
-                        # Translate text to the recipient language settings
-                        with override(
-                            recipient.wagtail_userprofile.get_preferred_language()
-                        ):
-                            # Get email subject and content
-                            email_subject = render_to_string(
-                                template_set["subject"], context
-                            ).strip()
-                            email_content = render_to_string(
-                                template_set["text"], context
-                            ).strip()
-
-                        kwargs = {}
-                        if getattr(
-                            settings, "WAGTAILADMIN_NOTIFICATION_USE_HTML", False
-                        ):
-                            kwargs["html_message"] = render_to_string(
-                                template_set["html"], context
-                            )
-
                         # Send email
                         send_mail(
                             email_subject,
@@ -314,8 +314,11 @@ class BaseWorkflowStateEmailNotifier(EmailNotificationMixin, Notifier):
 
     def get_context(self, workflow_state, **kwargs):
         context = super().get_context(workflow_state, **kwargs)
-        context["page"] = workflow_state.page
         context["workflow"] = workflow_state.workflow
+        context["object"] = workflow_state.content_object
+        context["model_name"] = context["object"]._meta.verbose_name
+        if isinstance(context["object"], Page):
+            context["page"] = context["object"].specific
         return context
 
 
@@ -396,8 +399,11 @@ class BaseGroupApprovalTaskStateEmailNotifier(EmailNotificationMixin, Notifier):
 
     def get_context(self, task_state, **kwargs):
         context = super().get_context(task_state, **kwargs)
-        context["page"] = task_state.workflow_state.page
         context["task"] = task_state.task.specific
+        context["object"] = task_state.workflow_state.content_object
+        context["model_name"] = context["object"]._meta.verbose_name
+        if isinstance(context["object"], Page):
+            context["page"] = context["object"].specific
         return context
 
     def get_recipient_users(self, task_state, **kwargs):

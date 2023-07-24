@@ -5,15 +5,21 @@ from django.core.cache import caches
 from django.core.files import File
 from django.core.files.storage import DefaultStorage, Storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Prefetch
 from django.db.utils import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 from willow.image import Image as WillowImage
 
-from wagtail.images.models import Rendition, SourceImageIOError, get_rendition_storage
+from wagtail.images.models import (
+    Filter,
+    Rendition,
+    SourceImageIOError,
+    get_rendition_storage,
+)
 from wagtail.images.rect import Rect
-from wagtail.models import Collection, GroupCollectionPermission, Page
+from wagtail.models import Collection, GroupCollectionPermission, Page, ReferenceIndex
 from wagtail.test.testapp.models import (
     EventPage,
     EventPageCarouselItem,
@@ -47,7 +53,7 @@ class TestImage(TestCase):
         self.assertTrue(self.image.is_landscape())
 
     def test_get_rect(self):
-        self.assertTrue(self.image.get_rect(), Rect(0, 0, 640, 480))
+        self.assertEqual(self.image.get_rect(), Rect(0, 0, 640, 480))
 
     def test_get_focal_point(self):
         self.assertIsNone(self.image.get_focal_point())
@@ -111,8 +117,15 @@ class TestImage(TestCase):
         with self.assertRaises(SourceImageIOError):
             self.image.get_file_size()
 
+    def test_file_hash(self):
+        self.assertEqual(
+            self.image.get_file_hash(), "4dd0211870e130b7e1690d2ec53c499a54a48fef"
+        )
 
-class TestImageQuerySet(TestCase):
+
+class TestImageQuerySet(TransactionTestCase):
+    fixtures = ["test_empty.json"]
+
     def test_search_method(self):
         # Create an image for running tests on
         image = Image.objects.create(
@@ -151,9 +164,13 @@ class TestImageQuerySet(TestCase):
             file=get_test_image_file(),
         )
 
-        results = Image.objects.order_by("title").search("Test")
+        results = Image.objects.order_by("title").search(
+            "Test", order_by_relevance=False
+        )
         self.assertEqual(list(results), [aaa_image, zzz_image])
-        results = Image.objects.order_by("-title").search("Test")
+        results = Image.objects.order_by("-title").search(
+            "Test", order_by_relevance=False
+        )
         self.assertEqual(list(results), [zzz_image, aaa_image])
 
     def test_search_indexing_prefetches_tags(self):
@@ -172,7 +189,7 @@ class TestImageQuerySet(TestCase):
             self.assertIn("aardvark", results["Test image 0"])
 
 
-class TestImagePermissions(TestCase, WagtailTestUtils):
+class TestImagePermissions(WagtailTestUtils, TestCase):
     def setUp(self):
         # Create some user accounts for testing permissions
         self.user = self.create_user(
@@ -220,7 +237,12 @@ class TestImagePermissions(TestCase, WagtailTestUtils):
         self.assertFalse(self.image.is_editable_by_user(self.user))
 
 
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+)
 class TestRenditions(TestCase):
+    SPECS = ("height-66", "width-100", "width-400")
+
     def setUp(self):
         # Create an image for running tests on
         self.image = Image.objects.create(
@@ -286,6 +308,18 @@ class TestRenditions(TestCase):
         # The renditions should match
         self.assertEqual(original_rendition, second_rendition)
 
+    def test_prefetch_renditions_found(self):
+        # Same test as above but uses the `prefetch_renditions` method on the manager instead.
+        with self.assertNumQueries(5):
+            original_rendition = self.image.get_rendition("width-100")
+
+        image = Image.objects.prefetch_renditions("width-100").get(pk=self.image.pk)
+
+        with self.assertNumQueries(0):
+            second_rendition = image.get_rendition("width-100")
+
+        self.assertEqual(original_rendition, second_rendition)
+
     def test_prefetched_rendition_not_found(self):
         # Request a rendition that does not exist yet
         with self.assertNumQueries(5):
@@ -296,8 +330,8 @@ class TestRenditions(TestCase):
 
         # Request a different rendition from this object
         with self.assertNumQueries(4):
-            # The number of queries is fewer than before, because the check for
-            # an existing rendition is skipped
+            # The number of queries is fewer than before, because checks for
+            # an existing rendition (in cache and db) are skipped
             second_rendition = image.get_rendition("height-66")
 
         # The renditions should NOT match
@@ -314,15 +348,57 @@ class TestRenditions(TestCase):
         # exact same in-memory object
         self.assertIs(second_rendition, third_rendition)
 
-    def test_alt_attribute(self):
-        rendition = self.image.get_rendition("width-400")
-        self.assertEqual(rendition.alt, "Test image")
+    def test_prefetch_renditions_not_found(self):
+        # Same test as above but uses the `prefetch_renditions` method on the manager instead.
+        with self.assertNumQueries(5):
+            original_rendition = self.image.get_rendition("width-100")
 
-    def test_full_url(self):
-        ren_img = self.image.get_rendition("original")
-        full_url = ren_img.full_url
-        img_name = ren_img.file.name.split("/")[1]
-        self.assertEqual(full_url, "http://testserver/media/images/{}".format(img_name))
+        image = Image.objects.prefetch_renditions("width-100").get(pk=self.image.pk)
+
+        with self.assertNumQueries(4):
+            second_rendition = image.get_rendition("height-66")
+
+        self.assertNotEqual(original_rendition, second_rendition)
+
+        with self.assertNumQueries(0):
+            third_rendition = image.get_rendition("height-66")
+
+        self.assertIs(second_rendition, third_rendition)
+
+    def _test_get_renditions_performance(
+        self,
+        db_queries_expected: int,
+        prefetch_restricted: bool = False,
+        prefetch_all: bool = False,
+    ):
+        queryset = Image.objects.all()
+        if prefetch_all:
+            queryset = queryset.prefetch_related("renditions")
+        elif prefetch_restricted:
+            queryset = queryset.prefetch_renditions(*self.SPECS)
+
+        image = queryset.get(id=self.image.id)
+        with self.assertNumQueries(db_queries_expected):
+            image.get_renditions(*self.SPECS)
+
+    def test_get_renditions_performance_with_rendition_caching_disabled(self):
+        # ATTEMPT 1
+        # 1) An initial lookup for rendition from the DB
+        # 2) A check for clashes before bulk saving new renditions
+        # 3) A bulk_create() to save new renditions
+        self._test_get_renditions_performance(3)
+
+        # ATTEMPT 2
+        # With all renditions already created, we should just see
+        # 1) An initial lookup for rendition from the DB
+        self._test_get_renditions_performance(1)
+
+        # ATTEMPT 3
+        # If the existing renditions are prefetched, no futher queries should
+        # be needed, whether that's with prefetch_related("renditions") or
+        # prefetch_renditions()
+        self._test_get_renditions_performance(0, prefetch_all=True)
+        self._test_get_renditions_performance(0, prefetch_restricted=True)
 
     @override_settings(
         CACHES={
@@ -331,30 +407,112 @@ class TestRenditions(TestCase):
             },
         },
     )
-    def test_renditions_cache_backend(self):
-        cache = caches["renditions"]
-        rendition = self.image.get_rendition("width-500")
-        rendition_cache_key = "image-{}-{}-{}".format(
-            rendition.image.id, rendition.focal_point_key, rendition.filter_spec
+    def test_get_renditions_performance_with_rendition_caching_enabled(self):
+        # ATTEMPT 1
+        # 1) An initial lookup for rendition from the DB
+        # 2) A check for clashes before bulk saving new renditions
+        # 3) A bulk_create() to save new renditions
+        self._test_get_renditions_performance(3)
+
+        # ATTEMPT 2
+        # Any renditions created in the first attempt should have
+        # been added to the cache, so a second request should bypass
+        # the database completely
+        self._test_get_renditions_performance(0)
+
+        # ATTEMPT 3
+        # Prefetching renditions should mean that no queries are
+        # required, and no cache hits are made
+        self._test_get_renditions_performance(0, prefetch_all=True)
+
+    def test_create_renditions(self):
+        filter_list = [Filter(spec) for spec in self.SPECS]
+        # When no renditions exist, there should be one query for
+        # 'clash identification', and another for bulk creation
+        with self.assertNumQueries(2):
+            result = self.image.create_renditions(*filter_list)
+
+        # Renditions should match the filters
+        for filter, rendition in result.items():
+            self.assertEqual(filter.spec, rendition.filter_spec)
+
+        # Filter specs should match the filters that were provided as arguments
+        self.assertEqual(
+            {filter.spec for filter in result.keys()},
+            {filter.spec for filter in filter_list},
         )
+
+        # When the renditions already exist, there should be one query
+        # for 'clash identification', but that is all
+        with self.assertNumQueries(1):
+            result = self.image.create_renditions(*filter_list)
+
+        # Renditions should match the filters
+        for filter, rendition in result.items():
+            self.assertEqual(filter.spec, rendition.filter_spec)
+
+        # Filter specs should match the filters that were provided as arguments
+        self.assertEqual(
+            {filter.spec for filter in result.keys()},
+            {filter.spec for filter in filter_list},
+        )
+
+        # Another request should give us an equal result
+        with self.assertNumQueries(1):
+            second_result = self.image.create_renditions(*filter_list)
+        self.assertEqual(result, second_result)
+
+        # When only some renditions exist, we should see the create query
+        # once again
+        self.image.renditions.filter(filter_spec=self.SPECS[0]).delete()
+        with self.assertNumQueries(2):
+            third_result = self.image.create_renditions(*filter_list)
+
+        # Equality check should fail, as newly created rendition has a different pk
+        self.assertNotEqual(third_result, result)
+
+        # But, we should see equality on the keys
+        self.assertEqual(third_result.keys(), result.keys())
+
+    def test_alt_attribute(self):
+        rendition = self.image.get_rendition("width-400")
+        self.assertEqual(rendition.alt, "Test image")
+
+    def test_full_url(self):
+        ren_img = self.image.get_rendition("original")
+        full_url = ren_img.full_url
+        img_name = ren_img.file.name.split("/")[1]
+        self.assertEqual(full_url, f"http://testserver/media/images/{img_name}")
+
+    @override_settings(
+        CACHES={
+            "renditions": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            },
+        },
+    )
+    def test_renditions_cache(self):
+        cache = Rendition.cache_backend
+        rendition = self.image.get_rendition("width-500")
+        rendition_cache_key = rendition.get_cache_key()
 
         # Check rendition is saved to cache
         self.assertEqual(cache.get(rendition_cache_key), rendition)
 
         # Mark a rendition to check it comes from cache
-        rendition._from_cache = "original"
+        rendition._mark = "original"
         cache.set(rendition_cache_key, rendition)
 
         # Check if get_rendition returns the rendition from cache
         with self.assertNumQueries(0):
             new_rendition = self.image.get_rendition("width-500")
-        self.assertEqual(new_rendition._from_cache, "original")
+        self.assertEqual(new_rendition._mark, "original")
 
         # But, not if the rendition has been prefetched
         fresh_image = Image.objects.prefetch_related("renditions").get(pk=self.image.pk)
         with self.assertNumQueries(0):
             prefetched_rendition = fresh_image.get_rendition("width-500")
-        self.assertFalse(hasattr(prefetched_rendition, "_from_cache"))
+        self.assertFalse(hasattr(prefetched_rendition, "_mark"))
 
         # changing the image file should invalidate the cache
         self.image.file = get_test_image_file(colour="green")
@@ -363,7 +521,7 @@ class TestRenditions(TestCase):
         # we're bypassing that here, so have to do it manually
         self.image.renditions.all().delete()
         new_rendition = self.image.get_rendition("width-500")
-        self.assertFalse(hasattr(new_rendition, "_from_cache"))
+        self.assertFalse(hasattr(new_rendition, "_mark"))
 
         # changing it back should also generate a new rendition and not re-use
         # the original one (because that file has now been deleted in the change)
@@ -371,7 +529,30 @@ class TestRenditions(TestCase):
         self.image.save()
         self.image.renditions.all().delete()
         new_rendition = self.image.get_rendition("width-500")
-        self.assertFalse(hasattr(new_rendition, "_from_cache"))
+        self.assertFalse(hasattr(new_rendition, "_mark"))
+
+    def test_prefers_rendition_cache_backend(self):
+        with override_settings(
+            CACHES={
+                "default": {
+                    "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+                },
+                "renditions": {
+                    "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+                },
+            }
+        ):
+            self.assertEqual(Rendition.cache_backend, caches["renditions"])
+
+    def test_uses_default_cache_when_no_renditions_cache(self):
+        with override_settings(
+            CACHES={
+                "default": {
+                    "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+                }
+            }
+        ):
+            self.assertEqual(Rendition.cache_backend, caches["default"])
 
     def test_focal_point(self):
         self.image.focal_point_x = 100
@@ -436,6 +617,64 @@ class TestRenditions(TestCase):
         settings = bkp
 
 
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+)
+class TestPrefetchRenditions(TestCase):
+    fixtures = ["test.json"]
+
+    def setUp(self):
+        self.images = []
+        self.event_pages_pks = []
+
+        event_pages = EventPage.objects.all()[:3]
+        for i, page in enumerate(event_pages):
+            page.feed_image = image = Image.objects.create(
+                title="Test image {i}",
+                file=get_test_image_file(),
+            )
+            page.save(update_fields=["feed_image"])
+            self.images.append(image)
+            self.event_pages_pks.append(page.pk)
+
+        # Generate renditions
+        self.small_renditions = [
+            image.get_rendition("max-100x100") for image in self.images
+        ]
+        self.large_renditions = [
+            image.get_rendition("min-300x600") for image in self.images
+        ]
+
+    def test_prefetch_renditions_on_non_image_querysets(self):
+        prefetch_images_and_small_renditions = Prefetch(
+            "feed_image", queryset=Image.objects.prefetch_renditions("max-100x100")
+        )
+        with self.assertNumQueries(3):
+            # One query to get the `EventPage`s, another one to fetch the feed images
+            # and a last one to select matching renditions.
+            pages = list(
+                EventPage.objects.prefetch_related(
+                    prefetch_images_and_small_renditions
+                ).filter(pk__in=self.event_pages_pks)
+            )
+
+        with self.assertNumQueries(0):
+            # No additional query since small renditions were prefetched.
+            small_renditions = [
+                page.feed_image.get_rendition("max-100x100") for page in pages
+            ]
+
+        self.assertListEqual(self.small_renditions, small_renditions)
+
+        with self.assertNumQueries(3):
+            # Additional queries since large renditions weren't prefetched.
+            large_renditions = [
+                page.feed_image.get_rendition("min-300x600") for page in pages
+            ]
+
+        self.assertListEqual(self.large_renditions, large_renditions)
+
+
 class TestUsageCount(TestCase):
     fixtures = ["test.json"]
 
@@ -445,11 +684,9 @@ class TestUsageCount(TestCase):
             file=get_test_image_file(),
         )
 
-    @override_settings(WAGTAIL_USAGE_COUNT_ENABLED=True)
     def test_unused_image_usage_count(self):
         self.assertEqual(self.image.get_usage().count(), 0)
 
-    @override_settings(WAGTAIL_USAGE_COUNT_ENABLED=True)
     def test_used_image_document_usage_count(self):
         page = EventPage.objects.get(id=4)
         event_page_carousel_item = EventPageCarouselItem()
@@ -468,21 +705,20 @@ class TestGetUsage(TestCase):
             file=get_test_image_file(),
         )
 
-    def test_image_get_usage_not_enabled(self):
-        self.assertEqual(list(self.image.get_usage()), [])
-
-    @override_settings(WAGTAIL_USAGE_COUNT_ENABLED=True)
     def test_unused_image_get_usage(self):
         self.assertEqual(list(self.image.get_usage()), [])
 
-    @override_settings(WAGTAIL_USAGE_COUNT_ENABLED=True)
     def test_used_image_document_get_usage(self):
         page = EventPage.objects.get(id=4)
         event_page_carousel_item = EventPageCarouselItem()
         event_page_carousel_item.page = page
         event_page_carousel_item.image = self.image
         event_page_carousel_item.save()
-        self.assertTrue(issubclass(Page, type(self.image.get_usage()[0])))
+
+        self.assertIsInstance(self.image.get_usage()[0], tuple)
+        self.assertIsInstance(self.image.get_usage()[0][0], Page)
+        self.assertIsInstance(self.image.get_usage()[0][1], list)
+        self.assertIsInstance(self.image.get_usage()[0][1][0], ReferenceIndex)
 
 
 class TestGetWillowImage(TestCase):
@@ -563,7 +799,7 @@ class TestIssue573(TestCase):
 
 
 @override_settings(_WAGTAILSEARCH_FORCE_AUTO_UPDATE=["elasticsearch"])
-class TestIssue613(TestCase, WagtailTestUtils):
+class TestIssue613(WagtailTestUtils, TestCase):
     def get_elasticsearch_backend(self):
         from django.conf import settings
 

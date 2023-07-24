@@ -3,7 +3,8 @@ from io import BytesIO
 
 from django.conf import settings
 from django.conf.locale import LANG_INFO
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -11,11 +12,11 @@ from django.utils import timezone, translation
 from openpyxl import load_workbook
 
 from wagtail.admin.views.mixins import ExcelDateFormatter
-from wagtail.models import Page, PageLogEntry
+from wagtail.models import GroupPagePermission, ModelLogEntry, Page, PageLogEntry
 from wagtail.test.utils import WagtailTestUtils
 
 
-class TestLockedPagesView(TestCase, WagtailTestUtils):
+class TestLockedPagesView(WagtailTestUtils, TestCase):
     def setUp(self):
         self.user = self.login()
 
@@ -30,6 +31,16 @@ class TestLockedPagesView(TestCase, WagtailTestUtils):
         # Initially there should be no locked pages
         self.assertContains(response, "No locked pages found.")
 
+        # No user locked anything
+        self.assertInHTML(
+            """
+            <select name="locked_by" id="id_locked_by">
+                <option value="" selected>---------</option>
+            </select>
+            """,
+            response.content.decode(),
+        )
+
         self.page = Page.objects.first()
         self.page.locked = True
         self.page.locked_by = self.user
@@ -42,6 +53,57 @@ class TestLockedPagesView(TestCase, WagtailTestUtils):
         self.assertTemplateUsed(response, "wagtailadmin/reports/locked_pages.html")
         self.assertNotContains(response, "No locked pages found.")
         self.assertContains(response, self.page.title)
+
+        self.assertInHTML(
+            f"""
+            <select name="locked_by" id="id_locked_by">
+                <option value="" selected>---------</option>
+                <option value="{self.user.pk}">{self.user}</option>
+            </select>
+            """,
+            response.content.decode(),
+        )
+
+        # Locked by current user shown in indicator
+        self.assertContains(response, "locked-indicator indicator--is-inverse")
+        self.assertContains(
+            response, 'title="This page is locked, by you, to further editing"'
+        )
+
+    def test_get_with_minimal_permissions(self):
+        group = Group.objects.create(name="test group")
+        self.user.is_superuser = False
+        self.user.save()
+        self.user.groups.add(group)
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="wagtailadmin", codename="access_admin"
+            )
+        )
+        GroupPagePermission.objects.create(
+            group=group,
+            page=Page.objects.first(),
+            permission_type="unlock",
+        )
+
+        response = self.get()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "wagtailadmin/reports/locked_pages.html")
+        self.assertContains(response, "No locked pages found.")
+
+    def test_get_with_no_permissions(self):
+        self.user.is_superuser = False
+        self.user.save()
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="wagtailadmin", codename="access_admin"
+            )
+        )
+
+        response = self.get()
+
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
 
     def test_csv_export(self):
 
@@ -116,8 +178,11 @@ class TestLockedPagesView(TestCase, WagtailTestUtils):
         )
         self.assertEqual(len(cell_array), 2)
 
+        self.assertEqual(worksheet["B2"].number_format, ExcelDateFormatter().get())
+        self.assertEqual(worksheet["E2"].number_format, ExcelDateFormatter().get())
 
-class TestFilteredLockedPagesView(TestCase, WagtailTestUtils):
+
+class TestFilteredLockedPagesView(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -151,7 +216,7 @@ class TestFilteredLockedPagesView(TestCase, WagtailTestUtils):
         self.assertNotContains(response, "My locked page")
 
 
-class TestFilteredLogEntriesView(TestCase, WagtailTestUtils):
+class TestFilteredLogEntriesView(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -250,6 +315,34 @@ class TestFilteredLogEntriesView(TestCase, WagtailTestUtils):
             ],
         )
 
+    def test_log_entry_with_stale_content_type(self):
+        stale_content_type = ContentType.objects.create(
+            app_label="fake_app", model="deleted model"
+        )
+
+        ModelLogEntry.objects.create(
+            object_id=123,
+            content_type=stale_content_type,
+            label="This instance's model was deleted, but its content type was not",
+            action="wagtail.create",
+            timestamp=timezone.now(),
+        )
+
+        response = self.get()
+        self.assertContains(response, "Deleted model")
+
+    def test_log_entry_with_null_content_type(self):
+        ModelLogEntry.objects.create(
+            object_id=123,
+            content_type=None,
+            label="This instance's model was deleted, and so was its content type",
+            action="wagtail.create",
+            timestamp=timezone.now(),
+        )
+
+        response = self.get()
+        self.assertContains(response, "Unknown content type")
+
 
 @override_settings(
     USE_L10N=True,
@@ -262,8 +355,19 @@ class TestExcelDateFormatter(TestCase):
             with self.subTest(lang), translation.override(lang):
                 self.assertNotEqual(formatter.get(), "")
 
+    def test_format(self):
+        formatter = ExcelDateFormatter()
 
-class TestAgingPagesView(TestCase, WagtailTestUtils):
+        with self.subTest(format="r"):
+            # Format code for RFC 5322 formatted date, e.g. 'Thu, 21 Dec 2000 16:01:07'
+            self.assertEqual(formatter.format("r"), "ddd, d mmm yyyy hh:mm:ss")
+
+        with self.subTest(format="m/d/Y g:i A"):
+            # Format code for e.g. '12/21/2000 4:01 PM'
+            self.assertEqual(formatter.format("m/d/Y g:i A"), "mm/dd/yyyy h:mm AM/PM")
+
+
+class TestAgingPagesView(WagtailTestUtils, TestCase):
     def setUp(self):
         self.user = self.login()
         self.root = Page.objects.first()
@@ -370,8 +474,22 @@ class TestAgingPagesView(TestCase, WagtailTestUtils):
         )
         self.assertEqual(len(cell_array), 2)
 
+        self.assertEqual(worksheet["C2"].number_format, ExcelDateFormatter().get())
 
-class TestFilteredAgingPagesView(TestCase, WagtailTestUtils):
+    def test_report_renders_when_page_publisher_deleted(self):
+        temp_user = self.create_superuser(
+            "temp", email="temp@user.com", password="tempuser"
+        )
+        expected_deleted_string = f"user {temp_user.pk} (deleted)"
+
+        self.home.save_revision().publish(user=temp_user)
+        temp_user.delete()
+
+        response = self.get()
+        self.assertContains(response, expected_deleted_string)
+
+
+class TestFilteredAgingPagesView(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):

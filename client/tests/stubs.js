@@ -32,6 +32,12 @@ global.wagtailConfig = {
   ACTIVE_LOCALE: 'en',
 };
 
+const script = document.createElement('script');
+script.type = 'application/json';
+script.id = 'wagtail-config';
+script.textContent = JSON.stringify({ CSRF_TOKEN: 'potato' });
+document.body.appendChild(script);
+
 global.wagtailVersion = '1.6a1';
 
 global.wagtail = {};
@@ -51,3 +57,37 @@ global.IMAGE_CHOOSER_MODAL_ONLOAD_HANDLERS = { type: 'image' };
 global.PAGE_CHOOSER_MODAL_ONLOAD_HANDLERS = { type: 'page' };
 global.EMBED_CHOOSER_MODAL_ONLOAD_HANDLERS = { type: 'embed' };
 global.DOCUMENT_CHOOSER_MODAL_ONLOAD_HANDLERS = { type: 'document' };
+
+class PageChooserModal {}
+global.PageChooserModal = PageChooserModal;
+
+/** Mock window.scrollTo as not provided via JSDom */
+window.scrollTo = jest.fn();
+
+/** Mock console.warn to filter out warnings from React due to Draftail legacy Component API usage.
+ * Draftail/Draft-js is unlikely to support these and the warnings are not useful for unit test output.
+ */
+/* eslint-disable no-console */
+const consoleWarnOriginal = console.warn;
+console.warn = function filterWarnings(...args) {
+  /* eslint-enable no-console */
+
+  const [warning, component] = args;
+
+  const legacyReactWarnings = [
+    'Warning: componentWillMount has been renamed, and is not recommended for use.',
+    'Warning: componentWillReceiveProps has been renamed, and is not recommended for use.',
+    'Warning: componentWillUpdate has been renamed, and is not recommended for use.',
+  ];
+
+  const ignoredComponents = ['DraftEditor', 'PluginEditor'];
+
+  if (
+    legacyReactWarnings.some((_) => warning.includes(_)) &&
+    ignoredComponents.includes(component)
+  ) {
+    return;
+  }
+
+  consoleWarnOriginal.apply(console, args);
+};

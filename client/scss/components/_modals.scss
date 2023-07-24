@@ -20,7 +20,6 @@ $zindex-modal-background: 500;
 
 // Container that the modal scrolls within
 .modal {
-  box-sizing: border-box;
   display: none;
   overflow: auto;
   overflow-y: scroll;
@@ -34,7 +33,6 @@ $zindex-modal-background: 500;
 
 // Shell div to position the modal with bottom padding
 .modal-dialog {
-  box-sizing: border-box;
   margin-inline-start: auto;
   margin-inline-end: auto;
   padding: 0;
@@ -53,11 +51,10 @@ $zindex-modal-background: 500;
 
 // Actual modal
 .modal-content {
-  box-sizing: border-box;
   border-radius: 3px;
   width: 98.7%;
   position: relative;
-  background-color: $color-white;
+  background-color: theme('colors.surface-page');
   margin-top: 2em;
   padding-bottom: 3em;
   display: inline-block;
@@ -73,7 +70,7 @@ $zindex-modal-background: 500;
   bottom: 0;
   inset-inline-start: 0;
   z-index: ($zindex-modal-background - 10);
-  background-color: $color-black;
+  background-color: theme('colors.black-50');
 
   // Fade for backdrop
   &.fade {
@@ -81,19 +78,28 @@ $zindex-modal-background: 500;
   }
 
   &.in {
-    opacity: 0.5;
+    opacity: 1;
   }
 }
 
-.modal .close {
-  @apply w-bg-primary-200 hover:w-bg-black w-border-primary;
-  padding: 0;
+.modal .close.button {
   position: absolute;
-  width: 50px;
-  height: 50px;
-  top: 10px;
-  inset-inline-end: 10px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  padding: 0;
+  top: theme('spacing.3');
+  inset-inline-end: theme('spacing.3');
+  width: theme('spacing.8');
+  height: theme('spacing.8');
+  color: theme('colors.text-button');
   z-index: 1;
+
+  &:hover {
+    background-color: theme('colors.surface-menu-item-active');
+    color: theme('colors.text-button');
+  }
 }
 
 // Where all modal content resides
@@ -101,14 +107,21 @@ $zindex-modal-background: 500;
   position: relative;
   padding-bottom: 2em;
 
-  header {
-    @apply w-bg-primary w-text-white;
+  .w-header {
+    color: theme('colors.text-label-menus-default');
+    background-color: theme('colors.surface-menus');
 
-    h1 {
-      @apply w-text-white;
+    > .row {
+      // reset inline padding added to w-header for sidebar offset
+      padding-inline-start: theme('spacing.16');
+      // ensure title can never overlap the close button
+      padding-inline-end: theme('spacing.16');
+    }
 
+    .w-header__title {
+      color: inherit;
       font-weight: 700;
-      font-size: 1.125rem;
+      font-size: theme('fontSize.19');
       line-height: 130%;
     }
   }
@@ -116,12 +129,22 @@ $zindex-modal-background: 500;
 
 @include media-breakpoint-up(sm) {
   .modal-dialog {
-    padding: 0 0 2em $menu-width;
+    margin-inline-end: theme('spacing.20');
+    margin-inline-start: theme('spacing.20');
+    padding: 0 0 2em 0;
+    width: auto;
+  }
+
+  .modal .close.button {
+    width: theme('spacing.12');
+    height: theme('spacing.12');
   }
 }
 
 @include media-breakpoint-up(xl) {
   .modal-dialog {
+    margin-inline-end: auto;
+    margin-inline-start: auto;
     max-width: 100em;
     padding: 0 0 2em;
   }

@@ -20,18 +20,21 @@ concurrency:
 # - test runs with USE_EMAIL_USER_MODEL=yes and DISABLE_TIMEZONE=yes
 
 # Current configuration:
-# - django 3.2, python 3.7, postgres
+# - django 3.2, python 3.8, postgres
 # - django 3.2, python 3.8, mysql
-# - django 4.0, python 3.9, sqlite
-# - django 4.0, python 3.9, mysql
-# - django 4.0, python 3.10, postgres, USE_EMAIL_USER_MODEL=yes
-# - django 4.0, python 3.10, postgres, DISABLE_TIMEZONE=yes
-# - django stable/4.0.x, python 3.10, postgres (allow failures)
+# - django 4.1, python 3.9, sqlite
+# - django 4.2, python 3.10, mysql
+# - django 4.1, python 3.10, postgres, USE_EMAIL_USER_MODEL=yes
+# - django 4.2, python 3.11, postgres, DISABLE_TIMEZONE=yes
+# - django stable/4.2.x, python 3.10, postgres (allow failures)
 # - django main, python 3.10, postgres (allow failures)
-# - elasticsearch 5, django 3.2, python 3.7, sqlite
-# - elasticsearch 6, django 3.2, python 3.7, postgres
-# - elasticsearch 7, django 4.0, python 3.8, postgres
-# - elasticsearch 7, django 4.0, python 3.9, sqlite, USE_EMAIL_USER_MODEL=yes
+# - elasticsearch 5, django 3.2, python 3.8, sqlite
+# - elasticsearch 6, django 3.2, python 3.8, postgres
+# - elasticsearch 7, django 4.1, python 3.8, postgres
+# - elasticsearch 8, django 4.2, python 3.10, sqlite, USE_EMAIL_USER_MODEL=yes
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
 
 jobs:
   test-sqlite:
@@ -40,7 +43,7 @@ jobs:
       matrix:
         include:
           - python: '3.9'
-            django: 'Django>=4.0,<4.1'
+            django: 'Django>=4.1,<4.2'
 
     steps:
       - uses: actions/checkout@v3
@@ -55,9 +58,14 @@ jobs:
           pip install "${{ matrix.django }}"
       - name: Test
         run: |
-          ./runtests.py
+          coverage run --parallel-mode --source wagtail runtests.py
         env:
           DATABASE_ENGINE: django.db.backends.sqlite3
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
   test-postgres:
     runs-on: ubuntu-latest
@@ -65,28 +73,34 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: '3.7'
+          - python: '3.8'
             django: 'Django>=3.2,<3.3'
             experimental: false
-          - python: '3.10'
-            django: 'Django>=4.0,<4.1'
+          - python: '3.11'
+            django: 'Django>=4.2,<4.3'
+            postgres: 'postgres:12'
             notz: notz
             experimental: false
           - python: '3.10'
-            django: 'Django>=4.0,<4.1'
+            django: 'Django>=4.1,<4.2'
             experimental: false
             emailuser: emailuser
           - python: '3.10'
-            django: 'git+https://github.com/django/django.git@stable/4.0.x#egg=Django'
+            django: 'git+https://github.com/django/django.git@stable/4.2.x#egg=Django'
             experimental: true
+            postgres: 'postgres:12'
           - python: '3.10'
             django: 'git+https://github.com/django/django.git@main#egg=Django'
             experimental: true
             postgres: 'postgres:12'
+            install_extras: |
+              pip uninstall -y django-modelcluster
+              pip install \
+                git+https://github.com/wagtail/django-modelcluster.git@main#egg=django-modelcluster
 
     services:
       postgres:
-        image: ${{ matrix.postgres || 'postgres:10.8' }}
+        image: ${{ matrix.postgres || 'postgres:11' }}
         env:
           POSTGRES_PASSWORD: postgres
         ports:
@@ -108,7 +122,7 @@ jobs:
           ${{ matrix.install_extras }}
       - name: Test
         run: |
-          ./runtests.py
+          coverage run --parallel-mode --source wagtail runtests.py
         env:
           DATABASE_ENGINE: django.db.backends.postgresql
           DATABASE_HOST: localhost
@@ -116,6 +130,11 @@ jobs:
           DATABASE_PASSWORD: postgres
           USE_EMAIL_USER_MODEL: ${{ matrix.emailuser }}
           DISABLE_TIMEZONE: ${{ matrix.notz }}
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
   test-mysql:
     runs-on: ubuntu-latest
@@ -126,8 +145,8 @@ jobs:
           - python: '3.8'
             django: 'Django>=3.2,<3.3'
             experimental: false
-          - python: '3.9'
-            django: 'Django>=4.0,<4.1'
+          - python: '3.10'
+            django: 'Django>=4.2,<4.3'
             experimental: false
 
     services:
@@ -138,7 +157,7 @@ jobs:
           MYSQL_DATABASE: wagtail
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3 --cap-add=sys_nice
 
     steps:
       - uses: actions/checkout@v3
@@ -154,11 +173,16 @@ jobs:
           pip install "${{ matrix.django }}"
       - name: Test
         run: |
-          ./runtests.py
+          coverage run --parallel-mode --source wagtail runtests.py
         env:
           DATABASE_ENGINE: django.db.backends.mysql
           DATABASE_HOST: '127.0.0.1'
           DATABASE_USER: root
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
   # https://github.com/elastic/elastic-github-actions doesn't work for Elasticsearch 5,
   # but https://github.com/getong/elasticsearch-action does
@@ -167,7 +191,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: '3.7'
+          - python: '3.8'
             django: 'Django>=3.2,<3.3'
     steps:
       - name: Configure sysctl limits
@@ -198,17 +222,22 @@ jobs:
           pip install certifi
       - name: Test
         run: |
-          ./runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch5
+          coverage run --parallel-mode --source wagtail runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch5
         env:
           DATABASE_ENGINE: django.db.backends.sqlite3
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
-  test-sqlite-elasticsearch7:
+  test-sqlite-elasticsearch8:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - python: '3.9'
-            django: 'Django>=4.0,<4.1'
+          - python: '3.10'
+            django: 'Django>=4.2,<4.3'
             emailuser: emailuser
     steps:
       - name: Configure sysctl limits
@@ -219,7 +248,7 @@ jobs:
           sudo sysctl -w vm.max_map_count=262144
       - uses: getong/elasticsearch-action@v1.2
         with:
-          elasticsearch version: 7.6.1
+          elasticsearch version: 8.8.0
           host port: 9200
           container port: 9200
           host node port: 9300
@@ -235,14 +264,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[testing]
           pip install "${{ matrix.django }}"
-          pip install "elasticsearch>=7,<8"
+          pip install "elasticsearch>=8,<9"
           pip install certifi
       - name: Test
         run: |
-          ./runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch7
+          coverage run --parallel-mode --source wagtail runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch8
         env:
           DATABASE_ENGINE: django.db.backends.sqlite3
           USE_EMAIL_USER_MODEL: ${{ matrix.emailuser }}
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
   # https://github.com/getong/elasticsearch-action doesn't work for Elasticsearch 6,
   # but https://github.com/elastic/elastic-github-actions does
@@ -251,12 +285,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - python: '3.7'
+          - python: '3.8'
             django: 'Django>=3.2,<3.3'
 
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:11
+        env:
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -286,13 +322,18 @@ jobs:
           pip install certifi
       - name: Test
         run: |
-          ./runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch6
+          coverage run --parallel-mode --source wagtail runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch6
         env:
           DATABASE_ENGINE: django.db.backends.postgresql
           DATABASE_HOST: localhost
           DATABASE_USER: postgres
           DATABASE_PASSWORD: postgres
           USE_EMAIL_USER_MODEL: ${{ matrix.emailuser }}
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
 
   test-postgres-elasticsearch7:
     runs-on: ubuntu-latest
@@ -301,12 +342,14 @@ jobs:
       matrix:
         include:
           - python: '3.8'
-            django: 'Django>=4.0,<4.1'
+            django: 'Django>=4.1,<4.2'
             experimental: false
 
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:11
+        env:
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -336,10 +379,54 @@ jobs:
           pip install certifi
       - name: Test
         run: |
-          ./runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch7
+          coverage run --parallel-mode --source wagtail runtests.py wagtail.search wagtail.documents wagtail.images --elasticsearch7
         env:
           DATABASE_ENGINE: django.db.backends.postgresql
           DATABASE_HOST: localhost
           DATABASE_USER: postgres
           DATABASE_PASSWORD: postgres
           USE_EMAIL_USER_MODEL: ${{ matrix.emailuser }}
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
+
+  coverage:
+    needs:
+      - test-sqlite
+      - test-postgres
+      - test-mysql
+      - test-sqlite-elasticsearch5
+      - test-sqlite-elasticsearch8
+      - test-postgres-elasticsearch6
+      - test-postgres-elasticsearch7
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install coverage
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-data
+
+      - name: Combine coverage data
+        run: |
+          coverage combine
+          coverage report -m --skip-covered
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: backend

@@ -54,9 +54,15 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 
+if os.environ.get("STATICFILES_STORAGE", "") == "manifest":
+    STATICFILES_STORAGE = (
+        "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+    )
+
+
 USE_TZ = not os.environ.get("DISABLE_TIMEZONE")
 if not USE_TZ:
-    print("Timezone support disabled")
+    print("Timezone support disabled")  # noqa: T201
 
 LANGUAGE_CODE = "en"
 
@@ -119,6 +125,7 @@ INSTALLED_APPS = [
     "wagtail.test.search",
     "wagtail.test.modeladmintest",
     "wagtail.test.i18n",
+    "wagtail.test.streamfield_migrations",
     "wagtail.contrib.simple_translation",
     "wagtail.contrib.styleguide",
     "wagtail.contrib.routable_page",
@@ -179,7 +186,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 if os.environ.get("USE_EMAIL_USER_MODEL"):
     INSTALLED_APPS.append("wagtail.test.emailuser")
     AUTH_USER_MODEL = "emailuser.EmailUser"
-    print("EmailUser (no username) user model active")
+    print("EmailUser (no username) user model active")  # noqa: T201
 else:
     INSTALLED_APPS.append("wagtail.test.customuser")
     AUTH_USER_MODEL = "customuser.CustomUser"
@@ -197,7 +204,9 @@ if os.environ.get("DATABASE_ENGINE") == "django.db.backends.postgresql":
     }
 
 if "ELASTICSEARCH_URL" in os.environ:
-    if os.environ.get("ELASTICSEARCH_VERSION") == "7":
+    if os.environ.get("ELASTICSEARCH_VERSION") == "8":
+        backend = "wagtail.search.backends.elasticsearch8"
+    elif os.environ.get("ELASTICSEARCH_VERSION") == "7":
         backend = "wagtail.search.backends.elasticsearch7"
     elif os.environ.get("ELASTICSEARCH_VERSION") == "6":
         backend = "wagtail.search.backends.elasticsearch6"

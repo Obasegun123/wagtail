@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 11:54+0000\n"
 "Last-Translator: Reinis Rozenbergs <reinisr@gmail.com>, 2016\n"
-"Language-Team: Latvian (http://www.transifex.com/torchbox/wagtail/language/"
+"Language-Team: Latvian (http://app.transifex.com/torchbox/wagtail/language/"
 "lv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,9 +20,6 @@ msgstr ""
 "Language: lv\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
 "2);\n"
-
-msgid "Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."
-msgstr "Obligāts. 30 vai mazāk simbolu. Burti, cipari un @/./+/-/_ simboli."
 
 msgid "A user with that username already exists."
 msgstr "Lietotājvāds aizņemts"
@@ -87,6 +84,15 @@ msgstr "Pievienot"
 msgid "Change"
 msgstr "Mainīt"
 
+msgid "Publish"
+msgstr "Publicēt"
+
+msgid "Lock"
+msgstr "Slēgt"
+
+msgid "Unlock"
+msgstr "Atslēgt"
+
 msgid "Other permissions"
 msgstr "Citas atļaujas"
 
@@ -125,9 +131,6 @@ msgstr "Pievienot lietotāju"
 msgid "Username"
 msgstr "Lietotājvārds"
 
-msgid "Level"
-msgstr "Līmenis"
-
 msgid "Status"
 msgstr "Statuss"
 
@@ -153,37 +156,27 @@ msgstr "PIevienot grupu"
 msgid "Search groups"
 msgstr "Meklēt grupas"
 
-#, python-brace-format
-msgid "Group '{0}' created."
-msgstr "Grupa '{0}' izveidota"
+#, python-format
+msgid "Group '%(object)s' created."
+msgstr "Grupa '%(object)s' izveidota"
 
-#, python-brace-format
-msgid "Group '{0}' updated."
-msgstr "Grupa '{0}' atjaunota."
+#, python-format
+msgid "Group '%(object)s' updated."
+msgstr "Grupa '%(object)s' atjaunota."
 
 msgid "The group could not be saved due to errors."
 msgstr "Grupu nevarēja saglabāt kļūdu dēļ."
 
-#, python-brace-format
-msgid "Group '{0}' deleted."
-msgstr "Grupa '{0}' dzēsta."
+#, python-format
+msgid "Group '%(object)s' deleted."
+msgstr "Grupa '%(object)s' dzēsta."
 
-msgid "Search users"
-msgstr "Meklēt lietotājus"
-
-#, python-brace-format
-msgid "User '{0}' created."
-msgstr "Grupa '{0}' izveidota."
-
-msgid "Edit"
-msgstr "Labot"
-
-msgid "The user could not be created due to errors."
-msgstr "Lietotāju nevarēja izveidot kļūdu dēļ."
-
-#, python-brace-format
-msgid "User '{0}' updated."
-msgstr "Lietotājs '{0}' atjaunots. "
+#, python-format
+msgid "User '%(object)s' updated."
+msgstr "Lietotājs '%(object)s' atjaunots. "
 
 msgid "The user could not be saved due to errors."
 msgstr "Lietotāju nevarēja saglabāt kļūdu dēļ."
+
+msgid "Edit"
+msgstr "Labot"

@@ -149,7 +149,7 @@ class CreatePageAliasAction:
         )
 
         # Update any translatable child objects
-        for (child_relation, old_pk), child_object in child_object_map.items():
+        for child_object in child_object_map.values():
             if isinstance(child_object, TranslatableMixin):
                 if update_locale:
                     child_object.locale = update_locale
@@ -217,7 +217,7 @@ class CreatePageAliasAction:
 
             numchild = 0
 
-            for child_page in page.get_children().specific():
+            for child_page in page.get_children().specific().iterator():
                 newdepth = _mpnode_attrs[1] + 1
                 child_mpnode_attrs = (
                     Page._get_path(_mpnode_attrs[0], newdepth, numchild),

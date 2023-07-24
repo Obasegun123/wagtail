@@ -18,24 +18,26 @@
     inset-inline-end: 0;
     bottom: 0;
     top: 0;
-    opacity: theme('opacity.40');
-    background: theme('colors.black.DEFAULT');
+    opacity: theme('opacity.80');
+    background: theme('colors.black-50');
   }
 
   &__box {
     width: 100%;
     position: relative;
     margin: auto;
-    overflow: hidden;
     max-width: theme('maxWidth.2xl');
     z-index: theme('zIndex.dialog');
-    background: theme('colors.white.DEFAULT');
+    background: theme('colors.surface-page');
     box-shadow: theme('boxShadow.DEFAULT');
     border-radius: theme('borderRadius.md');
     animation: theme('animation.fade-in');
 
     @include media-breakpoint-up(sm) {
       width: 600px;
+    }
+    @media (forced-colors: active) {
+      border: 5px solid currentColor;
     }
   }
 
@@ -63,6 +65,7 @@
     overflow: auto;
     padding: theme('spacing.8');
     max-height: calc(100vh - 180px);
+    min-height: min(100vh - 180px, 320px);
 
     @include media-breakpoint-up(sm) {
       padding: theme('spacing.12');
@@ -79,7 +82,7 @@
     display: none;
     width: theme('spacing.5');
     height: theme('spacing.5');
-    color: theme('colors.primary.DEFAULT');
+    color: theme('colors.icon-primary');
     top: theme('spacing.[0.5]');
     transform: translateY(theme('spacing.2'));
     inset-inline-start: calc(0 - theme('spacing.10'));
@@ -103,6 +106,12 @@
     display: flex;
     align-items: center;
     padding: theme('spacing.5');
+    border-start-start-radius: theme('borderRadius.md');
+    border-start-end-radius: theme('borderRadius.md');
+
+    @media (forced-colors: active) {
+      border-bottom: 1px solid currentColor;
+    }
 
     &--info {
       background: theme('colors.info.50');
@@ -140,5 +149,19 @@
 
   &__message-description {
     margin-bottom: 0;
+  }
+}
+
+// Variant of the dialog which allows viewing other page content.
+.w-dialog--floating {
+  pointer-events: none;
+
+  .w-dialog__box {
+    pointer-events: auto;
+    box-shadow: theme('boxShadow.md');
+  }
+
+  .w-dialog__overlay {
+    display: none;
   }
 }

@@ -1,4 +1,2 @@
-{% load wagtailadmin_tags %}
-<li class="{% if field.field.required %}required{% endif %} {{ wrapper_classes }} {{ li_classes }} {% if field.errors %}error{% endif %}">
-    {% include "wagtailadmin/shared/field.html" %}
-</li>
+{% comment %} RemovedInWagtail60 - this template is no longer used in Wagtail but kept around a little longer for compatibility with third-party packages. {% endcomment %}
+<li>{% include "wagtailadmin/shared/field.html" %}</li>

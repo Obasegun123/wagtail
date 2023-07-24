@@ -1,10 +1,9 @@
 import * as React from 'react';
 
+import Tippy from '@tippyjs/react';
 import { gettext } from '../../../utils/gettext';
 import Icon from '../../Icon/Icon';
 import { ModuleDefinition, SIDEBAR_TRANSITION_DURATION } from '../Sidebar';
-
-import Tippy from '@tippyjs/react';
 
 interface SearchInputProps {
   slim: boolean;
@@ -42,7 +41,7 @@ export const SearchInput: React.FunctionComponent<SearchInputProps> = ({
   return (
     <form
       role="search"
-      className={`w-h-[42px] w-relative w-box-border w-flex w-items-center w-justify-start w-flex-row w-flex-shrink-0`}
+      className="w-h-[42px] w-relative w-box-border w-flex w-items-center w-justify-start w-flex-row w-flex-shrink-0"
       action={searchUrl}
       method="get"
       onSubmit={onSubmitForm}
@@ -64,10 +63,10 @@ export const SearchInput: React.FunctionComponent<SearchInputProps> = ({
           w-outline-offset-inside
           w-border-0
           w-rounded-none
-          w-text-white/80
+          w-text-text-label-menus-default
           w-z-10
-          hover:w-text-white
-          focus:w-text-white
+          hover:w-text-text-label-menus-active
+          focus:w-text-text-label-menus-active
           hover:w-bg-transparent`}
             type="submit"
             aria-label={gettext('Search')}
@@ -108,10 +107,10 @@ export const SearchInput: React.FunctionComponent<SearchInputProps> = ({
             !w-bg-transparent
             !w-border-0
             !w-rounded-none
-            !w-text-white/80
+            !w-text-text-label-menus-default
             !w-outline-offset-inside
             !w-leading-none
-            placeholder:!w-text-white/80`}
+            placeholder:!w-text-text-label-menus-default`}
           type="text"
           id="menu-search-q"
           name="q"

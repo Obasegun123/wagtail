@@ -13,7 +13,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from wagtail.admin.admin_url_finder import AdminURLFinder
-from wagtail.admin.tests.pages.timestamps import submittable_timestamp
 from wagtail.exceptions import PageClassNotFoundError
 from wagtail.models import (
     Comment,
@@ -36,6 +35,7 @@ from wagtail.test.testapp.models import (
     EventPageCarouselItem,
     FilePage,
     ManyToManyBlogPage,
+    PageChooserModel,
     SimplePage,
     SingleEventPage,
     StandardIndex,
@@ -43,10 +43,17 @@ from wagtail.test.testapp.models import (
 )
 from wagtail.test.utils import WagtailTestUtils
 from wagtail.test.utils.form_data import inline_formset, nested_form_data
+from wagtail.test.utils.timestamps import submittable_timestamp
 from wagtail.users.models import UserProfile
+from wagtail.utils.timestamps import render_timestamp
 
 
-class TestPageEdit(TestCase, WagtailTestUtils):
+class TestPageEdit(WagtailTestUtils, TestCase):
+    STATUS_TOGGLE_BADGE_REGEX = (
+        r'data-side-panel-toggle="status"[^<]+<svg[^<]+<use[^<]+</use[^<]+</svg[^<]+'
+        r"<div data-side-panel-toggle-counter[^>]+w-bg-critical-200[^>]+>\s*%(num_errors)s\s*</div>"
+    )
+
     def setUp(self):
         # Find root page
         self.root_page = Page.objects.get(id=2)
@@ -116,9 +123,19 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         self.assertEqual(response["Content-Type"], "text/html; charset=utf-8")
         self.assertContains(response, 'id="status-sidebar-live"')
 
-        # Test InlinePanel labels/headings
-        self.assertContains(response, "<legend>Speaker lineup</legend>")
+        # Test help text defined on FieldPanel
+        self.assertContains(response, "Who this event is for")
+
+        # Test InlinePanel labels/headings/help text
+        self.assertContains(
+            response,
+            '<label class="w-field__label" for="id_speakers-__prefix__-last_name" id="id_speakers-__prefix__-last_name-label">',
+        )
         self.assertContains(response, "Add speakers")
+        self.assertContains(response, "Put the keynote speaker first")
+
+        # Test MultiFieldPanel help text
+        self.assertContains(response, "For SEO nerds only")
 
         # test register_page_action_menu_item hook
         self.assertContains(
@@ -139,10 +156,37 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             '<button type="submit" name="action-submit" value="Submit to Moderators approval" class="button">',
         )
 
+        # test that side panel is shown
+        self.assertContains(
+            response,
+            '<aside class="form-side form-side--initial" aria-label="Side panels" data-form-side>',
+        )
+        self.assertNotContains(response, "data-form-side-explorer")
+
+        # test that usage info is shown
+        self.assertContains(response, "Referenced 0 times")
+        self.assertContains(
+            response, reverse("wagtailadmin_pages:usage", args=(self.event_page.id,))
+        )
+
         # test that AdminURLFinder returns the edit view for the page
         url_finder = AdminURLFinder(self.user)
         expected_url = "/admin/pages/%d/edit/" % self.event_page.id
         self.assertEqual(url_finder.get_edit_url(self.event_page), expected_url)
+
+    def test_usage_count_information_shown(self):
+        PageChooserModel.objects.create(page=self.event_page)
+
+        # Tests that the edit page loads
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.event_page.id,))
+        )
+
+        # test that usage info is shown
+        self.assertContains(response, "Referenced 1 time")
+        self.assertContains(
+            response, reverse("wagtailadmin_pages:usage", args=(self.event_page.id,))
+        )
 
     @override_settings(WAGTAIL_WORKFLOW_ENABLED=False)
     def test_workflow_buttons_not_shown_when_workflow_disabled(self):
@@ -332,12 +376,11 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             "go_live_at": submittable_timestamp(go_live_at),
             "expire_at": submittable_timestamp(expire_at),
         }
-        response = self.client.post(
-            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
-        )
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data, follow=True)
 
-        # Should be redirected to explorer page
-        self.assertEqual(response.status_code, 302)
+        # Should be redirected to the edit page again
+        self.assertRedirects(response, edit_url, 302, 200)
 
         child_page_new = SimplePage.objects.get(id=self.child_page.id)
 
@@ -363,6 +406,166 @@ class TestPageEdit(TestCase, WagtailTestUtils):
                 object_id=child_page_new.id,
                 content__expire_at__startswith=str(expire_at.date()),
             ).exists()
+        )
+
+        # Should show the draft go_live_at and expire_at under the "Once published" label
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        # Should show the dialog template pointing to the [data-edit-form] selector as the root
+        self.assertTagInHTML(
+            '<template data-controller="w-teleport" data-w-teleport-target-value="[data-edit-form]">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+        self.assertTagInHTML(
+            '<div id="schedule-publishing-dialog" class="w-dialog publishing" data-controller="w-dialog">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        self.assertContains(
+            response,
+            'This publishing schedule will only take effect after you select the "Publish" option',
+        )
+
+    def test_edit_post_scheduled_custom_timezone(self):
+        # Set user's timezone to something different from the server timezone
+        UserProfile.objects.update_or_create(
+            user=self.user,
+            defaults={"current_time_zone": "Asia/Jakarta"},
+        )
+
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "go_live_at": "2022-03-20 06:00",
+        }
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data, follow=True)
+        html = response.content.decode()
+
+        # Should be redirected to the edit page again
+        self.assertRedirects(response, edit_url, 302, 200)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page will still be live
+        self.assertTrue(child_page_new.live)
+
+        # A revision with approved_go_live_at should not exist
+        self.assertFalse(
+            Revision.page_revisions.filter(object_id=child_page_new.id)
+            .exclude(approved_go_live_at__isnull=True)
+            .exists()
+        )
+
+        # But a revision with go_live_at in their content json *should* exist
+        if settings.USE_TZ:
+            # The saved timestamp should be in UTC
+            self.assertTrue(
+                Revision.page_revisions.filter(
+                    object_id=child_page_new.id,
+                    content__go_live_at="2022-03-19T23:00:00Z",
+                ).exists()
+            )
+        else:
+            # Without TZ support, just use the submitted timestamp as-is
+            self.assertTrue(
+                Revision.page_revisions.filter(
+                    object_id=child_page_new.id,
+                    content__go_live_at="2022-03-20T06:00:00",
+                ).exists()
+            )
+
+        # Should show the draft go_live_at under the "Once published" label
+        # and should be in the user's timezone
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            '<span class="w-text-grey-600">Go-live:</span> March 20, 2022, 6 a.m.',
+            html=True,
+            count=1,
+        )
+
+        # Should show the "Edit schedule" button
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        # Should show the dialog template pointing to the [data-edit-form] selector as the root
+        self.assertTagInHTML(
+            '<template data-controller="w-teleport" data-w-teleport-target-value="[data-edit-form]">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+        self.assertTagInHTML(
+            '<div id="schedule-publishing-dialog" class="w-dialog publishing" data-controller="w-dialog">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        # Should show the input with the correct value in the user's timezone
+        self.assertTagInHTML(
+            '<input type="text" name="go_live_at" value="2022-03-20 06:00">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        self.assertContains(
+            response,
+            'This publishing schedule will only take effect after you select the "Publish" option',
+        )
+
+    def test_schedule_panel_without_publish_permission(self):
+        editor = self.create_user("editor", password="password")
+        editor.groups.add(Group.objects.get(name="Editors"))
+        self.login(username="editor")
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.event_page.id,))
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Anyone with editing permissions can create schedules"
         )
 
     def test_edit_scheduled_go_live_before_expiry(self):
@@ -397,6 +600,20 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             "Go live date/time must be before expiry date/time",
         )
 
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Invalid schedule</div>',
+            html=True,
+        )
+
+        num_errors = 2
+
+        # Should show the correct number on the badge of the toggle button
+        self.assertRegex(
+            response.content.decode(),
+            self.STATUS_TOGGLE_BADGE_REGEX % {"num_errors": num_errors},
+        )
+
         # form should be marked as having unsaved changes for the purposes of the dirty-forms warning
         self.assertContains(response, "alwaysDirty: true")
 
@@ -420,65 +637,150 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             response, "form", "expire_at", "Expiry date/time must be in the future"
         )
 
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Invalid schedule</div>',
+            html=True,
+        )
+
+        num_errors = 1
+
+        # Should show the correct number on the badge of the toggle button
+        self.assertRegex(
+            response.content.decode(),
+            self.STATUS_TOGGLE_BADGE_REGEX % {"num_errors": num_errors},
+        )
+
         # form should be marked as having unsaved changes for the purposes of the dirty-forms warning
         self.assertContains(response, "alwaysDirty: true")
+
+    def test_edit_post_invalid_schedule_with_existing_draft_schedule(self):
+        self.child_page.go_live_at = timezone.now() + datetime.timedelta(days=1)
+        self.child_page.expire_at = timezone.now() + datetime.timedelta(days=2)
+        latest_revision = self.child_page.save_revision()
+
+        go_live_at = timezone.now() + datetime.timedelta(days=10)
+        expire_at = timezone.now() + datetime.timedelta(days=-20)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "go_live_at": submittable_timestamp(go_live_at),
+            "expire_at": submittable_timestamp(expire_at),
+        }
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data)
+
+        # Should render the edit page with errors instead of redirecting
+        self.assertEqual(response.status_code, 200)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page will still be live
+        self.assertTrue(child_page_new.live)
+
+        # No new revision should have been created
+        self.assertEqual(child_page_new.latest_revision_id, latest_revision.pk)
+
+        # Should not show the draft go_live_at and expire_at under the "Once published" label
+        self.assertNotContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+        )
+        self.assertNotContains(
+            response,
+            '<span class="w-text-grey-600">Go-live:</span>',
+            html=True,
+        )
+        self.assertNotContains(
+            response,
+            '<span class="w-text-grey-600">Expiry:</span>',
+            html=True,
+        )
+
+        # Should show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Invalid schedule</div>',
+            html=True,
+        )
+
+        num_errors = 2
+
+        # Should show the correct number on the badge of the toggle button
+        self.assertRegex(
+            response.content.decode(),
+            self.STATUS_TOGGLE_BADGE_REGEX % {"num_errors": num_errors},
+        )
 
     def test_page_edit_post_publish(self):
         # Connect a mock signal handler to page_published signal
         mock_handler = mock.MagicMock()
         page_published.connect(mock_handler)
 
-        # Set has_unpublished_changes=True on the existing record to confirm that the publish action
-        # is resetting it (and not just leaving it alone)
-        self.child_page.has_unpublished_changes = True
-        self.child_page.save()
+        try:
+            # Set has_unpublished_changes=True on the existing record to confirm that the publish action
+            # is resetting it (and not just leaving it alone)
+            self.child_page.has_unpublished_changes = True
+            self.child_page.save()
 
-        # Save current value of first_published_at so we can check that it doesn't change
-        first_published_at = SimplePage.objects.get(
-            id=self.child_page.id
-        ).first_published_at
+            # Save current value of first_published_at so we can check that it doesn't change
+            first_published_at = SimplePage.objects.get(
+                id=self.child_page.id
+            ).first_published_at
 
-        # Tests publish from edit page
-        post_data = {
-            "title": "I've been edited!",
-            "content": "Some content",
-            "slug": "hello-world-new",
-            "action-publish": "Publish",
-        }
-        response = self.client.post(
-            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)),
-            post_data,
-            follow=True,
-        )
+            # Tests publish from edit page
+            post_data = {
+                "title": "I've been edited!",
+                "content": "Some content",
+                "slug": "hello-world-new",
+                "action-publish": "Publish",
+            }
+            response = self.client.post(
+                reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)),
+                post_data,
+                follow=True,
+            )
 
-        # Should be redirected to explorer
-        self.assertRedirects(
-            response, reverse("wagtailadmin_explore", args=(self.root_page.id,))
-        )
+            # Should be redirected to explorer
+            self.assertRedirects(
+                response, reverse("wagtailadmin_explore", args=(self.root_page.id,))
+            )
 
-        # Check that the page was edited
-        child_page_new = SimplePage.objects.get(id=self.child_page.id)
-        self.assertEqual(child_page_new.title, post_data["title"])
-        self.assertEqual(child_page_new.draft_title, post_data["title"])
+            # Check that the page was edited
+            child_page_new = SimplePage.objects.get(id=self.child_page.id)
+            self.assertEqual(child_page_new.title, post_data["title"])
+            self.assertEqual(child_page_new.draft_title, post_data["title"])
 
-        # Check that the page_published signal was fired
-        self.assertEqual(mock_handler.call_count, 1)
-        mock_call = mock_handler.mock_calls[0][2]
+            # Check that the page_published signal was fired
+            self.assertEqual(mock_handler.call_count, 1)
+            mock_call = mock_handler.mock_calls[0][2]
 
-        self.assertEqual(mock_call["sender"], child_page_new.specific_class)
-        self.assertEqual(mock_call["instance"], child_page_new)
-        self.assertIsInstance(mock_call["instance"], child_page_new.specific_class)
+            self.assertEqual(mock_call["sender"], child_page_new.specific_class)
+            self.assertEqual(mock_call["instance"], child_page_new)
+            self.assertIsInstance(mock_call["instance"], child_page_new.specific_class)
 
-        # The page shouldn't have "has_unpublished_changes" flag set
-        self.assertFalse(child_page_new.has_unpublished_changes)
+            # The page shouldn't have "has_unpublished_changes" flag set
+            self.assertFalse(child_page_new.has_unpublished_changes)
 
-        # first_published_at should not change as it was already set
-        self.assertEqual(first_published_at, child_page_new.first_published_at)
+            # first_published_at should not change as it was already set
+            self.assertEqual(first_published_at, child_page_new.first_published_at)
 
-        # The "View Live" button should have the updated slug.
-        for message in response.context["messages"]:
-            self.assertIn("hello-world-new", message.message)
-            break
+            # The "View Live" button should have the updated slug.
+            for message in response.context["messages"]:
+                self.assertIn("hello-world-new", message.message)
+                break
+        finally:
+            page_published.disconnect(mock_handler)
 
     def test_first_published_at_editable(self):
         """Test that we can update the first_published_at via the Page edit form,
@@ -560,10 +862,42 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         # because the changes are not visible as a live page yet
         self.assertTrue(
             child_page_new.has_unpublished_changes,
-            "A page scheduled for future publishing should have has_unpublished_changes=True",
+            msg="A page scheduled for future publishing should have has_unpublished_changes=True",
         )
 
         self.assertEqual(child_page_new.status_string, "scheduled")
+
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
+        )
+
+        # Should show the go_live_at and expire_at without the "Once published" label
+        self.assertNotContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should not show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=0,
+            allow_extra_attrs=True,
+        )
 
     def test_edit_post_publish_now_an_already_scheduled_unpublished_page(self):
         # Unpublish the page
@@ -609,25 +943,34 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             "content": "Some content",
             "slug": "hello-world",
             "action-publish": "Publish",
-            "go_live_at": "",
+            "go_live_at": go_live_at,
         }
         response = self.client.post(
             reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
         )
 
-        # Should be redirected to edit page
-        self.assertEqual(response.status_code, 302)
+        # Should be blocked, as the page is already scheduled
+        self.assertEqual(response.status_code, 200)
 
         child_page_new = SimplePage.objects.get(id=self.child_page.id)
 
-        # The page should be live now
-        self.assertTrue(child_page_new.live)
+        # The page should not be live
+        self.assertFalse(child_page_new.live)
 
-        # And a revision with approved_go_live_at should not exist
-        self.assertFalse(
+        # The revision with approved_go_live_at should still exist
+        self.assertTrue(
             Revision.page_revisions.filter(object_id=child_page_new.id)
             .exclude(approved_go_live_at__isnull=True)
             .exists()
+        )
+
+        # Should not show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=0,
+            allow_extra_attrs=True,
         )
 
     def test_edit_post_publish_scheduled_published_page(self):
@@ -673,7 +1016,7 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         # because the changes are not visible as a live page yet
         self.assertTrue(
             child_page_new.has_unpublished_changes,
-            "A page scheduled for future publishing should have has_unpublished_changes=True",
+            msg="A page scheduled for future publishing should have has_unpublished_changes=True",
         )
 
         self.assertNotEqual(
@@ -685,7 +1028,39 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         self.assertEqual(
             child_page_new.title,
             original_title,
-            "A live page with scheduled revisions should still have original content",
+            msg="A live page with scheduled revisions should still have original content",
+        )
+
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
+        )
+
+        # Should show the go_live_at and expire_at without the "Once published" label
+        self.assertNotContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should not show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=0,
+            allow_extra_attrs=True,
         )
 
     def test_edit_post_publish_now_an_already_scheduled_published_page(self):
@@ -737,31 +1112,358 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             "content": "Some content",
             "slug": "hello-world",
             "action-publish": "Publish",
-            "go_live_at": "",
+            "go_live_at": go_live_at,
         }
         response = self.client.post(
             reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
         )
 
-        # Should be redirected to edit page
+        # Should be blocked, as the page is alrready scheduled
+        self.assertEqual(response.status_code, 200)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page should still be live
+        self.assertTrue(child_page_new.live)
+
+        # The scheduled revision should still exist
+        self.assertTrue(
+            Revision.page_revisions.filter(object_id=child_page_new.id)
+            .exclude(approved_go_live_at__isnull=True)
+            .exists()
+        )
+
+        # The title should still be the same, as the publish didn't work
+        self.assertEqual(
+            child_page_new.title,
+            "Hello world!",
+        )
+
+    def test_edit_post_save_schedule_before_a_scheduled_expire_page(self):
+        # First let's publish a page with *just* an expire_at in the future
+        expire_at = timezone.now() + datetime.timedelta(days=20)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "action-publish": "Publish",
+            "expire_at": submittable_timestamp(expire_at),
+        }
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data)
+
+        # Should be redirected to page explorer
         self.assertEqual(response.status_code, 302)
 
         child_page_new = SimplePage.objects.get(id=self.child_page.id)
 
-        # The page should be live now
+        # The page should still be live
         self.assertTrue(child_page_new.live)
 
-        # And a revision with approved_go_live_at should not exist
+        self.assertEqual(child_page_new.status_string, "live")
+
+        # The live page object should have the expire_at field set
+        self.assertEqual(
+            child_page_new.expire_at,
+            expire_at.replace(second=0, microsecond=0),
+        )
+
+        # Now, let's save a page with a go_live_at in the future,
+        # but before the existing expire_at
+        go_live_at = timezone.now() + datetime.timedelta(days=10)
+        new_expire_at = timezone.now() + datetime.timedelta(days=15)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "go_live_at": submittable_timestamp(go_live_at),
+            "expire_at": submittable_timestamp(new_expire_at),
+        }
+        response = self.client.post(edit_url, post_data, follow=True)
+
+        # Should be redirected to the edit page again
+        self.assertRedirects(response, edit_url, 302, 200)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page will still be live
+        self.assertTrue(child_page_new.live)
+
+        # A revision with approved_go_live_at should not exist
         self.assertFalse(
             Revision.page_revisions.filter(object_id=child_page_new.id)
             .exclude(approved_go_live_at__isnull=True)
             .exists()
         )
 
+        # But a revision with go_live_at and expire_at in their content json *should* exist
+        self.assertTrue(
+            Revision.page_revisions.filter(
+                object_id=child_page_new.id,
+                content__go_live_at__startswith=str(go_live_at.date()),
+            ).exists()
+        )
+        self.assertTrue(
+            Revision.page_revisions.filter(
+                object_id=child_page_new.id,
+                content__expire_at__startswith=str(expire_at.date()),
+            ).exists()
+        )
+
+        # Should still show the active expire_at in the live object
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should also show the draft go_live_at and expire_at under the "Once published" label
+        self.assertContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(new_expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+        # Should show the dialog template pointing to the [data-edit-form] selector as the root
+        self.assertTagInHTML(
+            '<template data-controller="w-teleport" data-w-teleport-target-value="[data-edit-form]">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+        self.assertTagInHTML(
+            '<div id="schedule-publishing-dialog" class="w-dialog publishing" data-controller="w-dialog">',
+            html,
+            count=1,
+            allow_extra_attrs=True,
+        )
+
+    def test_edit_post_publish_schedule_before_a_scheduled_expire_page(self):
+        # First let's publish a page with *just* an expire_at in the future
+        expire_at = timezone.now() + datetime.timedelta(days=20)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "action-publish": "Publish",
+            "expire_at": submittable_timestamp(expire_at),
+        }
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data)
+
+        # Should be redirected to page explorer
+        self.assertEqual(response.status_code, 302)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page should still be live
+        self.assertTrue(child_page_new.live)
+
+        self.assertEqual(child_page_new.status_string, "live")
+
+        # The live page object should have the expire_at field set
         self.assertEqual(
-            child_page_new.title,
-            post_data["title"],
-            "A published page should have the new title",
+            child_page_new.expire_at,
+            expire_at.replace(second=0, microsecond=0),
+        )
+
+        # Now, let's publish a page with a go_live_at in the future,
+        # but before the existing expire_at
+        go_live_at = timezone.now() + datetime.timedelta(days=10)
+        new_expire_at = timezone.now() + datetime.timedelta(days=15)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "action-publish": "Publish",
+            "go_live_at": submittable_timestamp(go_live_at),
+            "expire_at": submittable_timestamp(new_expire_at),
+        }
+        response = self.client.post(edit_url, post_data)
+
+        # Should be redirected to page explorer
+        self.assertEqual(response.status_code, 302)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page should still be live
+        self.assertTrue(child_page_new.live)
+
+        self.assertEqual(child_page_new.status_string, "live + scheduled")
+
+        # A revision with approved_go_live_at should now exist
+        self.assertTrue(
+            Revision.page_revisions.filter(object_id=child_page_new.id)
+            .exclude(approved_go_live_at__isnull=True)
+            .exists()
+        )
+
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
+        )
+
+        # Should not show the active expire_at in the live object because the
+        # scheduled revision is before the existing expire_at, which means it will
+        # override the existing expire_at when it goes live
+        self.assertNotContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+        )
+
+        # Should show the go_live_at and expire_at without the "Once published" label
+        self.assertNotContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(new_expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should not show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=0,
+            allow_extra_attrs=True,
+        )
+
+    def test_edit_post_publish_schedule_after_a_scheduled_expire_page(self):
+        # First let's publish a page with *just* an expire_at in the future
+        expire_at = timezone.now() + datetime.timedelta(days=20)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "action-publish": "Publish",
+            "expire_at": submittable_timestamp(expire_at),
+        }
+        edit_url = reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        response = self.client.post(edit_url, post_data)
+
+        # Should be redirected to page explorer
+        self.assertEqual(response.status_code, 302)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page should still be live
+        self.assertTrue(child_page_new.live)
+
+        self.assertEqual(child_page_new.status_string, "live")
+
+        # The live page object should have the expire_at field set
+        self.assertEqual(
+            child_page_new.expire_at,
+            expire_at.replace(second=0, microsecond=0),
+        )
+
+        # Now, let's publish a page with a go_live_at in the future,
+        # but after the existing expire_at
+        go_live_at = timezone.now() + datetime.timedelta(days=23)
+        new_expire_at = timezone.now() + datetime.timedelta(days=25)
+        post_data = {
+            "title": "I've been edited!",
+            "content": "Some content",
+            "slug": "hello-world",
+            "action-publish": "Publish",
+            "go_live_at": submittable_timestamp(go_live_at),
+            "expire_at": submittable_timestamp(new_expire_at),
+        }
+        response = self.client.post(edit_url, post_data)
+
+        # Should be redirected to page explorer
+        self.assertEqual(response.status_code, 302)
+
+        child_page_new = SimplePage.objects.get(id=self.child_page.id)
+
+        # The page should still be live
+        self.assertTrue(child_page_new.live)
+
+        self.assertEqual(child_page_new.status_string, "live + scheduled")
+
+        # Instead a revision with approved_go_live_at should now exist
+        self.assertTrue(
+            Revision.page_revisions.filter(object_id=child_page_new.id)
+            .exclude(approved_go_live_at__isnull=True)
+            .exists()
+        )
+
+        response = self.client.get(
+            reverse("wagtailadmin_pages:edit", args=(self.child_page.id,)), post_data
+        )
+
+        # Should still show the active expire_at in the live object because the
+        # scheduled revision is after the existing expire_at, which means the
+        # new expire_at won't take effect until the revision goes live.
+        # This means the page will be:
+        # unpublished (expired) -> published (scheduled) -> unpublished (expired again)
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should show the go_live_at and expire_at without the "Once published" label
+        self.assertNotContains(
+            response,
+            '<div class="w-label-3 w-text-primary">Once published:</div>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Go-live:</span> {render_timestamp(go_live_at)}',
+            html=True,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            f'<span class="w-text-grey-600">Expiry:</span> {render_timestamp(new_expire_at)}',
+            html=True,
+            count=1,
+        )
+
+        # Should not show the "Edit schedule" button
+        html = response.content.decode()
+        self.assertTagInHTML(
+            '<button type="button" data-a11y-dialog-show="schedule-publishing-dialog">Edit schedule</button>',
+            html,
+            count=0,
+            allow_extra_attrs=True,
         )
 
     def test_page_edit_post_submit(self):
@@ -817,7 +1519,12 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 200)
 
         # Check that a form error was raised
-        self.assertFormError(response, "form", "slug", "This slug is already in use")
+        self.assertFormError(
+            response,
+            "form",
+            "slug",
+            "The slug 'hello-world' is already in use within the parent page",
+        )
 
     def test_preview_on_edit(self):
         post_data = {
@@ -833,7 +1540,10 @@ class TestPageEdit(TestCase, WagtailTestUtils):
 
         # Check the JSON response
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content.decode(), {"is_valid": True})
+        self.assertJSONEqual(
+            response.content.decode(),
+            {"is_valid": True, "is_available": True},
+        )
 
         response = self.client.get(preview_url)
 
@@ -841,6 +1551,13 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "tests/simple_page.html")
         self.assertContains(response, "I&#39;ve been edited!", html=True)
+
+        # Should not show edit link in the userbar
+        # https://github.com/wagtail/wagtail/issues/8765
+        self.assertNotContains(response, "Edit this page")
+        self.assertNotContains(
+            response, reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
+        )
 
     def test_preview_on_edit_no_session_key(self):
         preview_url = reverse(
@@ -856,10 +1573,12 @@ class TestPageEdit(TestCase, WagtailTestUtils):
         # We should have an error page because we are unable to
         # preview; the page key was not in the session.
         self.assertContains(
-            response, "<title>Wagtail - Preview error</title>", html=True
+            response, "<title>Preview not available - Wagtail</title>", html=True
         )
         self.assertContains(
-            response, '<h1 class="header__title">Preview error</h1>', html=True
+            response,
+            '<h1 class="preview-error__title">Preview not available</h1>',
+            html=True,
         )
 
     @override_settings(
@@ -915,7 +1634,10 @@ class TestPageEdit(TestCase, WagtailTestUtils):
 
         # Check the JSON response
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content.decode(), {"is_valid": True})
+        self.assertJSONEqual(
+            response.content.decode(),
+            {"is_valid": True, "is_available": True},
+        )
 
         response = self.client.get(preview_url)
 
@@ -964,7 +1686,7 @@ class TestPageEdit(TestCase, WagtailTestUtils):
 
     def test_editor_page_shows_live_url_in_status_when_draft_edits_exist(self):
         # If a page has draft edits (ie. page has unpublished changes)
-        # that affect the URL (eg. slug) we  should still ensure the
+        # that affect the URL (slug) we  should still ensure the
         # status button at the top of the page links to the live URL
 
         self.child_page.content = "Some content with a draft edit"
@@ -977,8 +1699,8 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
         )
 
-        input_field_for_draft_slug = '<input type="text" name="slug" value="revised-slug-in-draft-only" id="id_slug" maxlength="255" required />'
-        input_field_for_live_slug = '<input type="text" name="slug" value="hello-world" id="id_slug" maxlength="255" required />'
+        input_field_for_draft_slug = '<input type="text" name="slug" value="revised-slug-in-draft-only" data-controller="w-slug" data-action="blur-&gt;w-slug#slugify w-sync:check-&gt;w-slug#compare w-sync:apply-&gt;w-slug#urlify:prevent" data-w-slug-compare-as-param="urlify" data-w-slug-allow-unicode-value maxlength="255" aria-describedby="panel-child-promote-child-for_search_engines-child-slug-helptext" required id="id_slug">'
+        input_field_for_live_slug = '<input type="text" name="slug" value="hello-world" maxlength="255" aria-describedby="panel-child-promote-child-for_search_engines-child-slug-helptext" required id="id_slug" />'
 
         # Status Link should be the live page (not revision)
         self.assertNotContains(
@@ -1003,8 +1725,8 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             reverse("wagtailadmin_pages:edit", args=(self.single_event_page.id,))
         )
 
-        input_field_for_draft_slug = '<input type="text" name="slug" value="revised-slug-in-draft-only" id="id_slug" maxlength="255" required />'
-        input_field_for_live_slug = '<input type="text" name="slug" value="mars-landing" id="id_slug" maxlength="255" required />'
+        input_field_for_draft_slug = '<input type="text" name="slug" value="revised-slug-in-draft-only" maxlength="255" aria-describedby="panel-child-promote-child-common_page_configuration-child-slug-helptext" required id="id_slug" />'
+        input_field_for_live_slug = '<input type="text" name="slug" value="mars-landing" maxlength="255" aria-describedby="panel-child-promote-child-common_page_configuration-child-slug-helptext" required id="id_slug" />'
 
         # Status Link should be the live page (not revision)
         self.assertNotContains(
@@ -1145,18 +1867,18 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             )
 
         publish_button = """
-            <button type="submit" name="action-publish" value="action-publish" class="button button-longrunning " data-clicked-text="Publishing…">
+            <button type="submit" name="action-publish" value="action-publish" class="button button-longrunning " data-controller="w-progress" data-action="w-progress#activate" data-w-progress-active-value="Publishing…">
                 <svg class="icon icon-upload button-longrunning__icon" aria-hidden="true"><use href="#icon-upload"></use></svg>
 
-                <svg class="icon icon-spinner icon" aria-hidden="true"><use href="#icon-spinner"></use></svg><em>Publish</em>
+                <svg class="icon icon-spinner icon" aria-hidden="true"><use href="#icon-spinner"></use></svg><em data-w-progress-target="label">Publish</em>
             </button>
         """
         save_button = """
-            <button type="submit" class="button action-save button-longrunning " data-clicked-text="Saving…" >
+            <button type="submit" class="button action-save button-longrunning " data-controller="w-progress" data-action="w-progress#activate" data-w-progress-active-value="Saving…" >
                 <svg class="icon icon-draft button-longrunning__icon" aria-hidden="true"><use href="#icon-draft"></use></svg>
 
                 <svg class="icon icon-spinner icon" aria-hidden="true"><use href="#icon-spinner"></use></svg>
-                <em>Save draft</em>
+                <em data-w-progress-target="label">Save draft</em>
             </button>
         """
 
@@ -1269,8 +1991,31 @@ class TestPageEdit(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=(self.child_page.id,))
         )
 
+    def test_page_edit_num_queries_as_superuser(self):
+        # Warm up cache so that result is the same when running this test in isolation
+        # as when running it within the full test suite
+        self.client.get(reverse("wagtailadmin_pages:edit", args=(self.event_page.id,)))
 
-class TestPageEditReordering(TestCase, WagtailTestUtils):
+        with self.assertNumQueries(35):
+            self.client.get(
+                reverse("wagtailadmin_pages:edit", args=(self.event_page.id,))
+            )
+
+    def test_page_edit_num_queries_as_editor(self):
+        editor = self.create_user("editor", password="password")
+        editor.groups.add(Group.objects.get(name="Editors"))
+        self.login(username="editor")
+
+        # Warm up the cache as above.
+        self.client.get(reverse("wagtailadmin_pages:edit", args=(self.event_page.id,)))
+
+        with self.assertNumQueries(39):
+            self.client.get(
+                reverse("wagtailadmin_pages:edit", args=(self.event_page.id,))
+            )
+
+
+class TestPageEditReordering(WagtailTestUtils, TestCase):
     def setUp(self):
         # Find root page
         self.root_page = Page.objects.get(id=2)
@@ -1392,7 +2137,7 @@ class TestPageEditReordering(TestCase, WagtailTestUtils):
         self.check_order(response, ["abcdefg", "1234567", "7654321"])
 
 
-class TestIssue197(TestCase, WagtailTestUtils):
+class TestIssue197(WagtailTestUtils, TestCase):
     def test_issue_197(self):
         # Find root page
         self.root_page = Page.objects.get(id=2)
@@ -1431,7 +2176,7 @@ class TestIssue197(TestCase, WagtailTestUtils):
         self.assertIn("world", page.tags.slugs())
 
 
-class TestChildRelationsOnSuperclass(TestCase, WagtailTestUtils):
+class TestChildRelationsOnSuperclass(WagtailTestUtils, TestCase):
     # In our test models we define AdvertPlacement as a child relation on the Page model.
     # Here we check that this behaves correctly when exposed on the edit form of a Page
     # subclass (StandardIndex here).
@@ -1532,7 +2277,10 @@ class TestChildRelationsOnSuperclass(TestCase, WagtailTestUtils):
         self.assertContains(response, "Adverts")
         self.assertContains(response, "id_advert_placements-TOTAL_FORMS")
         # the formset should be populated with an existing form (with a snippet chooser widget)
-        self.assertContains(response, '<span class="title">test_advert</span>')
+        self.assertContains(
+            response,
+            '<div class="chooser__title" data-chooser-title id="id_advert_placements-0-advert-title">test_advert</div>',
+        )
         self.assertContains(
             response,
             '<input type="hidden" name="advert_placements-0-advert" value="1" id="id_advert_placements-0-advert">',
@@ -1592,7 +2340,7 @@ class TestChildRelationsOnSuperclass(TestCase, WagtailTestUtils):
         self.assertContains(response, "alwaysDirty: true")
 
 
-class TestIssue2492(TestCase, WagtailTestUtils):
+class TestIssue2492(WagtailTestUtils, TestCase):
     """
     The publication submission message generation was performed using
     the Page class, as opposed to the specific_class for that Page.
@@ -1652,11 +2400,11 @@ class TestIssue2492(TestCase, WagtailTestUtils):
 
         # The "View Live" button should have the custom URL.
         for message in response.context["messages"]:
-            self.assertIn('"{}"'.format(new_url), message.message)
+            self.assertIn(f'"{new_url}"', message.message)
             break
 
 
-class TestIssue3982(TestCase, WagtailTestUtils):
+class TestIssue3982(WagtailTestUtils, TestCase):
     """
     Pages that are not associated with a site, and thus do not have a live URL,
     should not display a "View live" link in the flash message after being
@@ -1763,7 +2511,7 @@ class TestIssue3982(TestCase, WagtailTestUtils):
         )
 
     def _approve_page(self, parent):
-        response = self.client.post(
+        self.client.post(
             reverse("wagtailadmin_pages:add", args=("tests", "simplepage", parent.pk)),
             {
                 "title": "Hello, world!",
@@ -1815,7 +2563,7 @@ class TestIssue3982(TestCase, WagtailTestUtils):
         )
 
 
-class TestParentalM2M(TestCase, WagtailTestUtils):
+class TestParentalM2M(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -1864,7 +2612,7 @@ class TestParentalM2M(TestCase, WagtailTestUtils):
         self.assertRedirects(
             response, reverse("wagtailadmin_pages:edit", args=(created_page.id,))
         )
-        created_revision = created_page.get_latest_revision_as_page()
+        created_revision = created_page.get_latest_revision_as_object()
 
         self.assertIn(self.holiday_category, created_revision.categories.all())
         self.assertIn(self.men_with_beards_category, created_revision.categories.all())
@@ -1945,7 +2693,7 @@ class TestParentalM2M(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=(self.christmas_page.id,))
         )
         updated_page = EventPage.objects.get(id=self.christmas_page.id)
-        created_revision = updated_page.get_latest_revision_as_page()
+        created_revision = updated_page.get_latest_revision_as_object()
 
         self.assertIn(self.holiday_category, created_revision.categories.all())
         self.assertIn(self.men_with_beards_category, created_revision.categories.all())
@@ -1993,7 +2741,7 @@ class TestParentalM2M(TestCase, WagtailTestUtils):
         self.assertIn(self.men_with_beards_category, updated_page.categories.all())
 
 
-class TestValidationErrorMessages(TestCase, WagtailTestUtils):
+class TestValidationErrorMessages(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -2037,12 +2785,7 @@ class TestValidationErrorMessages(TestCase, WagtailTestUtils):
             response, "The page could not be saved due to validation errors"
         )
         # the error should only appear once: against the field, not in the header message
-        self.assertContains(
-            response,
-            """<p class="error-message"><span>This field is required.</span></p>""",
-            count=1,
-            html=True,
-        )
+        self.assertContains(response, "error-message", count=1)
         self.assertContains(response, "This field is required", count=1)
 
     def test_non_field_error(self):
@@ -2130,19 +2873,14 @@ class TestValidationErrorMessages(TestCase, WagtailTestUtils):
         )
 
         # Error on title shown against the title field
-        self.assertContains(
-            response,
-            """<p class="error-message"><span>This field is required.</span></p>""",
-            count=1,
-            html=True,
-        )
+        self.assertContains(response, "error-message", count=1)
         # Error on title shown in the header message
         self.assertContains(
             response, "<li>Title: This field is required.</li>", count=1
         )
 
 
-class TestNestedInlinePanel(TestCase, WagtailTestUtils):
+class TestNestedInlinePanel(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -2246,7 +2984,7 @@ class TestNestedInlinePanel(TestCase, WagtailTestUtils):
 
 
 @override_settings(WAGTAIL_I18N_ENABLED=True)
-class TestLocaleSelector(TestCase, WagtailTestUtils):
+class TestLocaleSelector(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -2289,7 +3027,7 @@ class TestLocaleSelector(TestCase, WagtailTestUtils):
         GroupPagePermission.objects.create(
             group=group,
             page=en_events_index,
-            permission_type="edit",
+            permission_type="change",
         )
         self.user.is_superuser = False
         self.user.user_permissions.add(
@@ -2313,7 +3051,7 @@ class TestLocaleSelector(TestCase, WagtailTestUtils):
         self.assertNotContains(response, f'href="{edit_translation_url}"')
 
 
-class TestPageSubscriptionSettings(TestCase, WagtailTestUtils):
+class TestPageSubscriptionSettings(WagtailTestUtils, TestCase):
     def setUp(self):
         # Find root page
         self.root_page = Page.objects.get(id=2)
@@ -2433,7 +3171,7 @@ class TestPageSubscriptionSettings(TestCase, WagtailTestUtils):
         self.assertFalse(PageSubscription.objects.get().comment_notifications)
 
 
-class TestCommenting(TestCase, WagtailTestUtils):
+class TestCommenting(WagtailTestUtils, TestCase):
     """
     Tests both the comment notification and audit logging logic of the edit page view.
     """
@@ -2514,6 +3252,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
 
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
+
         # Check the comment was added
         comment = self.child_page.wagtail_admin_comments.get()
         self.assertEqual(comment.text, "A test comment")
@@ -2573,6 +3314,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
 
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
+
         # Check the comment was edited
         comment.refresh_from_db()
         self.assertEqual(comment.text, "Edited")
@@ -2626,6 +3370,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
             [{"__all__": ["You cannot edit another user's comment."]}],
         )
 
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
+
         # Check the comment was not edited
         comment.refresh_from_db()
         self.assertNotEqual(comment.text, "Edited")
@@ -2670,6 +3417,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
         self.assertRedirects(
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
+
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
 
         # Check the comment was resolved
         comment.refresh_from_db()
@@ -2742,6 +3492,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
 
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
+
         # Check the comment was deleted
         self.assertFalse(self.child_page.wagtail_admin_comments.exists())
 
@@ -2807,6 +3560,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
         self.assertRedirects(
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
+
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
 
         # Check the comment reply was added
         comment.refresh_from_db()
@@ -2886,6 +3642,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
 
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
+
         # Check the comment reply was edited
         reply.refresh_from_db()
         self.assertEqual(reply.text, "an edited reply")
@@ -2946,6 +3705,9 @@ class TestCommenting(TestCase, WagtailTestUtils):
         self.assertRedirects(
             response, reverse("wagtailadmin_pages:edit", args=[self.child_page.id])
         )
+
+        # Refresh so that latest_revision is correct (instead of using the cached id)
+        self.child_page.refresh_from_db()
 
         # Check the comment reply was deleted
         self.assertFalse(comment.replies.exists())

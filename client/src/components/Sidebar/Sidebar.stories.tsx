@@ -6,6 +6,8 @@ import { MainMenuModuleDefinition } from './modules/MainMenu';
 import { PageExplorerMenuItemDefinition } from './menu/PageExplorerMenuItem';
 import { LinkMenuItemDefinition } from './menu/LinkMenuItem';
 import { SubMenuItemDefinition } from './menu/SubMenuItem';
+import { WagtailBrandingModuleDefinition } from './modules/WagtailBranding';
+import { range } from '../../utils/range';
 
 export default {
   title: 'Sidebar/Sidebar',
@@ -67,7 +69,7 @@ function bogStandardMenuModule(): MainMenuModuleDefinition {
         [
           new LinkMenuItemDefinition({
             name: 'locked-pages',
-            label: 'Locked Pages',
+            label: 'Locked pages',
             url: '/admin/reports/locked/',
             icon_name: 'lock',
             classnames: '',
@@ -188,6 +190,10 @@ function renderSidebarStory(
   modules: ModuleDefinition[],
   { rtl = false }: RenderSidebarStoryOptions = {},
 ) {
+  // Add branding to all sidebar stories by default
+  const wagtailBrandingModule = new WagtailBrandingModuleDefinition('');
+  modules.unshift(wagtailBrandingModule);
+
   // Simulate navigation
   const [currentPath, setCurrentPath] = React.useState('/admin/');
 
@@ -318,7 +324,7 @@ export function withLargeSubmenu() {
   const menuModule = bogStandardMenuModule();
 
   const menuItems = [];
-  for (let i = 0; i < 100; i++) {
+  range(0, 100).forEach((i) => {
     menuItems.push(
       new LinkMenuItemDefinition({
         name: `item-${i}`,
@@ -328,7 +334,7 @@ export function withLargeSubmenu() {
         classnames: '',
       }),
     );
-  }
+  });
 
   menuModule.menuItems.push(
     new SubMenuItemDefinition(
@@ -347,7 +353,7 @@ export function withLargeSubmenu() {
 }
 
 export function withoutSearch() {
-  return renderSidebarStory([wagtailBrandingModule(), bogStandardMenuModule()]);
+  return renderSidebarStory([bogStandardMenuModule()]);
 }
 
 function arabicMenuModule(): MainMenuModuleDefinition {
@@ -399,7 +405,7 @@ function arabicMenuModule(): MainMenuModuleDefinition {
         [
           new LinkMenuItemDefinition({
             name: 'locked-pages',
-            label: 'Locked Pages',
+            label: 'Locked pages',
             url: '/admin/reports/locked/',
             icon_name: 'lock',
             classnames: '',

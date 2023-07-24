@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:45+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-21 15:51+0000\n"
 "Last-Translator: Naglis Jonaitis, 2020-2022\n"
-"Language-Team: Lithuanian (http://www.transifex.com/torchbox/wagtail/"
+"Language-Team: Lithuanian (http://app.transifex.com/torchbox/wagtail/"
 "language/lt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -32,12 +32,12 @@ msgid "Add Comment"
 msgstr "Pridėti komentarą"
 
 #, python-format
-msgid "The minimum number of items is %d"
-msgstr "Mažiausias vienetų kiekis %d"
+msgid "The minimum number of items is %(min_num)d"
+msgstr "Mažiausias vienetų kiekis %(min_num)d"
 
 #, python-format
-msgid "The maximum number of items is %d"
-msgstr "Didžiausias vienetų kiekis %d"
+msgid "The maximum number of items is %(max_num)d"
+msgstr "Didžiausias vienetų kiekis %(max_num)d"
 
 msgid "Move up"
 msgstr "Perkelti aukštyn"
@@ -69,6 +69,51 @@ msgstr "Slaptažodis kurį suvedėte yra neteisingas. Bandykite dar kartą."
 msgid "Comment"
 msgstr "Komentaras"
 
+msgid "Locked"
+msgstr "Užrakinta"
+
+msgid "Unlocked"
+msgstr "Atrakinta"
+
+msgid "live"
+msgstr "veikiantis"
+
+msgid "has unpublished changes"
+msgstr "turi nebepublikuojamų pakeitimų"
+
+msgid "first published at"
+msgstr "pirmą kartą publikuotas"
+
+msgid "last published at"
+msgstr "paskutinį kartą publikuota"
+
+msgid "go live date/time"
+msgstr "veikimo įjungimo data/laikas"
+
+msgid "expiry date/time"
+msgstr "galiojimo pabaigos data/laikas"
+
+msgid "expired"
+msgstr "baigė galioti"
+
+msgid "scheduled"
+msgstr "planuotas"
+
+msgid "draft"
+msgstr "juodraštis"
+
+msgid "live + scheduled"
+msgstr "veikiantis + suplanuotas"
+
+msgid "live + draft"
+msgstr "veikiantis + juodraštis"
+
+msgid "Default"
+msgstr "Numatytasis"
+
+msgid "locked"
+msgstr "Užrakintas"
+
 msgid "title"
 msgstr "pavadinimas"
 
@@ -87,12 +132,6 @@ msgstr ""
 
 msgid "content type"
 msgstr "turinio tipas"
-
-msgid "live"
-msgstr "veikiantis"
-
-msgid "has unpublished changes"
-msgstr "turi nebepublikuojamų pakeitimų"
 
 msgid "URL path"
 msgstr "URL kelias"
@@ -127,44 +166,8 @@ msgid ""
 msgstr ""
 "Aprašymo tekstas, atvaizduojamas po paieškos variklio rezultatų antrašte."
 
-msgid "go live date/time"
-msgstr "veikimo įjungimo data/laikas"
-
-msgid "expiry date/time"
-msgstr "galiojimo pabaigos data/laikas"
-
-msgid "expired"
-msgstr "baigė galioti"
-
-msgid "locked"
-msgstr "Užrakintas"
-
-msgid "first published at"
-msgstr "pirmą kartą publikuotas"
-
-msgid "last published at"
-msgstr "paskutinį kartą publikuota"
-
 msgid "latest revision created at"
 msgstr "paskutinė revizija sukurta"
-
-msgid "This slug is already in use"
-msgstr "Šis adreso trumpinys jau naudojamas"
-
-msgid "scheduled"
-msgstr "planuotas"
-
-msgid "draft"
-msgstr "juodraštis"
-
-msgid "live + scheduled"
-msgstr "veikiantis + suplanuotas"
-
-msgid "live + draft"
-msgstr "veikiantis + juodraštis"
-
-msgid "Default"
-msgstr "Numatytasis"
 
 msgid "page"
 msgstr "puslapis"
@@ -186,12 +189,6 @@ msgstr "turinys JSON"
 
 msgid "approved go live at"
 msgstr "patvirtintas įjungimas"
-
-msgid "page revision"
-msgstr "puslapio revizija"
-
-msgid "page revisions"
-msgstr "puslapio revizijos"
 
 msgid "Add/edit pages you own"
 msgstr "Pridėti/redaguoti puslapius kurie jums priklauso"
@@ -378,18 +375,6 @@ msgstr "Jums reikia slaptažodžio kad pasiekti šį puslapį."
 msgid "Continue"
 msgstr "Tęsti"
 
-msgid "English"
-msgstr "Anglų"
-
-msgid "French"
-msgstr "Prancūzų"
-
-msgid "You must log in first."
-msgstr "Pirma privalote prisijungti."
-
-msgid "German"
-msgstr "Vokiečių"
-
 msgid "Create"
 msgstr "Sukurti"
 
@@ -404,12 +389,6 @@ msgstr "Publikuotas"
 
 msgid "Unpublish"
 msgstr "Nebepublikuoti"
-
-msgid "Locked"
-msgstr "Užrakinta"
-
-msgid "Unlocked"
-msgstr "Atrakinta"
 
 msgid "Reject"
 msgstr "Atmesti"

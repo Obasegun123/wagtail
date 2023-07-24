@@ -1,15 +1,12 @@
-import json
-
 from django import forms
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from wagtail.admin.staticfiles import versioned_static
-from wagtail.admin.widgets import BaseChooser
+from wagtail.admin.widgets import BaseChooser, BaseChooserAdapter
 from wagtail.images import get_image_model
 from wagtail.images.shortcuts import get_rendition_or_not_found
 from wagtail.telepath import register
-from wagtail.widget_adapters import WidgetAdapter
 
 
 class AdminImageChooser(BaseChooser):
@@ -17,9 +14,10 @@ class AdminImageChooser(BaseChooser):
     choose_another_text = _("Change image")
     link_to_chosen_text = _("Edit this image")
     template_name = "wagtailimages/widgets/image_chooser.html"
-    chooser_modal_url_name = "wagtailimages:chooser"
+    chooser_modal_url_name = "wagtailimages_chooser:choose"
     icon = "image"
     classname = "image-chooser"
+    js_constructor = "ImageChooser"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -40,9 +38,6 @@ class AdminImageChooser(BaseChooser):
         context["preview"] = value_data.get("preview", {})
         return context
 
-    def render_js_init(self, id_, name, value_data):
-        return "createImageChooser({0});".format(json.dumps(id_))
-
     @property
     def media(self):
         return forms.Media(
@@ -53,19 +48,14 @@ class AdminImageChooser(BaseChooser):
         )
 
 
-class ImageChooserAdapter(WidgetAdapter):
+class ImageChooserAdapter(BaseChooserAdapter):
     js_constructor = "wagtail.images.widgets.ImageChooser"
-
-    def js_args(self, widget):
-        return [
-            widget.render_html("__NAME__", None, attrs={"id": "__ID__"}),
-            widget.id_for_label("__ID__"),
-        ]
 
     @cached_property
     def media(self):
         return forms.Media(
             js=[
+                versioned_static("wagtailimages/js/image-chooser-modal.js"),
                 versioned_static("wagtailimages/js/image-chooser-telepath.js"),
             ]
         )

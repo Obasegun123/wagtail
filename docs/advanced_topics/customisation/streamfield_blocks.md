@@ -20,7 +20,7 @@ class PersonBlock(blocks.StructBlock):
         form_classname = 'person-block struct-block'
 ```
 
-You can then provide custom CSS for this block, targeted at the specified classname, by using the [](insert_editor_css) hook.
+You can then provide custom CSS for this block, targeted at the specified classname, by using the [](insert_global_admin_css) hook.
 
 ```{note}
 Wagtail's editor styling has some built in styling for the `struct-block` class and other related elements. If you specify a value for `form_classname`, it will overwrite the classes that are already applied to `StructBlock`, so you must remember to specify the `struct-block` as well.
@@ -71,16 +71,16 @@ A form template for a StructBlock must include the output of `render_form` for e
     {% if help_text %}
         <span>
             <div class="help">
-                {% icon name="help" class_name="default" %}
+                {% icon name="help" classname="default" %}
                 {{ help_text }}
             </div>
         </span>
     {% endif %}
 
     {% for child in children.values %}
-        <div class="field {% if child.block.required %}required{% endif %}" data-contentpath="{{ child.block.name }}">
+        <div class="w-field" data-field data-contentpath="{{ child.block.name }}">
             {% if child.block.label %}
-                <label class="field__label" {% if child.id_for_label %}for="{{ child.id_for_label }}"{% endif %}>{{ child.block.label }}</label>
+                <label class="w-field__label" {% if child.id_for_label %}for="{{ child.id_for_label }}"{% endif %}>{{ child.block.label }}{% if child.block.required %}<span class="w-required-mark">*</span>{% endif %}</label>
             {% endif %}
             {{ child.render_form }}
         </div>

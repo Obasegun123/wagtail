@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-21 15:50+0000\n"
 "Last-Translator: Matt Westcott <matthew@torchbox.com>, 2021\n"
-"Language-Team: Maori (http://www.transifex.com/torchbox/wagtail/language/"
+"Language-Team: Maori (http://app.transifex.com/torchbox/wagtail/language/"
 "mi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -26,11 +26,13 @@ msgstr "Perehi"
 msgid "Submit for moderation"
 msgstr "Tukungia hei whakaōrite"
 
-msgid "Resubmit to {}"
-msgstr "Tukungia anō ki {}"
+#, python-format
+msgid "Resubmit to %(task_name)s"
+msgstr "Tukungia anō ki %(task_name)s"
 
-msgid "Submit to {}"
-msgstr "Tukungia ki {}"
+#, python-format
+msgid "Submit to %(workflow_name)s"
+msgstr "Tukungia ki %(workflow_name)s"
 
 msgid "Restart workflow "
 msgstr "Tīmata ano te mahi pūheke"
@@ -40,9 +42,6 @@ msgstr "Whakakore te mahi pūheke"
 
 msgid "Unpublish"
 msgstr "whakakore te whakaputa"
-
-msgid "Delete"
-msgstr "Muku"
 
 msgid "Save Draft"
 msgstr "Puritia te tuhinga hukihuki"
@@ -97,14 +96,23 @@ msgid "Enter password"
 msgstr "Tāuru tō kupu muna"
 
 #, python-format
-msgid "Enter your %s"
-msgstr "Tāuru tō %s"
+msgid "Enter your %(username_field_name)s"
+msgstr "Tāuru tō %(username_field_name)s"
 
 msgid "Enter your email address to reset your password"
 msgstr "Tāuru tō īmera i roto kia tautuhi anō tō kupu muna"
 
 msgid "URL"
 msgstr "URL"
+
+msgid "Search term"
+msgstr "Haha-a-karangatanga"
+
+msgid "Search"
+msgstr "Haha"
+
+msgid "Collection"
+msgstr "Kohikohinga"
 
 msgid "Parent"
 msgstr "Mātua"
@@ -121,14 +129,20 @@ msgstr ""
 "Kāore koe ka taea ngā rekoata–whakaae e nui ake ki te kotahi anake, ki roto "
 "ī te kohikohinga ōrite."
 
-msgid "Collection"
-msgstr "Kohikohinga"
-
 msgid "Add"
 msgstr "Tāpiri"
 
 msgid "Edit"
 msgstr "Whakarerekē"
+
+msgid "Delete"
+msgstr "Muku"
+
+msgid "Go live date/time must be before expiry date/time"
+msgstr "Me haere mataora rā/taima i mua te mōnehu rā/taima"
+
+msgid "Expiry date/time must be in the future"
+msgstr "Me haere te mōnehu rā/taima ki roto ī te wāheke."
 
 msgid "New title"
 msgstr "Taitara hou"
@@ -187,30 +201,16 @@ msgstr "Ehara koe e whakaae ki te kape a whārangi \"%(page_title)s\""
 
 #, python-format
 msgid ""
-"This slug is already in use within the context of its parent page \"%s\""
+"This slug is already in use within the context of its parent page "
+"\"%(parent_page_title)s\""
 msgstr ""
-"Kei te mahi tonu tenei ngata ki roto i te horopaki ō tōna whārangi matua \"%s"
-"\""
+"Kei te mahi tonu tenei ngata ki roto i te horopaki ō tōna whārangi matua "
+"\"%(parent_page_title)s\""
 
 msgid "You cannot copy a page into itself when copying subpages"
 msgstr ""
 "Ehara koe ka taea ki te kape he whārangi ki roto i a ia mēna kei te kape koe "
 "i ngā wharangi kōaro."
-
-msgid "This slug is already in use"
-msgstr "E mahi tonu ana tēnei ngata"
-
-msgid "Go live date/time must be before expiry date/time"
-msgstr "Me haere mataora rā/taima i mua te mōnehu rā/taima"
-
-msgid "Expiry date/time must be in the future"
-msgstr "Me haere te mōnehu rā/taima ki roto ī te wāheke."
-
-msgid "Search"
-msgstr "Haha"
-
-msgid "Search term"
-msgstr "Haha-a-karangatanga"
 
 msgid "Visibility"
 msgstr "Kitenga"
@@ -224,9 +224,9 @@ msgstr "Kōwhiri koa he rōpū kōtahi."
 msgid "All types"
 msgstr "Ngā momo katoa"
 
-#, python-brace-format
-msgid "This page already has workflow '{0}' assigned."
-msgstr "Kua whakarite a mahi pūheke '{0}' ki te whārangi nei."
+#, python-format
+msgid "This page already has workflow '%(workflow_name)s' assigned."
+msgstr "Kua whakarite a mahi pūheke '%(workflow_name)s' ki te whārangi nei."
 
 msgid "You cannot assign this workflow to the same page multiple times."
 msgstr ""
@@ -239,12 +239,6 @@ msgstr "Hoatu he ingoa ki to mahi pūheke"
 msgid "Add tasks to your workflow"
 msgstr "Tāpiri waitara ki ō mahi pūheke"
 
-msgid "Scheduled publishing"
-msgstr "Hōtaka whakaputaputa"
-
-msgid "Privacy"
-msgstr "Noho matatapu"
-
 msgid "Content"
 msgstr "Rārangi take"
 
@@ -253,12 +247,6 @@ msgstr "Whakatuarā"
 
 msgid "Settings"
 msgstr "Tautuhinga"
-
-msgid "Status"
-msgstr "Tūnga"
-
-msgid "Preview"
-msgstr "Titiro"
 
 msgid "Error 404: Page not found"
 msgstr "Hē 404: Kua ngaro te whārangi"
@@ -274,15 +262,6 @@ msgstr "Haere ki whakahaere tikanga-a-Wagtail"
 
 msgid "Account"
 msgstr "Rongorua"
-
-msgid "Change password"
-msgstr "Panoni tō kupu muna"
-
-msgid ""
-"Your password can't be changed here. Please contact a site administrator."
-msgstr ""
-"Ehara ka taea e koe ki te panoni i tō kupu muna i konei. Whakapā koa tō kai "
-"whakahaere-a-pae."
 
 msgid "Reset password"
 msgstr "Tautuhi anō tō kupu muna"
@@ -380,6 +359,9 @@ msgstr "Ka taea e koe ki te whakarerekē ngā tautuhinga paraiweti ki:"
 msgid "Save"
 msgstr "Puritia"
 
+msgid "Privacy"
+msgstr "Noho matatapu"
+
 msgid "Set collection privacy. Current status: Public"
 msgstr "Kohikohinga noho matatapu. Tūnga i te wā nei: Mārakerake"
 
@@ -398,11 +380,11 @@ msgstr "Ingoa"
 msgid "Yes, delete"
 msgstr "Ae, muku"
 
+msgid "No, don't delete"
+msgstr "Kao, kaua e muku"
+
 msgid "Update"
 msgstr "Whakahou"
-
-msgid "Dashboard"
-msgstr "Papatohu"
 
 #, python-format
 msgid "Welcome to the %(site_name)s Wagtail CMS"
@@ -438,14 +420,23 @@ msgstr "Whakamiha"
 msgid "Reject"
 msgstr "Parahako"
 
+msgid "Preview"
+msgstr "Titiro"
+
 msgid "Your most recent edits"
 msgstr "Ou whakarerekē hou"
+
+msgid "Status"
+msgstr "Tūnga"
 
 msgid "Date"
 msgstr "Rā"
 
 msgid "Site summary"
 msgstr "Te pae whakarāpopototanga"
+
+msgid "Close"
+msgstr "Kōpani"
 
 #, python-format
 msgid "The page \"%(title)s\" has been approved."
@@ -479,12 +470,6 @@ msgstr "Kua tuohu te whārangi \"%(page)s\" hei whakaōrite"
 msgid "This page has been made private by a parent page."
 msgstr "He paraiweti tēnei whārangi mai i he matua whārangi."
 
-msgid "Set page privacy. Current status: Public"
-msgstr "Whārangi noho matatapu. Tūnga i te wā nei: Mārakerake"
-
-msgid "Page privacy. Current status: Public"
-msgstr "Whārangi noho matatapu. Tūnga i te wā nei: Mārakerake"
-
 msgid "Saving…"
 msgstr "pupuru ana..."
 
@@ -497,9 +482,6 @@ msgstr "Hangaia he whārangi ki "
 
 msgid "Choose which type of page you'd like to create."
 msgstr "Kōwhiri he whārangi kei te pirangi koe ki te hanga."
-
-msgid "No, don't delete"
-msgstr "Kao, kaua e muku"
 
 #, python-format
 msgid "Delete %(title)s"
@@ -514,39 +496,38 @@ msgstr "Hohenga"
 msgid "Comment"
 msgstr "Tākupu"
 
-#, python-format
-msgid "%(time_period)s ago"
-msgstr "%(time_period)s mai rā anō"
-
-msgid "Close"
-msgstr "Kōpani"
-
-msgid "Lock"
-msgstr "Raka"
-
-msgid "Started at"
-msgstr "Tīmata ki"
-
 msgid "Move up"
 msgstr "Mū ki runga"
 
 msgid "Move down"
 msgstr "Mū ki raro"
 
-msgid "Filter"
-msgstr "Tātari"
-
 msgid "Workflow"
 msgstr "Mahi pūheke"
 
-msgid "Page"
-msgstr "Whārangi"
+msgid "Started at"
+msgstr "Tīmata ki"
 
 msgid "Completed at"
 msgstr "I whakatutuki ki"
 
-msgid "Home"
-msgstr "Kainga"
+msgid "Filter"
+msgstr "Tātari"
+
+msgid "Lock"
+msgstr "Raka"
+
+msgid "Usage"
+msgstr "Whakamahi"
+
+#, python-format
+msgid "Used %(usage_count)s time"
+msgid_plural "Used %(usage_count)s times"
+msgstr[0] "I whakamahi %(usage_count)s taima"
+msgstr[1] "I whakamahi %(usage_count)s taima"
+
+msgid "Page"
+msgstr "Whārangi"
 
 msgid "New"
 msgstr "Hou"
@@ -554,20 +535,33 @@ msgstr "Hou"
 msgid "Not started"
 msgstr "Kāhore ē timata"
 
-msgid "live"
-msgstr "mataora"
-
-msgid "draft"
-msgstr "hukihuki"
-
-msgid "live + draft"
-msgstr "mataora + hukihuki"
+#, python-format
+msgid "%(time_period)s ago"
+msgstr "%(time_period)s mai rā anō"
 
 msgid "Password"
 msgstr "Kupu muna"
 
+#, python-format
+msgid "%(model_name)s '%(object)s' updated."
+msgstr "%(model_name)s '%(object)s' kua whakahou."
+
+#, python-format
+msgid "%(model_name)s '%(object)s' created."
+msgstr "%(model_name)s '%(object)s' kua hangaia."
+
 msgid "Editing"
 msgstr "Whakarerekē"
+
+msgid "Usage of"
+msgstr "Te whakamahi ō "
+
+#, python-format
+msgid "Edit this %(object)s"
+msgstr "Whakarerekē i tēnei %(object)s"
+
+msgid "Dashboard"
+msgstr "Papatohu"
 
 msgid "View live"
 msgstr "Mātaki mataora"
@@ -577,9 +571,6 @@ msgstr "Whakakite"
 
 msgid "Awaiting my review"
 msgstr "E tatari ana mō tōku arotake"
-
-msgid "Server Error"
-msgstr "Hapa rorohiko"
 
 msgid "Pages"
 msgstr "Ngā whārangi"

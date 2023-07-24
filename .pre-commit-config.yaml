@@ -7,20 +7,14 @@ repos:
     hooks:
       - id: black
         language_version: python3
-        args: ['--target-version', 'py37']
-  - repo: https://github.com/timothycrosley/isort
-    # isort config is in setup.cfg
-    rev: 5.6.4
+        args: ['--target-version', 'py38']
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.0.272'
     hooks:
-      - id: isort
-  - repo: https://gitlab.com/pycqa/flake8
-    # flake8 config is in setup.cfg
-    rev: 3.8.4
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-comprehensions
-          - flake8-assertive
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.1
     hooks:
@@ -46,7 +40,17 @@ repos:
         additional_dependencies:
           - stylelint@14.2.0
           - '@wagtail/stylelint-config-wagtail@0.3.2'
+  - repo: https://github.com/thibaudcolas/curlylint
+    rev: v0.13.1
+    hooks:
+      - id: curlylint
+        args: ['--parse-only']
   - repo: https://github.com/rtts/djhtml
-    rev: v1.4.13
+    rev: v1.5.2
     hooks:
       - id: djhtml
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.3.0
+    hooks:
+      - id: semgrep
+        args: ['--config', '.semgrep.yml', '--error']

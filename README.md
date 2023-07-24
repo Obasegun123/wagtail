@@ -13,17 +13,11 @@
     <a href="https://pypi.python.org/pypi/wagtail/">
         <img src="https://img.shields.io/pypi/v/wagtail.svg" alt="Version" />
     </a>
-    <a href="https://lgtm.com/projects/g/wagtail/wagtail/alerts/">
-        <img src="https://img.shields.io/lgtm/alerts/g/wagtail/wagtail.svg?logo=lgtm&logoWidth=18" alt="Total alerts" />
-    </a>
-    <a href="https://lgtm.com/projects/g/wagtail/wagtail/context:python">
-        <img src="https://img.shields.io/lgtm/grade/python/g/wagtail/wagtail.svg?logo=lgtm&logoWidth=18" alt="Language grade: Python" />
-    </a>
-    <a href="https://lgtm.com/projects/g/wagtail/wagtail/context:javascript">
-        <img src="https://img.shields.io/lgtm/grade/javascript/g/wagtail/wagtail.svg?logo=lgtm&logoWidth=18" alt="Language grade: JavaScript" />
-    </a>
     <a href="https://pypi.python.org/pypi/wagtail/">
         <img src="https://img.shields.io/pypi/dm/wagtail?logo=Downloads" alt="Monthly downloads" />
+    </a>
+    <a href="https://twitter.com/WagtailCMS">
+        <img src="https://img.shields.io/twitter/follow/WagtailCMS?style=social&logo=twitter" alt="follow on Twitter">
     </a>
 </p>
 
@@ -37,7 +31,7 @@ Wagtail is an open source content management system built on Django, with a stro
 -   Complete control over front-end design and structure
 -   Scales to millions of pages and thousands of editors
 -   Fast out of the box, cache-friendly when you need it
--   Content API for 'headless' sites with de-coupled front-end
+-   Content API for 'headless' sites with decoupled front-end
 -   Runs on a Raspberry Pi or a multi-datacenter cloud platform
 -   StreamField encourages flexible content without compromising structure
 -   Powerful, integrated search, using Elasticsearch or PostgreSQL
@@ -55,7 +49,7 @@ To get started with using Wagtail, run the following in a virtual environment:
 
 ![Installing Wagtail](.github/install-animation.gif)
 
-```bash
+```sh
 pip install wagtail
 wagtail start mysite
 cd mysite
@@ -66,7 +60,6 @@ python manage.py runserver
 ```
 
 For detailed installation and setup docs, see [the getting started tutorial](https://docs.wagtail.org/en/stable/getting_started/tutorial.html).
-
 
 ### 👨‍👩‍👧‍👦 Who’s using it?
 
@@ -82,18 +75,17 @@ For those who are **new to Wagtail**, the [Zen of Wagtail](https://docs.wagtail.
 
 **Do you have an existing Django project?** The [Wagtail Integration documentation](https://docs.wagtail.org/en/stable/getting_started/integrating_into_django.html) is the best place to start.
 
-
 ### 📌 Compatibility
 
 _(If you are reading this on GitHub, the details here may not be indicative of the current released version - please see [Compatible Django / Python versions](https://docs.wagtail.org/en/stable/releases/upgrading.html#compatible-django-python-versions) in the Wagtail documentation.)_
 
 Wagtail supports:
 
--   Django 3.2.x and 4.0.x
--   Python 3.7, 3.8, 3.9 and 3.10
+-   Django 3.2.x, 4.1.x and 4.2.x
+-   Python 3.8, 3.9, 3.10 and 3.11
 -   PostgreSQL, MySQL and SQLite (with JSON1) as database backends
 
-[Previous versions of Wagtail](https://docs.wagtail.org/en/stable/releases/upgrading.html#compatible-django-python-versions) additionally supported Python 2.7 and earlier Django versions.
+[Previous versions of Wagtail](https://docs.wagtail.org/en/stable/releases/upgrading.html#compatible-django-python-versions) additionally supported Python 2.7, 3.7 and earlier Django versions.
 
 ---
 
@@ -105,7 +97,7 @@ For topics and discussions that do not fit Stack Overflow's question and answer 
 
 [![Join slack community](.github/join-slack-community.png)](https://github.com/wagtail/wagtail/wiki/Slack)
 
-Our [Github discussion boards](https://github.com/wagtail/wagtail/discussions) are open for sharing ideas and plans for the Wagtail project.
+Our [GitHub discussion boards](https://github.com/wagtail/wagtail/discussions) are open for sharing ideas and plans for the Wagtail project.
 
 We maintain a curated list of third party packages, articles and other resources at [Awesome Wagtail](https://github.com/springload/awesome-wagtail).
 
@@ -115,7 +107,7 @@ Wagtail is sponsored by [Torchbox](https://torchbox.com/). If you need help impl
 
 ### 🔐 Security
 
-We take the security of Wagtail, and related packages we maintain, seriously. If you have found a security issue with any of our projects please email us at [security@wagtail.org](mailto:security@wagtail.org) so we can work together to find and patch the issue. We appreciate responsible disclosure with any security related issues, so please contact us first before creating a Github issue.
+We take the security of Wagtail, and related packages we maintain, seriously. If you have found a security issue with any of our projects please email us at [security@wagtail.org](mailto:security@wagtail.org) so we can work together to find and patch the issue. We appreciate responsible disclosure with any security related issues, so please contact us first before creating a GitHub issue.
 
 If you want to send an encrypted email (optional), the public key ID for security@wagtail.org is 0xbed227b4daf93ff9, and this public key is available from most commonly-used keyservers.
 
@@ -133,7 +125,7 @@ If you're a Python or Django developer, fork the repo and get stuck in! We have 
 
 You might like to start by reviewing the [contributing guidelines](https://docs.wagtail.org/en/latest/contributing/index.html) and checking issues with the [good first issue](https://github.com/wagtail/wagtail/labels/good%20first%20issue) label.
 
-We also welcome translations for Wagtail's interface. Translation work should be submitted through [Transifex](https://www.transifex.com/projects/p/wagtail/).
+We also welcome translations for Wagtail's interface. Translation work should be submitted through [Transifex](https://explore.transifex.com/torchbox/wagtail/).
 
 ### 🔓 License
 

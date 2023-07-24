@@ -1,17 +1,39 @@
 #
 # Translators:
 # Bogdan Mateescu, 2022
-# Dan Braghis, 2022
 # Julian C <jcuotpc@gmail.com>, 2022
+# Alex Morega, 2023
+# Dan Braghis, 2023
 #
 msgid ""
 msgstr ""
-"Last-Translator: Julian C <jcuotpc@gmail.com>, 2022\n"
-"Language-Team: Romanian (https://www.transifex.com/torchbox/teams/8009/ro/)\n"
+"Last-Translator: Dan Braghis, 2023\n"
+"Language-Team: Romanian (https://app.transifex.com/torchbox/teams/8009/ro/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: ro\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
 "2:1));\n"
+
+msgid "(%(number)s new items in this menu)"
+msgstr "(%(number)s elemente noi în acest meniu)"
+
+msgid "(1 new item in this menu)"
+msgstr "(1 articol nou în acest meniu)"
+
+msgid "(New)"
+msgstr "(Nou)"
+
+msgid "%(num)s error"
+msgid_plural "%(num)s errors"
+msgstr[0] "%(num)s eroare"
+msgstr[1] "%(num)s erori"
+msgstr[2] "%(num)s de erori"
+
+msgid "%(num)s pixel"
+msgid_plural "%(num)s pixels"
+msgstr[0] "%(num)s pixel"
+msgstr[1] "%(num)s pixeli"
+msgstr[2] "%(num)s de pixeli"
 
 msgid "Add a comment"
 msgstr "Adaugă un comentariu"
@@ -22,14 +44,23 @@ msgstr "Text alternativ"
 msgid "Are you sure?"
 msgstr "Ești sigur?"
 
+msgid "Blocks"
+msgstr "Blocuri"
+
 msgid "Broken link"
 msgstr "Link nefuncțional"
 
 msgid "Cancel"
 msgstr "Anulează"
 
+msgid "Character count:"
+msgstr "Număr de caractere:"
+
 msgid "Close"
 msgstr "Închideți"
+
+msgid "Collapse all"
+msgstr "Restrânge toate"
 
 msgid "Comment"
 msgstr "Comentariu"
@@ -46,20 +77,38 @@ msgstr "Șterge"
 msgid "Delete error"
 msgstr "Eroare de ștergere"
 
+msgid "Deleting"
+msgstr "În curs de ștergere"
+
 msgid "Edit"
 msgstr "Editează"
 
-msgid "Edit '{title}'"
-msgstr "Editează '{title}'"
+msgid "Edit '%(title)s'"
+msgstr "Editează '%(title)s'"
 
 msgid "Edit your account"
 msgstr "Editează contul utilizator"
+
+msgid "Enter your comments..."
+msgstr "Introduceți comentariile Dvs"
+
+msgid "Enter your reply..."
+msgstr "Introduceți răspunsul Dvs"
+
+msgid "Error while sending preview data."
+msgstr "Eroare în timpul transmiterii datelor pentru previzualizare."
+
+msgid "Expand all"
+msgstr "Extinde toate"
 
 msgid "Focus comment"
 msgstr "Focalizează comentariu"
 
 msgid "Horizontal line"
 msgstr "Linie orizontală"
+
+msgid "Insert a block"
+msgstr "Inserează un bloc"
 
 msgid "Line break"
 msgstr "Sfârșit de linie"
@@ -88,8 +137,8 @@ msgstr "Explorator de pagini"
 msgid "Pages"
 msgstr "Pagini"
 
-msgid "Redo"
-msgstr "Refacere"
+msgid "Pin toolbar"
+msgstr "Fixează bara de instrumente"
 
 msgid "Reload saved content"
 msgstr "Reîncarcă conținutul salvat"
@@ -99,6 +148,13 @@ msgstr "Reîncarcă pagina"
 
 msgid "Reply"
 msgstr "Raspunde"
+
+msgid ""
+"Report this error to your website administrator with the following "
+"information:"
+msgstr ""
+"Raportează această eroare admistratorului site-ului cu următoarele "
+"informații:"
 
 msgid "Resolve"
 msgstr "Rezolva"
@@ -127,6 +183,9 @@ msgstr "În curs de salvare..."
 msgid "Search"
 msgstr "Căută"
 
+msgid "Search options…"
+msgstr "Opțiuni de căutare…"
+
 msgid "See all"
 msgstr "Vezi toate"
 
@@ -139,21 +198,30 @@ msgstr "Afișează eroare"
 msgid "Show latest content"
 msgstr "Afișează conținutul cel mai recent"
 
+msgid "Split block"
+msgstr "Despică bloc"
+
 msgid ""
 "The editor just crashed. Content has been reset to the last saved version."
 msgstr "Editorul s-a prăbușit. Conținut resetat la versiunea recent salvată."
 
+msgid "This field is required."
+msgstr "Acest câmp este obligatoriu."
+
+msgid "Toggle side panel"
+msgstr "Comută panou lateral"
+
 msgid "Toggle sidebar"
 msgstr "Comutați bara laterală"
-
-msgid "Undo"
-msgstr "Anulare"
 
 msgid "Unfocus comment"
 msgstr "Defocalizează comentariu"
 
-msgid "View child pages of '{title}'"
-msgstr "Vezi paginile dependente de '{title}'"
+msgid "Unpin toolbar"
+msgstr "Anulează fixarea barei de instrumente"
 
-msgid "Write here…"
-msgstr "Scrieți aici…"
+msgid "View child pages of '%(title)s'"
+msgstr "Vezi pagini descendente la '%(title)s'"
+
+msgid "Write something or type ‘/’ to insert a block"
+msgstr "Scrie ceva, sau ‘/‘ pentru a insera un bloc"

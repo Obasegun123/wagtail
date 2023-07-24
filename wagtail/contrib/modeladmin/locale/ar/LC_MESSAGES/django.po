@@ -6,14 +6,16 @@
 # abdulaziz alfuhigi <abajall@gmail.com>, 2018
 # Ahmad Kiswani <kiswani.ahmad@gmail.com>, 2016
 # ultraify media <ultraify@gmail.com>, 2018
+# Younes Oumakhou, 2022
+# Younes Oumakhou, 2022
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2016-05-11 20:22+0000\n"
-"Last-Translator: abdulaziz alfuhigi <abajall@gmail.com>, 2018\n"
-"Language-Team: Arabic (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Younes Oumakhou, 2022\n"
+"Language-Team: Arabic (http://app.transifex.com/torchbox/wagtail/language/"
 "ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -26,50 +28,54 @@ msgid "Parent page"
 msgstr "صفحة الأم"
 
 #, python-format
-msgid "Add %s"
-msgstr "اضف %s"
+msgid "Add %(object)s"
+msgstr "اضف %(object)s"
 
 #, python-format
-msgid "Add a new %s"
-msgstr "اضف جديد %s"
+msgid "Add a new %(object)s"
+msgstr "اضف جديد %(object)s"
 
 msgid "Inspect"
 msgstr "فحص"
 
 #, python-format
-msgid "Inspect this %s"
-msgstr "افحص %s"
+msgid "Inspect this %(object)s"
+msgstr "افحص %(object)s"
 
 msgid "Edit"
 msgstr "تعديل"
 
 #, python-format
-msgid "Edit this %s"
-msgstr "عدل %s"
+msgid "Edit this %(object)s"
+msgstr "تحرير هذا %(object)s"
 
 msgid "Delete"
 msgstr "حذف"
 
 #, python-format
-msgid "Delete this %s"
-msgstr "حذف %s"
+msgid "Delete this %(object)s"
+msgstr "حذف %(object)s"
 
 msgid "Unpublish"
 msgstr "غير منشور"
 
 #, python-format
-msgid "Unpublish this %s"
-msgstr "عدم نشر %s"
+msgid "Unpublish this %(object)s"
+msgstr "عدم نشر %(object)s"
 
 msgid "Copy"
 msgstr "انسخ"
 
 #, python-format
-msgid "Copy this %s"
-msgstr "نسخ %s"
+msgid "Copy this %(object)s"
+msgstr "نسخ %(object)s"
 
 msgid "image"
 msgstr "صورة"
+
+#, python-format
+msgid "Back to %(model_name)s list"
+msgstr "الرجوع الى %(model_name)s القائمة"
 
 msgid "Choose a parent page"
 msgstr "إختر صفحة أم"
@@ -114,9 +120,6 @@ msgstr "نعم, احذف"
 msgid "No, don't delete"
 msgstr "لا, لا تذف"
 
-msgid "Home"
-msgstr "الصفحة الرئيسية"
-
 #, python-format
 msgid "Sorry, there are no %(name)s matching your search parameters."
 msgstr "عذرًا ، لا توجد مطابقة لـ %(name)s عمليات البحث الخاصة بك."
@@ -127,6 +130,12 @@ msgstr "إبحث عن"
 #, python-format
 msgid "Search %(name)s"
 msgstr "بحث %(name)s"
+
+msgid "Search"
+msgstr "بحث"
+
+msgid "Download XLSX"
+msgstr "تنزيل XLSX"
 
 msgid "Download CSV"
 msgstr "تنزيل ملف CSV"
@@ -153,10 +162,6 @@ msgstr "ترقيم الصفحات"
 msgid "Page %(current_page)s of %(num_pages)s."
 msgstr "صفحة %(current_page)s من %(num_pages)s."
 
-#, python-format
-msgid "Back to %(model_name)s list"
-msgstr "الرجوع الى %(model_name)s القائمة"
-
 msgid "Previous"
 msgstr "السابق"
 
@@ -164,45 +169,57 @@ msgid "Next"
 msgstr "التالي"
 
 #, python-format
-msgid "The %s could not be created due to errors."
-msgstr "لا يمكن إنشاء %s بسبب أخطاء."
+msgid "%(model_name)s '%(object)s' created."
+msgstr "تم إنشاء '%(object)s' '%(model_name)s'"
+
+#, python-format
+msgid "The %(object)s could not be created due to errors."
+msgstr "لا يمكن إنشاء %(object)s بسبب أخطاء."
 
 msgid "New"
 msgstr "جديد"
 
 #, python-format
-msgid "Create new %s"
-msgstr "أنشئ %s جديد"
+msgid "Create new %(object)s"
+msgstr "أنشئ %(object)s جديد"
 
 msgid "Editing"
 msgstr "جاري التعديل"
 
 #, python-format
-msgid "Editing %s"
-msgstr "جاري التعديل %s"
+msgid "Editing %(object)s"
+msgstr "جاري التعديل %(object)s"
 
 #, python-format
-msgid "The %s could not be saved due to errors."
-msgstr "لا يمكن حفظ %s بسبب الأخطاء."
+msgid "%(model_name)s '%(object)s' updated."
+msgstr "تم تحديث '%(object)s' '%(model_name)s'."
 
 #, python-format
-msgid "Confirm deletion of %s"
-msgstr "تأكيد حذف %s"
+msgid "The %(object)s could not be saved due to errors."
+msgstr "لا يمكن حفظ %(object)s بسبب الأخطاء."
+
+#, python-format
+msgid "Confirm deletion of %(object)s"
+msgstr "تأكيد حذف %(object)s"
 
 #, python-format
 msgid ""
-"Are you sure you want to delete this %s? If other things in your site are "
-"related to it, they may also be affected."
+"Are you sure you want to delete this %(object)s? If other things in your "
+"site are related to it, they may also be affected."
 msgstr ""
-"هل أنت متأكد أنك تريد حذف هذا %s؟ إذا كانت هناك أشياء أخرى في موقعك مرتبطة "
-"بها ، فقد تتأثر أيضًا."
+"هل أنت متأكد أنك تريد حذف هذا %(object)s؟ إذا كانت هناك أشياء أخرى في موقعك "
+"مرتبطة بها ، فقد تتأثر أيضًا."
+
+#, python-format
+msgid "%(model_name)s '%(object)s' deleted."
+msgstr "تم حذف '%(object)s' '%(model_name)s'."
 
 msgid "Inspecting"
 msgstr "يتم الفحص"
 
 #, python-format
-msgid "Inspecting %s"
-msgstr "يتم فحص %s"
+msgid "Inspecting %(object)s"
+msgstr "يتم فحص %(object)s"
 
 msgid "Date"
 msgstr "تاريخ"

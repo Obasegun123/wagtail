@@ -36,9 +36,11 @@ To replace the default logo, create a template file `dashboard/templates/wagtail
 {% endblock %}
 ```
 
-The logo also appears on the admin 404 error page; to replace it there too, create a template file `dashboard/templates/wagtailadmin/404.html` that overrides the `branding_logo` block.
+The logo also appears in the following pages and can be replaced with its template file:
 
-The logo also appears on the wagtail userbar; to replace it there too, create a template file `dashboard/templates/wagtailadmin/userbar/base.html` that overwrites the `branding_logo` block.
+-   **login page** - create a template file `dashboard/templates/wagtailadmin/login.html` that overwrites the `branding_logo` block.
+-   **404 error page** - create a template file `dashboard/templates/wagtailadmin/404.html` that overrides the `branding_logo` block.
+-   **wagtail userbar** - create a template file `dashboard/templates/wagtailadmin/userbar/base.html` that overwrites the `branding_logo` block.
 
 ### `branding_favicon`
 
@@ -104,42 +106,22 @@ To customise the font families used in the admin user interface, inject a CSS fi
 The default Wagtail colours conform to the WCAG2.1 AA level colour contrast requirements. When customising the admin colours you should test the contrast using tools like [Axe](https://www.deque.com/axe/browser-extensions/).
 ```
 
-To customise the primary colour used in the admin user interface, inject a CSS file using the hook [](insert_global_admin_css) and override the variables within the `:root` selector:
+To customise the colours used in the admin user interface, inject a CSS file using the hook [](insert_global_admin_css) and set the desired variables within the `:root` selector. Colour variables are reused across both the light and dark themes of the admin interface. To change the colours of a specific theme, use:
 
-```css
-:root {
-    --color-primary-hue: 25;
-}
-```
+-   `:root, .w-theme-light` for the light theme.
+-   `.w-theme-dark` for the dark theme.
+-   `@media (prefers-color-scheme: light) { .w-theme-system { […] }}` for the light theme via system settings.
+-   `@media (prefers-color-scheme: dark) { .w-theme-system { […] }}` for the dark theme via system settings.
 
-`color-primary` is an [hsl colour](https://en.wikipedia.org/wiki/HSL_and_HSV) composed of 3 CSS variables - `--color-primary-hue` (0-360 with no unit), `--color-primary-saturation` (a percentage), and `--color-primary-lightness` (also a percentage). Separating the colour into 3 allows us to calculate variations on the colour to use alongside the primary colour. If needed, you can also control those variations manually by setting `hue`, `saturation`, and `lightness` variables for the following colours: `color-primary-darker`, `color-primary-dark`, `color-primary-lighter`, `color-primary-light`, `color-input-focus`, and `color-input-focus-border`:
+There are two ways to customise Wagtail’s colour scheme:
 
-```css
-:root {
-    --color-primary-hue: 25;
-    --color-primary-saturation: 100%;
-    --color-primary-lightness: 25%;
-    --color-primary-darker-hue: 24;
-    --color-primary-darker-saturation: 100%;
-    --color-primary-darker-lightness: 20%;
-    --color-primary-dark-hue: 23;
-    --color-primary-dark-saturation: 100%;
-    --color-primary-dark-lightness: 15%;
-}
-```
+-   Set static colour variables, which are then reused in both light and dark themes across a wide number of UI components.
+-   Set semantic colours, which are more numerous but allow customising specific UI components.
 
-If instead you intend to set all available colours, you can use any valid css colours:
+For static colours, either set each colour separately (for example `--w-color-primary: #2E1F5E;`); or separately set [HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) (`--w-color-primary-hue`, `--w-color-primary-saturation`, `--w-color-primary-lightness`) variables so all shades are customised at once. For example, setting `--w-color-secondary-hue: 180;` will customise all of the secondary shades at once.
 
-```css
-:root {
-    --color-primary: mediumaquamarine;
-    --color-primary-darker: rebeccapurple;
-    --color-primary-dark: hsl(330, 100%, 70%);
-    --color-primary-lighter: azure;
-    --color-primary-light: aliceblue;
-    --color-input-focus: rgb(204, 0, 102);
-    --color-input-focus-border: #4d0026;
-}
+```{include} ../../_static/wagtail_colors_tables.txt
+
 ```
 
 ## Specifying a site or page in the branding
@@ -189,12 +171,10 @@ To add extra fields to the login form, override the `fields` block. You will nee
 
 {% block fields %}
     {{ block.super }}
-    <li class="full">
-        <div class="field iconfield">
-            Two factor auth token
-            <div class="input icon-key">
-                <input type="text" name="two-factor-auth">
-            </div>
+    <li>
+        <div>
+            <label for="id_two-factor-auth">Two factor auth token</label>
+            <input type="text" name="two-factor-auth" id="id_two-factor-auth">
         </div>
     </li>
 {% endblock %}
@@ -226,9 +206,35 @@ To completely customise the login form, override the `login_form` block. This bl
 {% endblock %}
 ```
 
-(extending_clientside_components)=
+## Extending the password reset request form
 
-## Extending client-side components
+To add extra controls to the password reset form, create a template file `dashboard/templates/wagtailadmin/account/password_reset/form.html`.
+
+### `above_form` and `below_form`
+
+To add content above or below the password reset form, override these blocks:
+
+```html+django
+{% extends "wagtailadmin/account/password_reset/form.html" %}
+
+{% block above_login %} If you have not received your email within 7 days, call us. {% endblock %}
+```
+
+### `submit_buttons`
+
+To add extra buttons to the password reset form, override the `submit_buttons` block. You will need to add `{{ block.super }}` somewhere in your block if you want to include the original submit button:
+
+```html+django
+{% extends "wagtailadmin/account/password_reset/form.html" %}
+
+{% block submit_buttons %}
+    <a href="{% url 'helpdesk' %}">Contact the helpdesk</a>
+{% endblock %}
+```
+
+(extending_client_side_react)=
+
+## Extending client-side React components
 
 Some of Wagtail’s admin interface is written as client-side JavaScript with [React](https://reactjs.org/).
 In order to customise or extend those components, you may need to use React too, as well as other related libraries.
@@ -262,6 +268,7 @@ window.Draftail;
 
 // Wagtail’s Draftail-related APIs and components.
 window.draftail;
+window.draftail.DraftUtils;
 window.draftail.ModalWorkflowSource;
 window.draftail.ImageModalWorkflowSource;
 window.draftail.EmbedModalWorkflowSource;

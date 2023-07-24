@@ -15,6 +15,7 @@ from .models import (
     Author,
     Book,
     Contributor,
+    Enemy,
     Friend,
     Person,
     Publisher,
@@ -43,9 +44,7 @@ class AuthorModelAdmin(ModelAdmin):
         return ""
 
     def get_extra_class_names_for_field_col(self, obj, field_name):
-        class_names = super(AuthorModelAdmin, self).get_extra_class_names_for_field_col(
-            field_name, obj
-        )
+        class_names = super().get_extra_class_names_for_field_col(field_name, obj)
         if field_name == "first_book":
             class_names.append("for-author-%s" % obj.pk)
         return class_names
@@ -198,6 +197,13 @@ class PageAdmin(ModelAdmin):
     menu_label = "Page"
 
 
+class EnemyAdmin(ModelAdmin):
+    model = Enemy
+    add_to_admin_menu = False
+    menu_icon = "snippet"
+    base_url_path = "enemyadmin"
+
+
 modeladmin_register(AuthorModelAdmin)
 modeladmin_register(BookModelAdmin)
 modeladmin_register(TranslatableBookModelAdmin)
@@ -211,3 +217,4 @@ modeladmin_register(VisitorAdmin)
 modeladmin_register(ContributorAdmin)
 modeladmin_register(RelatedLinkAdmin)
 modeladmin_register(PageAdmin)
+modeladmin_register(EnemyAdmin)

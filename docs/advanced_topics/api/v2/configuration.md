@@ -40,13 +40,25 @@ can hook into the rest of your project.
 
 Wagtail provides three endpoint classes you can use:
 
-```{eval-rst}
-- Pages :class:`wagtail.api.v2.views.PagesAPIViewSet`
-- Images :class:`wagtail.images.api.v2.views.ImagesAPIViewSet`
-- Documents :class:`wagtail.documents.api.v2.views.DocumentsAPIViewSet`
+-   Pages {class}`wagtail.api.v2.views.PagesAPIViewSet`
+-   Images {class}`wagtail.images.api.v2.views.ImagesAPIViewSet`
+-   Documents {class}`wagtail.documents.api.v2.views.DocumentsAPIViewSet`
+
+You can subclass any of these endpoint classes to customise their functionality.
+For example, in this case if you need to change the `APIViewSet` by setting a desired renderer class:
+
+```python
+from rest_framework.renderers import JSONRenderer
+
+# ...
+
+class CustomPagesAPIViewSet(PagesAPIViewSet):
+    renderer_classes = [JSONRenderer]
+    name = "pages"
+
+api_router.register_endpoint("pages", ProdPagesAPIViewSet)
 ```
 
-You can subclass any of these endpoint classes to customize their functionality.
 Additionally, there is a base endpoint class you can use for adding different
 content types to the API: `wagtail.api.v2.views.BaseAPIViewSet`
 
@@ -65,7 +77,7 @@ from wagtail.documents.api.v2.views import DocumentsAPIViewSet
 api_router = WagtailAPIRouter('wagtailapi')
 
 # Add the three endpoints using the "register_endpoint" method.
-# The first parameter is the name of the endpoint (eg. pages, images). This
+# The first parameter is the name of the endpoint (such as pages, images). This
 # is used in the URL of the endpoint
 # The second parameter is the endpoint class that handles the requests
 api_router.register_endpoint('pages', PagesAPIViewSet)
@@ -108,29 +120,29 @@ For example:
 ```python
 # blog/models.py
 
-from wagtail.api import apifield
+from wagtail.api import APIField
 
-class blogpageauthor(orderable):
-    page = models.foreignkey('blog.blogpage', on_delete=models.cascade, related_name='authors')
-    name = models.charfield(max_length=255)
+class BlogPageAuthor(Orderable):
+    page = models.ForeignKey('blog.BlogPage', on_delete=models.CASCADE, related_name='authors')
+    name = models.CharField(max_length=255)
 
     api_fields = [
-        apifield('name'),
+        APIField('name'),
     ]
 
 
-class blogpage(page):
-    published_date = models.datetimefield()
-    body = richtextfield()
-    feed_image = models.foreignkey('wagtailimages.image', on_delete=models.set_null, null=true, ...)
-    private_field = models.charfield(max_length=255)
+class BlogPage(Page):
+    published_date = models.DateTimeField()
+    body = RichTextField()
+    feed_image = models.ForeignKey('wagtailimages.Image', on_delete=models.SET_NULL, null=True, ...)
+    private_field = models.CharField(max_length=255)
 
-    # export fields over the api
+    # Export fields over the API
     api_fields = [
-        apifield('published_date'),
-        apifield('body'),
-        apifield('feed_image'),
-        apifield('authors'),  # this will nest the relevant blogpageauthor objects in the api response
+        APIField('published_date'),
+        APIField('body'),
+        APIField('feed_image'),
+        APIField('authors'),  # This will nest the relevant BlogPageAuthor objects in the API response
     ]
 ```
 
@@ -139,9 +151,25 @@ This will make `published_date`, `body`, `feed_image` and a list of
 fields, you must select the `blog.BlogPage` type using the `?type`
 [parameter in the API itself](apiv2_custom_page_fields).
 
+(form_page_fields_api_field)=
+
+### Adding form fields to the API
+
+If you have a FormBuilder page called `FormPage` this is an example of how you would expose the form fields to the API:
+
+```python
+from wagtail.api import APIField
+
+class FormPage(AbstractEmailForm):
+    #...
+    api_fields = [
+        APIField('form_fields'),
+    ]
+```
+
 ### Custom serializers
 
-[Serializers](https://www.django-rest-framework.org/api-guide/fields) are used to convert the database representation of a model into
+[Serializers](https://www.django-rest-framework.org/api-guide/fields/) are used to convert the database representation of a model into
 JSON format. You can override the serializer for any field using the
 `serializer` keyword argument:
 
@@ -243,6 +271,8 @@ Note: `download_url` is the original uploaded file path, whereas
 When you are using another storage backend, such as S3, `download_url` will return
 a URL to the image if your media files are properly configured.
 
+For cases where the source image set may contain SVGs, the `ImageRenditionField` constructor takes a `preserve_svg` argument. The behaviour of `ImageRenditionField` when `preserve_svg` is `True` is as described for the `image` template tag's `preserve-svg` argument (see the documentation on [](svg_images)).
+
 ## Additional settings
 
 ### `WAGTAILAPI_BASE_URL`
@@ -252,7 +282,7 @@ a URL to the image if your media files are properly configured.
 This is used in two places, when generating absolute URLs to document files and
 invalidating the cache.
 
-Generating URLs to documents will fall back the the current request's hostname
+Generating URLs to documents will fall back the current request's hostname
 if this is not set. Cache invalidation cannot do this, however, so this setting
 must be set when using this module alongside the `wagtailfrontendcache` module.
 

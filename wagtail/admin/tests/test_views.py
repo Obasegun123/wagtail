@@ -1,11 +1,13 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from wagtail.admin.forms.auth import PasswordResetForm
+from wagtail.admin.tests.test_forms import CustomPasswordResetForm
 from wagtail.models import Page
 from wagtail.test.utils import WagtailTestUtils
 
 
-class TestLoginView(TestCase, WagtailTestUtils):
+class TestLoginView(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -67,12 +69,16 @@ class TestLoginView(TestCase, WagtailTestUtils):
     @override_settings(LANGUAGE_CODE="de")
     def test_language_code(self):
         response = self.client.get(reverse("wagtailadmin_login"))
-        self.assertContains(response, '<html lang="de" dir="ltr">')
+        self.assertContains(
+            response, '<html lang="de" dir="ltr" class="w-theme-system">'
+        )
 
     @override_settings(LANGUAGE_CODE="he")
     def test_bidi_language_changes_dir_attribute(self):
         response = self.client.get(reverse("wagtailadmin_login"))
-        self.assertContains(response, '<html lang="he" dir="rtl">')
+        self.assertContains(
+            response, '<html lang="he" dir="rtl" class="w-theme-system">'
+        )
 
     @override_settings(
         WAGTAILADMIN_USER_LOGIN_FORM="wagtail.admin.tests.test_forms.CustomLoginForm"
@@ -80,7 +86,21 @@ class TestLoginView(TestCase, WagtailTestUtils):
     def test_login_page_renders_extra_fields(self):
         response = self.client.get(reverse("wagtailadmin_login"))
         self.assertContains(
-            response, '<input type="text" name="captcha" required id="id_captcha">'
+            response,
+            """
+            <input type="text" name="captcha" required
+            aria-describedby="id_captcha-helptext" id="id_captcha">
+            """,
+            html=True,
+        )
+        self.assertContains(
+            response,
+            """
+            <div class="w-field__help" id="id_captcha-helptext" data-field-help>
+                <div class="help">should be in extra_fields()</div>
+            </div>
+            """,
+            html=True,
         )
 
     def test_session_expire_on_browser_close(self):
@@ -101,3 +121,47 @@ class TestLoginView(TestCase, WagtailTestUtils):
         )
         self.assertFalse(self.client.session.get_expire_at_browser_close())
         self.assertEqual(self.client.session.get_expiry_age(), 7)
+
+
+class TestPasswordResetView(TestCase):
+    def test_password_reset_view_uses_correct_form(self):
+        response = self.client.get(reverse("wagtailadmin_password_reset"))
+        self.assertIsInstance(response.context.get("form"), PasswordResetForm)
+
+        with override_settings(
+            WAGTAILADMIN_USER_PASSWORD_RESET_FORM="wagtail.admin.tests.test_forms.CustomPasswordResetForm"
+        ):
+            response = self.client.get(reverse("wagtailadmin_password_reset"))
+            self.assertIsInstance(response.context.get("form"), CustomPasswordResetForm)
+
+    @override_settings(
+        WAGTAILADMIN_USER_PASSWORD_RESET_FORM="wagtail.admin.tests.test_forms.CustomPasswordResetForm"
+    )
+    def test_password_reset_page_renders_extra_fields(self):
+        response = self.client.get(reverse("wagtailadmin_password_reset"))
+        self.assertContains(
+            response,
+            """
+            <input type="text" name="captcha" required
+            aria-describedby="id_captcha-helptext" id="id_captcha">
+            """,
+            html=True,
+        )
+        self.assertContains(
+            response,
+            """
+            <div class="w-field__help" id="id_captcha-helptext" data-field-help>
+                <div class="help">should be in extra_fields()</div>
+            </div>
+            """,
+            html=True,
+        )
+
+
+class TestJsi18nView(TestCase):
+    def test_jsi18n_does_not_require_login(self):
+        response = self.client.get(reverse("wagtailadmin_javascript_catalog"))
+        self.assertEqual(response.status_code, 200)
+        # get content type header without the "charset" suffix
+        content_type = response["content-type"].split(";")[0]
+        self.assertEqual(content_type, "text/javascript")

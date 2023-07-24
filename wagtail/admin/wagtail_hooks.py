@@ -14,8 +14,15 @@ from wagtail.admin.admin_url_finder import (
 )
 from wagtail.admin.auth import user_has_any_page_permission
 from wagtail.admin.forms.collections import GroupCollectionManagementPermissionFormSet
-from wagtail.admin.menu import MenuItem, SubmenuMenuItem, reports_menu, settings_menu
-from wagtail.admin.navigation import get_explorable_root_page
+from wagtail.admin.menu import (
+    DismissibleMenuItem,
+    DismissibleSubmenuMenuItem,
+    MenuItem,
+    SubmenuMenuItem,
+    help_menu,
+    reports_menu,
+    settings_menu,
+)
 from wagtail.admin.rich_text.converters.contentstate import link_entity
 from wagtail.admin.rich_text.converters.editor_html import (
     LinkTypeRule,
@@ -45,11 +52,16 @@ from wagtail.admin.views.pages.bulk_actions import (
 )
 from wagtail.admin.viewsets import viewsets
 from wagtail.admin.widgets import Button, ButtonWithDropdownFromHook, PageListingButton
-from wagtail.models import Collection, Page, Task, UserPagePermissionsProxy, Workflow
+from wagtail.models import Collection, Page, Task, Workflow
+from wagtail.permission_policies.pages import PagePermissionPolicy
 from wagtail.permissions import (
     collection_permission_policy,
     task_permission_policy,
     workflow_permission_policy,
+)
+from wagtail.templatetags.wagtailcore_tags import (
+    wagtail_feature_release_editor_guide_link,
+    wagtail_feature_release_whats_new_link,
 )
 from wagtail.whitelist import allow_without_attributes, attribute_rule, check_url
 
@@ -60,7 +72,7 @@ class ExplorerMenuItem(MenuItem):
 
     def get_context(self, request):
         context = super().get_context(request)
-        start_page = get_explorable_root_page(request.user)
+        start_page = PagePermissionPolicy().explorable_root_instance(request.user)
 
         if start_page:
             context["start_page_id"] = start_page.id
@@ -68,7 +80,7 @@ class ExplorerMenuItem(MenuItem):
         return context
 
     def render_component(self, request):
-        start_page = get_explorable_root_page(request.user)
+        start_page = PagePermissionPolicy().explorable_root_instance(request.user)
 
         if start_page:
             return PageExplorerMenuItemComponent(
@@ -102,13 +114,19 @@ class SettingsMenuItem(SubmenuMenuItem):
             self.menu.render_component(request),
             icon_name=self.icon_name,
             classnames=self.classnames,
-            footer_text="Wagtail v." + __version__,
+            footer_text="Wagtail v" + __version__,
         )
 
 
 @hooks.register("register_admin_menu_item")
 def register_settings_menu():
-    return SettingsMenuItem(_("Settings"), settings_menu, icon_name="cogs", order=10000)
+    return SettingsMenuItem(
+        _("Settings"),
+        settings_menu,
+        name="settings",
+        icon_name="cogs",
+        order=10000,
+    )
 
 
 @hooks.register("register_permissions")
@@ -154,6 +172,7 @@ def register_collections_menu_item():
     return CollectionsMenuItem(
         _("Collections"),
         reverse("wagtailadmin_collections:index"),
+        name="collections",
         icon_name="folder-open-1",
         order=700,
     )
@@ -184,6 +203,7 @@ def register_workflows_menu_item():
     return WorkflowsMenuItem(
         _("Workflows"),
         reverse("wagtailadmin_workflows:index"),
+        name="workflows",
         icon_name="tasks",
         order=100,
     )
@@ -194,13 +214,14 @@ def register_workflow_tasks_menu_item():
     return WorkflowTasksMenuItem(
         _("Workflow tasks"),
         reverse("wagtailadmin_workflows:task_index"),
+        name="workflow-tasks",
         icon_name="thumbtack",
         order=150,
     )
 
 
 @hooks.register("register_page_listing_buttons")
-def page_listing_buttons(page, page_perms, is_parent=False, next_url=None):
+def page_listing_buttons(page, page_perms, next_url=None):
     if page_perms.can_edit():
         yield PageListingButton(
             _("Edit"),
@@ -234,46 +255,27 @@ def page_listing_buttons(page, page_perms, is_parent=False, next_url=None):
             priority=30,
         )
     if page_perms.can_add_subpage():
-        if is_parent:
-            yield Button(
-                _("Add child page"),
-                reverse("wagtailadmin_pages:add_subpage", args=[page.id]),
-                attrs={
-                    "aria-label": _("Add a child page to '%(title)s' ")
-                    % {"title": page.get_admin_display_title()},
-                },
-                classes={
-                    "button",
-                    "button-small",
-                    "bicolor",
-                    "icon",
-                    "white",
-                    "icon-plus",
-                },
-                priority=40,
-            )
-        else:
-            yield PageListingButton(
-                _("Add child page"),
-                reverse("wagtailadmin_pages:add_subpage", args=[page.id]),
-                attrs={
-                    "aria-label": _("Add a child page to '%(title)s' ")
-                    % {"title": page.get_admin_display_title()}
-                },
-                priority=40,
-            )
+        yield PageListingButton(
+            _("Add child page"),
+            reverse("wagtailadmin_pages:add_subpage", args=[page.id]),
+            attrs={
+                "aria-label": _("Add a child page to '%(title)s' ")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=40,
+        )
 
     yield ButtonWithDropdownFromHook(
         _("More"),
         hook_name="register_page_listing_more_buttons",
         page=page,
         page_perms=page_perms,
-        is_parent=is_parent,
         next_url=next_url,
+        classes={"button", "button-secondary", "button-small"},
         attrs={
             "target": "_blank",
             "rel": "noreferrer",
-            "title": _("View more options for '%(title)s'")
+            "title": _("More options for '%(title)s'")
             % {"title": page.get_admin_display_title()},
         },
         priority=50,
@@ -281,89 +283,7 @@ def page_listing_buttons(page, page_perms, is_parent=False, next_url=None):
 
 
 @hooks.register("register_page_listing_more_buttons")
-def page_listing_more_buttons(page, page_perms, is_parent=False, next_url=None):
-    if page_perms.can_move():
-        yield Button(
-            _("Move"),
-            reverse("wagtailadmin_pages:move", args=[page.id]),
-            attrs={
-                "title": _("Move page '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=10,
-        )
-    if page_perms.can_copy():
-        url = reverse("wagtailadmin_pages:copy", args=[page.id])
-        if next_url:
-            url += "?" + urlencode({"next": next_url})
-
-        yield Button(
-            _("Copy"),
-            url,
-            attrs={
-                "title": _("Copy page '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=20,
-        )
-    if page_perms.can_delete():
-        url = reverse("wagtailadmin_pages:delete", args=[page.id])
-
-        # After deleting the page, it is impossible to redirect to it.
-        if next_url == reverse("wagtailadmin_explore", args=[page.id]):
-            next_url = None
-
-        if next_url:
-            url += "?" + urlencode({"next": next_url})
-
-        yield Button(
-            _("Delete"),
-            url,
-            attrs={
-                "title": _("Delete page '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=30,
-        )
-    if page_perms.can_unpublish():
-        url = reverse("wagtailadmin_pages:unpublish", args=[page.id])
-        if next_url:
-            url += "?" + urlencode({"next": next_url})
-
-        yield Button(
-            _("Unpublish"),
-            url,
-            attrs={
-                "title": _("Unpublish page '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=40,
-        )
-    if page_perms.can_view_revisions():
-        yield Button(
-            _("History"),
-            reverse("wagtailadmin_pages:history", args=[page.id]),
-            attrs={
-                "title": _("View page history for '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=50,
-        )
-
-    if is_parent:
-        yield Button(
-            _("Sort menu order"),
-            "?ordering=ord",
-            attrs={
-                "title": _("Change ordering of child pages of '%(title)s'")
-                % {"title": page.get_admin_display_title()}
-            },
-            priority=60,
-        )
-
-
-@hooks.register("register_page_header_buttons")
-def page_header_buttons(page, page_perms, next_url=None):
+def page_listing_more_buttons(page, page_perms, next_url=None):
     if page_perms.can_move():
         yield Button(
             _("Move"),
@@ -390,6 +310,106 @@ def page_header_buttons(page, page_perms, next_url=None):
             },
             priority=20,
         )
+    if page_perms.can_delete():
+        url = reverse("wagtailadmin_pages:delete", args=[page.id])
+        include_next_url = True
+
+        # After deleting the page, it is impossible to redirect to it.
+        if next_url == reverse("wagtailadmin_explore", args=[page.id]):
+            include_next_url = False
+
+        if next_url and include_next_url:
+            url += "?" + urlencode({"next": next_url})
+
+        yield Button(
+            _("Delete"),
+            url,
+            icon_name="bin",
+            attrs={
+                "title": _("Delete page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=30,
+        )
+    if page_perms.can_unpublish():
+        url = reverse("wagtailadmin_pages:unpublish", args=[page.id])
+        if next_url:
+            url += "?" + urlencode({"next": next_url})
+
+        yield Button(
+            _("Unpublish"),
+            url,
+            icon_name="resubmit",
+            attrs={
+                "title": _("Unpublish page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=40,
+        )
+    if page_perms.can_view_revisions():
+        yield Button(
+            _("History"),
+            reverse("wagtailadmin_pages:history", args=[page.id]),
+            icon_name="history",
+            attrs={
+                "title": _("View page history for '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=50,
+        )
+
+    if page_perms.can_reorder_children():
+        yield Button(
+            _("Sort menu order"),
+            "?ordering=ord",
+            icon_name="list-ul",
+            attrs={
+                "title": _("Change ordering of child pages of '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=60,
+        )
+
+
+@hooks.register("register_page_header_buttons")
+def page_header_buttons(page, page_perms, next_url=None):
+    if page_perms.can_edit():
+        yield Button(
+            _("Edit"),
+            reverse("wagtailadmin_pages:edit", args=[page.id]),
+            icon_name="edit",
+            attrs={
+                "title": _("Edit '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=10,
+        )
+    if page_perms.can_move():
+        yield Button(
+            _("Move"),
+            reverse("wagtailadmin_pages:move", args=[page.id]),
+            icon_name="arrow-right-full",
+            attrs={
+                "title": _("Move page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=20,
+        )
+    if page_perms.can_copy():
+        url = reverse("wagtailadmin_pages:copy", args=[page.id])
+        if next_url:
+            url += "?" + urlencode({"next": next_url})
+
+        yield Button(
+            _("Copy"),
+            url,
+            icon_name="copy",
+            attrs={
+                "title": _("Copy page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=30,
+        )
     if page_perms.can_add_subpage():
         yield Button(
             _("Add child page"),
@@ -399,7 +419,60 @@ def page_header_buttons(page, page_perms, next_url=None):
                 "aria-label": _("Add a child page to '%(title)s' ")
                 % {"title": page.get_admin_display_title()},
             },
-            priority=30,
+            priority=40,
+        )
+    if page_perms.can_delete():
+        url = reverse("wagtailadmin_pages:delete", args=[page.id])
+
+        include_next_url = True
+
+        # After deleting the page, it is impossible to redirect to it.
+        if next_url == reverse("wagtailadmin_explore", args=[page.id]):
+            include_next_url = False
+
+        if next_url == reverse("wagtailadmin_pages:edit", args=[page.id]):
+            include_next_url = False
+
+        if next_url and include_next_url:
+            url += "?" + urlencode({"next": next_url})
+
+        yield Button(
+            _("Delete"),
+            url,
+            icon_name="bin",
+            attrs={
+                "title": _("Delete page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=50,
+        )
+    if page_perms.can_unpublish():
+        url = reverse("wagtailadmin_pages:unpublish", args=[page.id])
+        if next_url:
+            url += "?" + urlencode({"next": next_url})
+
+        yield Button(
+            _("Unpublish"),
+            url,
+            icon_name="download",
+            attrs={
+                "title": _("Unpublish page '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=60,
+        )
+    if page_perms.can_reorder_children():
+        url = reverse("wagtailadmin_explore", args=[page.id])
+        url += "?ordering=ord"
+        yield Button(
+            _("Sort menu order"),
+            url,
+            icon_name="list-ul",
+            attrs={
+                "title": _("Change ordering of child pages of '%(title)s'")
+                % {"title": page.get_admin_display_title()}
+            },
+            priority=70,
         )
 
 
@@ -486,7 +559,7 @@ def register_core_features(features):
         "h1",
         draftail_features.BlockFeature(
             {
-                "label": "H1",
+                "icon": "h1",
                 "type": "header-one",
                 "description": gettext("Heading %(level)d") % {"level": 1},
             }
@@ -507,7 +580,7 @@ def register_core_features(features):
         "h2",
         draftail_features.BlockFeature(
             {
-                "label": "H2",
+                "icon": "h2",
                 "type": "header-two",
                 "description": gettext("Heading %(level)d") % {"level": 2},
             }
@@ -528,7 +601,7 @@ def register_core_features(features):
         "h3",
         draftail_features.BlockFeature(
             {
-                "label": "H3",
+                "icon": "h3",
                 "type": "header-three",
                 "description": gettext("Heading %(level)d") % {"level": 3},
             }
@@ -549,7 +622,7 @@ def register_core_features(features):
         "h4",
         draftail_features.BlockFeature(
             {
-                "label": "H4",
+                "icon": "h4",
                 "type": "header-four",
                 "description": gettext("Heading %(level)d") % {"level": 4},
             }
@@ -570,7 +643,7 @@ def register_core_features(features):
         "h5",
         draftail_features.BlockFeature(
             {
-                "label": "H5",
+                "icon": "h5",
                 "type": "header-five",
                 "description": gettext("Heading %(level)d") % {"level": 5},
             }
@@ -591,7 +664,7 @@ def register_core_features(features):
         "h6",
         draftail_features.BlockFeature(
             {
-                "label": "H6",
+                "icon": "h6",
                 "type": "header-six",
                 "description": gettext("Heading %(level)d") % {"level": 6},
             }
@@ -733,7 +806,7 @@ def register_core_features(features):
                 # We want to enforce constraints on which links can be pasted into rich text.
                 # Keep only the attributes Wagtail needs.
                 "attributes": ["url", "id", "parentId"],
-                "whitelist": {
+                "allowlist": {
                     # Keep pasted links with http/https protocol, and not-pasted links (href = undefined).
                     "href": "^(http:|https:|undefined$)",
                 },
@@ -842,7 +915,7 @@ def register_core_features(features):
 
 class LockedPagesMenuItem(MenuItem):
     def is_shown(self, request):
-        return UserPagePermissionsProxy(request.user).can_remove_locks()
+        return PagePermissionPolicy().user_has_permission(request.user, "unlock")
 
 
 class WorkflowReportMenuItem(MenuItem):
@@ -852,7 +925,7 @@ class WorkflowReportMenuItem(MenuItem):
 
 class SiteHistoryReportMenuItem(MenuItem):
     def is_shown(self, request):
-        return UserPagePermissionsProxy(request.user).explorable_pages().exists()
+        return PagePermissionPolicy().explorable_root_instance(request.user) is not None
 
 
 class AgingPagesReportMenuItem(MenuItem):
@@ -863,8 +936,9 @@ class AgingPagesReportMenuItem(MenuItem):
 @hooks.register("register_reports_menu_item")
 def register_locked_pages_menu_item():
     return LockedPagesMenuItem(
-        _("Locked Pages"),
+        _("Locked pages"),
         reverse("wagtailadmin_reports:locked_pages"),
+        name="locked-pages",
         icon_name="lock",
         order=700,
     )
@@ -875,6 +949,7 @@ def register_workflow_report_menu_item():
     return WorkflowReportMenuItem(
         _("Workflows"),
         reverse("wagtailadmin_reports:workflow"),
+        name="workflows",
         icon_name="tasks",
         order=800,
     )
@@ -885,6 +960,7 @@ def register_workflow_tasks_report_menu_item():
     return WorkflowReportMenuItem(
         _("Workflow tasks"),
         reverse("wagtailadmin_reports:workflow_tasks"),
+        name="workflow-tasks",
         icon_name="thumbtack",
         order=900,
     )
@@ -895,6 +971,7 @@ def register_site_history_report_menu_item():
     return SiteHistoryReportMenuItem(
         _("Site history"),
         reverse("wagtailadmin_reports:site_history"),
+        name="site-history",
         icon_name="history",
         order=1000,
     )
@@ -905,6 +982,7 @@ def register_aging_pages_report_menu_item():
     return AgingPagesReportMenuItem(
         _("Aging pages"),
         reverse("wagtailadmin_reports:aging_pages"),
+        name="aging-pages",
         icon_name="time",
         order=1100,
     )
@@ -912,7 +990,49 @@ def register_aging_pages_report_menu_item():
 
 @hooks.register("register_admin_menu_item")
 def register_reports_menu():
-    return SubmenuMenuItem(_("Reports"), reports_menu, icon_name="site", order=9000)
+    return SubmenuMenuItem(
+        _("Reports"),
+        reports_menu,
+        name="reports",
+        icon_name="site",
+        order=9000,
+    )
+
+
+@hooks.register("register_help_menu_item")
+def register_whats_new_in_wagtail_version_menu_item():
+    version = "5.0"
+    return DismissibleMenuItem(
+        _("What's new in Wagtail %(version)s") % {"version": version},
+        wagtail_feature_release_whats_new_link(),
+        icon_name="help",
+        order=1000,
+        attrs={"target": "_blank", "rel": "noreferrer"},
+        name=f"whats-new-in-wagtail-{version}",
+    )
+
+
+@hooks.register("register_help_menu_item")
+def register_editors_guide_menu_item():
+    return DismissibleMenuItem(
+        _("Editor Guide"),
+        wagtail_feature_release_editor_guide_link(),
+        icon_name="help",
+        order=1100,
+        attrs={"target": "_blank", "rel": "noreferrer"},
+        name="editor-guide",
+    )
+
+
+@hooks.register("register_admin_menu_item")
+def register_help_menu():
+    return DismissibleSubmenuMenuItem(
+        _("Help"),
+        help_menu,
+        name="help",
+        icon_name="help",
+        order=11000,
+    )
 
 
 @hooks.register("register_icons")
@@ -920,23 +1040,24 @@ def register_icons(icons):
     for icon in [
         "angle-double-left.svg",
         "angle-double-right.svg",
-        "arrow-down-big.svg",
         "arrow-down.svg",
         "arrow-right-full.svg",
         "arrow-left.svg",
         "arrow-right.svg",
-        "arrow-up-big.svg",
         "arrow-up.svg",
         "arrows-up-down.svg",
         "bars.svg",
         "bin.svg",
         "bold.svg",
         "breadcrumb-expand.svg",
+        "calendar.svg",
+        "calendar-alt.svg",
+        "calendar-check.svg",
         "chain-broken.svg",
         "check.svg",
-        "chevron-down.svg",
         "circle-check.svg",
         "circle-plus.svg",
+        "circle-xmark.svg",
         "clipboard-list.svg",
         "code.svg",
         "cog.svg",
@@ -947,22 +1068,20 @@ def register_icons(icons):
         "comment.svg",
         "comment-add.svg",
         "comment-add-reversed.svg",
-        "comment-large.svg",
-        "comment-large-outline.svg",
-        "comment-large-reversed.svg",
         "cross.svg",
+        "crosshairs.svg",
         "cut.svg",
         "date.svg",
+        "decimal.svg",
+        "desktop.svg",
         "doc-empty-inverse.svg",
         "doc-empty.svg",
         "doc-full-inverse.svg",
         "doc-full.svg",  # aka file-text-alt
         "dots-vertical.svg",
         "dots-horizontal.svg",
-        "download-alt.svg",
         "download.svg",
         "draft.svg",
-        "duplicate.svg",
         "edit.svg",
         "ellipsis-v.svg",
         "expand-right.svg",
@@ -975,6 +1094,12 @@ def register_icons(icons):
         "globe.svg",
         "grip.svg",
         "group.svg",
+        "h1.svg",
+        "h2.svg",
+        "h3.svg",
+        "h4.svg",
+        "h5.svg",
+        "h6.svg",
         "help.svg",
         "history.svg",
         "home.svg",
@@ -982,6 +1107,7 @@ def register_icons(icons):
         "image.svg",  # aka picture
         "info-circle.svg",
         "italic.svg",
+        "key.svg",
         "link.svg",
         "link-external.svg",
         "list-ol.svg",
@@ -992,6 +1118,7 @@ def register_icons(icons):
         "logout.svg",
         "mail.svg",
         "media.svg",
+        "minus.svg",
         "mobile-alt.svg",
         "no-view.svg",
         "openquote.svg",
@@ -1007,9 +1134,11 @@ def register_icons(icons):
         "radio-empty.svg",
         "radio-full.svg",
         "redirect.svg",
+        "regex.svg",
         "repeat.svg",
         "reset.svg",
         "resubmit.svg",
+        "rotate.svg",
         "search.svg",
         "site.svg",
         "snippet.svg",
@@ -1019,15 +1148,15 @@ def register_icons(icons):
         "subscript.svg",
         "superscript.svg",
         "table.svg",
+        "tablet-alt.svg",
         "tag.svg",
         "tasks.svg",
         "thumbtack.svg",
+        "thumbtack-crossed.svg",
         "tick-inverse.svg",
-        "tick.svg",
         "time.svg",
         "title.svg",
         "undo.svg",
-        "uni52.svg",  # Is this a redundant icon?
         "upload.svg",
         "user.svg",
         "view.svg",
@@ -1035,7 +1164,7 @@ def register_icons(icons):
         "wagtail.svg",
         "warning.svg",
     ]:
-        icons.append("wagtailadmin/icons/{}".format(icon))
+        icons.append(f"wagtailadmin/icons/{icon}")
     return icons
 
 
@@ -1046,10 +1175,10 @@ def add_pages_summary_item(request, items):
 
 class PageAdminURLFinder:
     def __init__(self, user):
-        self.page_perms = user and UserPagePermissionsProxy(user)
+        self.user = user
 
     def get_edit_url(self, instance):
-        if self.page_perms and not self.page_perms.for_page(instance).can_edit():
+        if self.user and not instance.permissions_for_user(self.user).can_edit():
             return None
         else:
             return reverse("wagtailadmin_pages:edit", args=(instance.pk,))

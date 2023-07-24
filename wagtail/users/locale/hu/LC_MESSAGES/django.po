@@ -3,16 +3,17 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
+# B N <biczoxd@gmail.com>, 2018
 # Istvan Farkas <istvan.farkas@gmail.com>, 2018-2022
 # B N <biczoxd@gmail.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 11:54+0000\n"
-"Last-Translator: Istvan Farkas <istvan.farkas@gmail.com>, 2018-2022\n"
-"Language-Team: Hungarian (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: B N <biczoxd@gmail.com>, 2018\n"
+"Language-Team: Hungarian (http://app.transifex.com/torchbox/wagtail/language/"
 "hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,8 +24,8 @@ msgstr ""
 msgid "Wagtail users"
 msgstr "Felhasználók"
 
-msgid "Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."
-msgstr "Kötelező. Maximum 30 karakter és csak netűk, számok, @/./+/-/_ jelek."
+msgid "Required. Letters, digits and @/./+/-/_ only."
+msgstr "Kötelező. Betűk, számok, és @/./+/-/_ jelek."
 
 msgid "This value may contain only letters, numbers and @/./+/-/_ characters."
 msgstr ""
@@ -122,6 +123,12 @@ msgstr "felhasználói profil"
 msgid "user profiles"
 msgstr "felhasználói fiókok"
 
+#, python-format
+msgid "Assign role to 1 user"
+msgid_plural "Assign role to %(counter)s users"
+msgstr[0] "Szerepkör hozzáadása 1 felhasználóhoz"
+msgstr[1] "Szerepkör hozzáadása %(counter)s felhasználóhoz"
+
 msgid "Assign role"
 msgstr "Szerepkör hozzáadása"
 
@@ -138,6 +145,12 @@ msgstr "Igen, hozzáadom"
 
 msgid "No, don't assign"
 msgstr "Nem, mégsem"
+
+#, python-format
+msgid "Delete 1 user"
+msgid_plural "Delete %(counter)s users"
+msgstr[0] "1 felhasználó törlése"
+msgstr[1] "%(counter)s felhasználó törlése"
 
 msgid "Delete"
 msgstr "Törlés"
@@ -156,6 +169,12 @@ msgstr "Igen, törlés"
 msgid "No, don't delete"
 msgstr "Nem, ne töröljük"
 
+#, python-format
+msgid "Change active state for 1 user"
+msgid_plural "Change active state for %(counter)s users"
+msgstr[0] "1 felhasználü státuszának megváltoztatása"
+msgstr[1] "%(counter)s felhasználó státuszának megváltoztatása"
+
 msgid "Set active state"
 msgstr "Aktív státusz beállítása"
 
@@ -173,6 +192,18 @@ msgstr "Nem, mégsem"
 
 msgid "Delete group"
 msgstr "Csoport törlése"
+
+#, python-format
+msgid ""
+"The group '%(group_name)s' has <strong>%(group_user_count)s</strong> member."
+msgid_plural ""
+"The group '%(group_name)s' has <strong>%(group_user_count)s</strong> members."
+msgstr[0] ""
+"A(z) '%(group_name)s' csoportnak <strong>%(group_user_count)s</strong> tagja "
+"van."
+msgstr[1] ""
+"A(z) '%(group_name)s' csoportnak <strong>%(group_user_count)s</strong> tagja "
+"van."
 
 msgid ""
 "Deleting this group will revoke this group's permissions from all member "
@@ -195,9 +226,6 @@ msgstr "Csoport tagjainak megtekintése"
 msgid "Save"
 msgstr "Mentés"
 
-msgid "Permissions"
-msgstr "Engedélyek"
-
 msgid "Object permissions"
 msgstr "Rekord jogosultságok"
 
@@ -209,6 +237,15 @@ msgstr "Hozzáadás"
 
 msgid "Change"
 msgstr "Megváltoztatás"
+
+msgid "Publish"
+msgstr "Közzététel"
+
+msgid "Lock"
+msgstr "Lezár"
+
+msgid "Unlock"
+msgstr "Feloldás"
 
 msgid "Custom permissions"
 msgstr "Egyedi engedélyek"
@@ -266,9 +303,6 @@ msgstr "Összes felhasználó kiválasztása a listában"
 msgid "Username"
 msgstr "Felhasználónév"
 
-msgid "Level"
-msgstr "Szint"
-
 msgid "Status"
 msgstr "Állapot"
 
@@ -285,8 +319,10 @@ msgid "Inactive"
 msgstr "Kikapcsolt"
 
 #, python-format
-msgid "%(time_period)s ago"
-msgstr "%(time_period)s"
+msgid "There is %(counter)s match"
+msgid_plural "There are %(counter)s matches"
+msgstr[0] "%(counter)s találat van"
+msgstr[1] "%(counter)s találat van"
 
 #, python-format
 msgid "Sorry, no users match \"<em>%(query_string)s</em>\""
@@ -309,6 +345,10 @@ msgid ""
 msgstr ""
 "Nincs felhasználó létrehozva. Miért nem <a href=\"%(wagtailusers_add_url)s"
 "\">ad hozzá egyet</a>?"
+
+#, python-format
+msgid "user %(id)s (deleted)"
+msgstr "%(id)s felhasználó (törölt)"
 
 msgid "Assign role to selected users"
 msgstr "Szerepkör beállítás a kiválasztott felhasználókhoz"
@@ -352,44 +392,38 @@ msgstr "Csoport hozzáadása"
 msgid "Search groups"
 msgstr "Csoportok keresése"
 
-#, python-brace-format
-msgid "Group '{0}' created."
-msgstr "Csoport létrehozva: '{0}'"
+#, python-format
+msgid "Group '%(object)s' created."
+msgstr "Csoport létrehozva: '%(object)s'"
 
-#, python-brace-format
-msgid "Group '{0}' updated."
-msgstr "Csoport frissítve: '{0}'"
+#, python-format
+msgid "Group '%(object)s' updated."
+msgstr "Csoport frissítve: '%(object)s'"
 
 msgid "The group could not be saved due to errors."
 msgstr "Hiba történt a csoport mentése közben."
 
-#, python-brace-format
-msgid "Group '{0}' deleted."
-msgstr "Csoport törölve: '{0}'"
+#, python-format
+msgid "Group '%(object)s' deleted."
+msgstr "Csoport törölve: '%(object)s'"
 
-msgid "Search users"
-msgstr "Felhasználók keresése"
-
-#, python-brace-format
-msgid "User '{0}' created."
-msgstr "Felhasználó létrehozva: '{0}'"
-
-msgid "Edit"
-msgstr "Szerkeszt"
-
-msgid "The user could not be created due to errors."
-msgstr "Hiba történt a felhasználó létrehozása közben."
-
-#, python-brace-format
-msgid "User '{0}' updated."
-msgstr "Felhasználó frissítve: '{0}'"
+#, python-format
+msgid "User '%(object)s' updated."
+msgstr "Felhasználó frissítve: '%(object)s'"
 
 msgid "The user could not be saved due to errors."
 msgstr "Hiba történt a felhasználó mentése közben."
 
-#, python-brace-format
-msgid "User '{0}' deleted."
-msgstr "Felhasználó törölve: '{0}'"
+#, python-format
+msgid "Editing %(object)s"
+msgstr "%(object)s szerkesztése"
+
+#, python-format
+msgid "User '%(object)s' deleted."
+msgstr "Felhasználó törölve: '%(object)s'"
+
+msgid "Edit"
+msgstr "Szerkeszt"
 
 msgid "Edit this user"
 msgstr "Felhasználó szerkesztése"

@@ -34,42 +34,41 @@ model has an `author` field (a `ForeignKey` to the `Author` model)
 to allow a single author to be specified for each post.
 
 ```python
+# file: wagtail_hooks.py
 
-    # file: wagtail_hooks.py
+from wagtail.admin.widgets import PageListingButton
+from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail import hooks
 
-    from wagtail.admin.widgets import PageListingButton
-    from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
-    from wagtail import hooks
+# Author & BlogPage model not shown in this example
+from models import Author
 
-    # Author & BlogPage model not shown in this example
-    from models import Author
+# ensure our modeladmin is created
+class AuthorModelAdmin(ModelAdmin):
+    model = Author
+    menu_order = 200
 
-    # ensure our modeladmin is created
-    class AuthorModelAdmin(ModelAdmin):
-        model = Author
-        menu_order = 200
+# Creating an instance of `AuthorModelAdmin`
+author_modeladmin = AuthorModelAdmin()
 
-    # Creating an instance of `AuthorModelAdmin`
-    author_modeladmin = AuthorModelAdmin()
+@hooks.register('register_page_listing_buttons')
+def add_author_edit_buttons(page, page_perms, next_url=None):
+    """
+    For pages that have an author, add an additional button to the page listing,
+    linking to the 'edit' page for that author.
+    """
+    author_id = getattr(page, 'author_id', None)
+    if author_id:
+        # the url helper will return something like: /admin/my-app/author/edit/2/
+        author_edit_url = author_modeladmin.url_helper.get_action_url('edit', author_id)
+        yield PageListingButton('Edit Author',  author_edit_url, priority=10)
 
-    @hooks.register('register_page_listing_buttons')
-    def add_author_edit_buttons(page, page_perms, is_parent=False, next_url=None):
-        """
-        For pages that have an author, add an additional button to the page listing,
-        linking to the 'edit' page for that author.
-        """
-        author_id = getattr(page, 'author_id', None)
-        if author_id:
-            # the url helper will return something like: /admin/my-app/author/edit/2/
-            author_edit_url = author_modeladmin.url_helper.get_action_url('edit', author_id)
-            yield PageListingButton('Edit Author',  author_edit_url, priority=10)
-
-    modeladmin_register(AuthorModelAdmin)
+modeladmin_register(AuthorModelAdmin)
 ```
 
 As you can see from the example above, when using `get_action_url()` to
 generate object-specific URLs, the target object's primary key value must be supplied
-so that it can be included in the resulting URL (e.g. `"/admin/my-app/author/edit/2/"`).
+so that it can be included in the resulting URL (for example `"/admin/my-app/author/edit/2/"`).
 The following object-specific action names are supported by `get_action_url()`:
 
 -   `'edit'` Returns a URL for updating a specific object.
@@ -98,28 +97,27 @@ shortcut available; `url_helper.index_url` and `url_helper.create_url`.
 For example:
 
 ```python
+from .wagtail_hooks import AuthorModelAdmin
 
-    from .wagtail_hooks import AuthorModelAdmin
+url_helper = AuthorModelAdmin().url_helper
 
-    url_helper = AuthorModelAdmin().url_helper
+index_url = url_helper.get_action_url('index')
+# OR we can use the 'index_url' shortcut
+also_index_url = url_helper.index_url # note: do not call this property as a function
+# both will output /admin/my-app/author
 
-    index_url = url_helper.get_action_url('index')
-    # OR we can use the 'index_url' shortcut
-    also_index_url = url_helper.index_url # note: do not call this property as a function
-    # both will output /admin/my-app/author
-
-    create_url = url_helper.get_action_url('create')
-    # OR we can use the 'create_url' shortcut
-    also_create_url = url_helper.create_url # note: do not call this property as a function
-    # both will output /admin/my-app/author/create
+create_url = url_helper.get_action_url('create')
+# OR we can use the 'create_url' shortcut
+also_create_url = url_helper.create_url # note: do not call this property as a function
+# both will output /admin/my-app/author/create
 ```
 
 ```{note}
-If you have registered a page type with `modeladmin` (e.g. `BlogPage`), and pages
+If you have registered a page type with `modeladmin` (for example `BlogPage`), and pages
 of that type can be added to more than one place in the page tree, when a user visits
 the `create` URL, they'll be automatically redirected to another view to choose a
 parent for the new page. So, this isn't something you need to check or cater for in
 your own code.
 ```
 
-To customise `url_helper` behaviour, see :ref:`modeladmin_url_helper_class`.
+To customise `url_helper` behaviour, see [](modeladmin_url_helper_class).

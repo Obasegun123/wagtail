@@ -33,7 +33,7 @@ class Command:
             prog = None
         else:
             # hack the prog name as reported to ArgumentParser to include the command
-            prog = "%s %s" % (prog_name(), command_name)
+            prog = f"{prog_name()} {command_name}"
 
         parser = ArgumentParser(
             description=getattr(self, "description", None), add_help=False, prog=prog
@@ -58,6 +58,9 @@ class Command:
 class CreateProject(Command):
     description = "Creates the directory structure for a new Wagtail project."
 
+    def __init__(self):
+        self.default_template_path = self.get_default_template_path()
+
     def add_arguments(self, parser):
         parser.add_argument("project_name", help="Name for your Wagtail project")
         parser.add_argument(
@@ -65,8 +68,20 @@ class CreateProject(Command):
             nargs="?",
             help="Destination directory inside which to create the project",
         )
+        parser.add_argument(
+            "--template",
+            help="The path or URL to load the template from.",
+            default=self.default_template_path,
+        )
 
-    def run(self, project_name=None, dest_dir=None):
+    def get_default_template_path(self):
+        import wagtail
+
+        wagtail_path = os.path.dirname(wagtail.__file__)
+        default_template_path = os.path.join(wagtail_path, "project_template")
+        return default_template_path
+
+    def run(self, project_name=None, dest_dir=None, **options):
         # Make sure given name is not already in use by another python package/module.
         try:
             __import__(project_name)
@@ -79,24 +94,20 @@ class CreateProject(Command):
                 "name. Please try another name." % project_name
             )
 
-        print(
-            "Creating a Wagtail project called %(project_name)s"
-            % {"project_name": project_name}
-        )  # noqa
+        template_name = options["template"]
+        if template_name == self.default_template_path:
+            template_name = "the default Wagtail template"
 
-        # Create the project from the Wagtail template using startapp
-
-        # First find the path to Wagtail
-        import wagtail
-
-        wagtail_path = os.path.dirname(wagtail.__file__)
-        template_path = os.path.join(wagtail_path, "project_template")
+        print(  # noqa: T201
+            "Creating a Wagtail project called %(project_name)s using %(template_name)s"
+            % {"project_name": project_name, "template_name": template_name}
+        )
 
         # Call django-admin startproject
         utility_args = [
             "django-admin",
             "startproject",
-            "--template=" + template_path,
+            "--template=" + options["template"],
             "--ext=html,rst",
             "--name=Dockerfile",
             project_name,
@@ -108,10 +119,10 @@ class CreateProject(Command):
         utility = ManagementUtility(utility_args)
         utility.execute()
 
-        print(
+        print(  # noqa: T201
             "Success! %(project_name)s has been created"
             % {"project_name": project_name}
-        )  # noqa
+        )
 
 
 class UpdateModulePaths(Command):
@@ -239,16 +250,16 @@ class UpdateModulePaths(Command):
                     else:  # actually update
                         change_count = self._rewrite_file(path)
                     if change_count:
-                        print(
+                        print(  # noqa: T201
                             "%s - %d change%s"
                             % (relative_path, change_count, pluralize(change_count))
-                        )  # NOQA
+                        )
 
                 if change_count:
                     changed_file_count += 1
 
         if diff or list_files:
-            print(
+            print(  # noqa: T201
                 "\nChecked %d .py file%s, %d file%s to update."
                 % (
                     checked_file_count,
@@ -256,9 +267,9 @@ class UpdateModulePaths(Command):
                     changed_file_count,
                     pluralize(changed_file_count),
                 )
-            )  # NOQA
+            )
         else:
-            print(
+            print(  # noqa: T201
                 "\nChecked %d .py file%s, %d file%s updated."
                 % (
                     checked_file_count,
@@ -266,7 +277,7 @@ class UpdateModulePaths(Command):
                     changed_file_count,
                     pluralize(changed_file_count),
                 )
-            )  # NOQA
+            )
 
     def _rewrite_line(self, line):
         for pattern, repl in self.REPLACEMENTS:
@@ -353,7 +364,14 @@ class UpdateModulePaths(Command):
                     found_unicode_error = True
                 else:
                     line = self._rewrite_line(original_line)
-                    sys.stdout.write(line.encode("utf-8"))
+                    if CURRENT_PYTHON >= (3, 8):
+                        sys.stdout.write(line.encode("utf-8"))
+                    else:
+                        # Python 3.7 opens the output stream in text mode, so write the line back as
+                        # text rather than bytes:
+                        # https://github.com/python/cpython/commit/be6dbfb43b89989ccc83fbc4c5234f50f44c47ad
+                        sys.stdout.write(line)
+
                     if line != original_line:
                         change_count += 1
 
@@ -374,7 +392,7 @@ class Version(Command):
 
         version = wagtail.get_version(wagtail.VERSION)
 
-        print("You are using Wagtail %(version)s" % {"version": version})
+        print(f"You are using Wagtail {version}")  # noqa: T201
 
 
 COMMANDS = {
@@ -389,17 +407,17 @@ def prog_name():
 
 
 def help_index():
-    print(
+    print(  # noqa: T201
         "Type '%s help <subcommand>' for help on a specific subcommand.\n" % prog_name()
-    )  # NOQA
-    print("Available subcommands:\n")  # NOQA
+    )
+    print("Available subcommands:\n")  # NOQA: T201
     for name, cmd in sorted(COMMANDS.items()):
-        print("    %s%s" % (name.ljust(20), cmd.description))  # NOQA
+        print(f"    {name.ljust(20)}{cmd.description}")  # NOQA: T201
 
 
 def unknown_command(command):
-    print("Unknown command: '%s'" % command)  # NOQA
-    print("Type '%s help' for usage." % prog_name())  # NOQA
+    print("Unknown command: '%s'" % command)  # NOQA: T201
+    print("Type '%s help' for usage." % prog_name())  # NOQA: T201
     sys.exit(1)
 
 

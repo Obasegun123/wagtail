@@ -4,7 +4,7 @@
   --width: #{$menu-width};
 
   visibility: hidden;
-  transform: translateX(-100%);
+  transform: translateX(calc(var(--w-direction-factor) * -100%));
   position: fixed;
   height: 100vh;
   padding: 0;
@@ -13,21 +13,20 @@
   z-index: 400;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 
   @include media-breakpoint-up(sm) {
     z-index: var(--z-index);
     width: var(--width);
   }
 
-  @media (forced-colors: $media-forced-colours) {
+  @media (forced-colors: active) {
     border-inline-start: 1px solid transparent;
     border-inline-end: 1px solid transparent;
   }
 
   &--visible {
     visibility: visible;
-    box-shadow: 2px 0 2px rgba(0, 0, 0, 0.35);
+    box-shadow: 2px 0 2px theme('colors.black-35');
   }
 
   // Showing the submenu options panel in mobile mode

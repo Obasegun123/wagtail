@@ -3,16 +3,37 @@
 # mahulst, 2022
 # Rob Moorman <rob@moori.nl>, 2022
 # benny_AT_it_digin.com <benny@it-digin.com>, 2022
+# Coen van der Kamp <cvanderkamp@gmail.com>, 2022
 # Loic Teixeira, 2022
-# Thijs Kramer <thijskramer@gmail.com>, 2022
+# Thijs Kramer <thijskramer@gmail.com>, 2023
+# Storm Heg <storm@stormbase.digital>, 2023
 #
 msgid ""
 msgstr ""
-"Last-Translator: Thijs Kramer <thijskramer@gmail.com>, 2022\n"
-"Language-Team: Dutch (https://www.transifex.com/torchbox/teams/8009/nl/)\n"
+"Last-Translator: Storm Heg <storm@stormbase.digital>, 2023\n"
+"Language-Team: Dutch (https://app.transifex.com/torchbox/teams/8009/nl/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "(%(number)s new items in this menu)"
+msgstr "(%(number)s nieuwe items in dit menu)"
+
+msgid "(1 new item in this menu)"
+msgstr "(1 nieuw item in dit menu)"
+
+msgid "(New)"
+msgstr "(Nieuw)"
+
+msgid "%(num)s error"
+msgid_plural "%(num)s errors"
+msgstr[0] "%(num)s foutmelding"
+msgstr[1] "%(num)s foutmeldingen"
+
+msgid "%(num)s pixel"
+msgid_plural "%(num)s pixels"
+msgstr[0] "%(num)s pixel"
+msgstr[1] "%(num)s pixels"
 
 msgid "Add a comment"
 msgstr "Voeg opmerking toe"
@@ -23,14 +44,23 @@ msgstr "Alt tekst"
 msgid "Are you sure?"
 msgstr "Weet je het zeker?"
 
+msgid "Blocks"
+msgstr "Blokken"
+
 msgid "Broken link"
 msgstr "Defecte link"
 
 msgid "Cancel"
 msgstr "Annuleren"
 
+msgid "Character count:"
+msgstr "Aantal tekens:"
+
 msgid "Close"
 msgstr "Sluit"
+
+msgid "Collapse all"
+msgstr "Alles samenvouwen"
 
 msgid "Comment"
 msgstr "Opmerking"
@@ -53,17 +83,32 @@ msgstr "Bezig met verwijderen"
 msgid "Edit"
 msgstr "Bewerk"
 
-msgid "Edit '{title}'"
-msgstr "Wijzig '{title}'"
+msgid "Edit '%(title)s'"
+msgstr "Wijzig '%(title)s'"
 
 msgid "Edit your account"
 msgstr "Wijzig je account"
+
+msgid "Enter your comments..."
+msgstr "Typ commentaar... "
+
+msgid "Enter your reply..."
+msgstr "Typ je reactie... "
+
+msgid "Error while sending preview data."
+msgstr "Fout tijdens het versturen van voorvertoning-data"
+
+msgid "Expand all"
+msgstr "Alles uitvouwen"
 
 msgid "Focus comment"
 msgstr "Focus opmerking"
 
 msgid "Horizontal line"
 msgstr "Horizontale lijn"
+
+msgid "Insert a block"
+msgstr "Blok invoegen"
 
 msgid "Line break"
 msgstr "Regel onderbreking"
@@ -92,8 +137,8 @@ msgstr "Paginaverkenner"
 msgid "Pages"
 msgstr "Pagina's"
 
-msgid "Redo"
-msgstr "Opnieuw doen"
+msgid "Pin toolbar"
+msgstr "Toolbar vastzetten"
 
 msgid "Reload saved content"
 msgstr "Herlaad opgeslagen inhoud"
@@ -103,6 +148,11 @@ msgstr "Herlaad de pagina"
 
 msgid "Reply"
 msgstr "Reageer"
+
+msgid ""
+"Report this error to your website administrator with the following "
+"information:"
+msgstr "Meld deze fout aan je websitebeheerder, en vermeld het volgende:"
 
 msgid "Resolve"
 msgstr "Markeer als opgelost"
@@ -131,6 +181,9 @@ msgstr "Bezig met opslaan..."
 msgid "Search"
 msgstr "Zoeken"
 
+msgid "Search options…"
+msgstr "Zoek opties..."
+
 msgid "See all"
 msgstr "Toon"
 
@@ -152,17 +205,23 @@ msgstr ""
 "De editor is zojuist vastgelopen. De inhoud is teruggezet naar de laatst "
 "opgeslagen versie."
 
-msgid "Toggle sidebar"
+msgid "This field is required."
+msgstr "Dit veld is verplicht."
+
+msgid "Toggle side panel"
 msgstr "Toon/verberg zijbalk"
 
-msgid "Undo"
-msgstr "Ongedaan maken"
+msgid "Toggle sidebar"
+msgstr "Toon/verberg zijbalk"
 
 msgid "Unfocus comment"
 msgstr "Ontfocus opmerking"
 
-msgid "View child pages of '{title}'"
-msgstr "Toon onderliggende pagina's van '{title}'"
+msgid "Unpin toolbar"
+msgstr "Toolbar losmaken"
 
-msgid "Write here…"
-msgstr "Schrijf hier..."
+msgid "View child pages of '%(title)s'"
+msgstr "Toon onderliggende pagina's van '%(title)s'"
+
+msgid "Write something or type ‘/’ to insert a block"
+msgstr "Schrijf iets of typ ‘/’ om een nieuw blok in te voegen"

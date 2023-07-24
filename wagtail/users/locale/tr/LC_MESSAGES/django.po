@@ -4,18 +4,20 @@
 #
 # Translators:
 # Basitlik İyidir, 2020
+# Basitlik İyidir, 2020
 # Cihad GÜNDOĞDU <cihadgundogdu@gmail.com>, 2016
 # Matt Westcott <matthew@torchbox.com>, 2020
+# Py Data Geek <pydatageek@gmail.com>, 2019
 # Py Data Geek <pydatageek@gmail.com>, 2019
 # Ragıp Ünal <ragip@ragipunal.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 11:54+0000\n"
-"Last-Translator: Basitlik İyidir, 2020\n"
-"Language-Team: Turkish (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Ragıp Ünal <ragip@ragipunal.com>, 2016\n"
+"Language-Team: Turkish (http://app.transifex.com/torchbox/wagtail/language/"
 "tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,10 +27,6 @@ msgstr ""
 
 msgid "Wagtail users"
 msgstr "Wagtail kullanıcılar"
-
-msgid "Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."
-msgstr ""
-"Gerekli. 30 karakter veya daha az. Sadece harfler, sayılar ve @/./+/-/_."
 
 msgid "This value may contain only letters, numbers and @/./+/-/_ characters."
 msgstr "Bu değer sadece harf, sayı ya da @/./+/-/_ karakterlerinden oluşur."
@@ -142,9 +140,6 @@ msgstr "Düzenleniyor"
 msgid "Save"
 msgstr "Kaydet"
 
-msgid "Permissions"
-msgstr "İzinler"
-
 msgid "Object permissions"
 msgstr "Nesne izinleri"
 
@@ -156,6 +151,15 @@ msgstr "Ekle"
 
 msgid "Change"
 msgstr "Değiştir"
+
+msgid "Publish"
+msgstr "Yayınla"
+
+msgid "Lock"
+msgstr "Kilitle"
+
+msgid "Unlock"
+msgstr "Kilidini aç"
 
 msgid "Other permissions"
 msgstr "Diğer izinler"
@@ -205,9 +209,6 @@ msgstr "Kullanıcı ekle"
 msgid "Username"
 msgstr "Kullanıcı adı"
 
-msgid "Level"
-msgstr "Seviye"
-
 msgid "Status"
 msgstr "Durum"
 
@@ -224,10 +225,6 @@ msgid "Inactive"
 msgstr "Pasif"
 
 #, python-format
-msgid "%(time_period)s ago"
-msgstr "%(time_period)s önce"
-
-#, python-format
 msgid "Sorry, no users match \"<em>%(query_string)s</em>\""
 msgstr "Üzgünüm, \"<em>%(query_string)s</em>\" ile eşleşen kullanıcı yok"
 
@@ -240,44 +237,38 @@ msgstr "Bir grup ekle"
 msgid "Search groups"
 msgstr "Gruplarda ara"
 
-#, python-brace-format
-msgid "Group '{0}' created."
-msgstr "'{0}' grubu oluşturuldu."
+#, python-format
+msgid "Group '%(object)s' created."
+msgstr "'%(object)s' grubu oluşturuldu."
 
-#, python-brace-format
-msgid "Group '{0}' updated."
-msgstr "'{0}' grubu güncellendi."
+#, python-format
+msgid "Group '%(object)s' updated."
+msgstr "'%(object)s' grubu güncellendi."
 
 msgid "The group could not be saved due to errors."
 msgstr "Hata nedeniyle grup kaydedilemedi."
 
-#, python-brace-format
-msgid "Group '{0}' deleted."
-msgstr "'{0}' grubu silindi."
+#, python-format
+msgid "Group '%(object)s' deleted."
+msgstr "'%(object)s' grubu silindi."
 
-msgid "Search users"
-msgstr "Kullanıcı ara"
-
-#, python-brace-format
-msgid "User '{0}' created."
-msgstr "'{0}' kullanıcısı oluşturuldu."
-
-msgid "Edit"
-msgstr "Düzenle"
-
-msgid "The user could not be created due to errors."
-msgstr "Hata nedeniyle kullanıcı oluşturulamadı."
-
-#, python-brace-format
-msgid "User '{0}' updated."
-msgstr "'{0}' kullanıcısı güncellendi."
+#, python-format
+msgid "User '%(object)s' updated."
+msgstr "'%(object)s' kullanıcısı güncellendi."
 
 msgid "The user could not be saved due to errors."
 msgstr "Hata nedeniyle kullanıcı kaydedilemedi."
 
-#, python-brace-format
-msgid "User '{0}' deleted."
-msgstr "'{0}' kullanıcısı silindi."
+#, python-format
+msgid "Editing %(object)s"
+msgstr "%(object)s düzenleniyor"
+
+#, python-format
+msgid "User '%(object)s' deleted."
+msgstr "'%(object)s' kullanıcısı silindi."
+
+msgid "Edit"
+msgstr "Düzenle"
 
 msgid "Edit this user"
 msgstr "Kullanıcıyı düzenle"

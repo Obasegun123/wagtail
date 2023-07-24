@@ -64,15 +64,15 @@ Use bullets for unordered lists, numbers when ordered. Prefer dashes `-` for bul
 
 ### Inline styles
 
-Use **bold** and _italic_ sparingly, inline `code` when relevant.
+Use **bold** and _italic_ sparingly and inline `code` when relevant.
 
 ```md
-Use **bold** and _italic_ sparingly, inline `code` when relevant.
+Use **bold** and _italic_ sparingly and inline `code` when relevant.
 ```
 
 ### Code blocks
 
-Make sure to include the correct language code for syntax highlighting, and to format your code according to our coding guidelines. Frequently used: `python`, `css`, `html`, `html+django`, `javascript`, `console`.
+Make sure to include the correct language code for syntax highlighting, and to format your code according to our coding guidelines. Frequently used: `python`, `css`, `html`, `html+django`, `javascript`, `sh`.
 
     ```python
     INSTALLED_APPS = [
@@ -81,6 +81,62 @@ Make sure to include the correct language code for syntax highlighting, and to f
         ...
     ]
     ```
+
+<details>
+
+<summary>Rendered output</summary>
+
+```python
+INSTALLED_APPS = [
+    ...
+    "wagtail",
+    ...
+]
+```
+
+</details>
+
+#### When using console (terminal) code blocks
+
+```{note}
+`$` or `>` prompts are not needed, this makes it harder to copy and paste the lines and can be difficult to consistently add in every single code snippet.
+```
+
+Use `sh` as it has better support for comment and code syntax highlighting in MyST's parser, plus is more compatible with GitHub and VSCode.
+
+    ```sh
+    # some comment
+    some command
+    ```
+
+<details>
+
+<summary>Rendered output</summary>
+
+```sh
+# some comment
+some command
+```
+
+</details>
+
+Use `doscon` (DOS Console) only if explicitly calling out Windows commands alongside their bash equivalent.
+
+    ```doscon
+    # some comment
+    some command
+    ```
+
+<details>
+
+<summary>Rendered output</summary>
+
+```doscon
+# some comment
+some command
+```
+
+</details>
 
 ### Links
 
@@ -108,7 +164,7 @@ A [link to a reference](register_reports_menu_item).
 
 #### Reference links
 
-Reference links (links to a target within a page) rely on the page having a reference created, this can be added as follows:
+Reference links (links to a target within a page) rely on the page having a reference created. Each reference must have a unique name and should use the `lower_snake_case` format. A reference can be added as follows:
 
 ```md
 (my_awesome_section)=
@@ -168,6 +224,12 @@ Warnings can be scary.
 
 </details>
 
+These call-outs do not support titles, so be careful not to include them, titles will just be moved to the body of the call-out.
+
+    ```{note} Title's here will not work correctly
+    Notes can provide complementary information.
+    ```
+
 ### Images
 
 Images are hard to keep up-to-date as documentation evolves, but can be worthwhile nonetheless. Here are guidelines when adding images:
@@ -177,20 +239,20 @@ Images are hard to keep up-to-date as documentation evolves, but can be worthwhi
 -   Use absolute paths for image files so they are more portable.
 
 ```md
-![Screenshot of the workflow editing interface, with fields to change the workflow name, tasks, and assigned pages](/_static/images/screen44_workflow_edit.png)
+![The TableBlock component in StreamField, with row header, column header, caption fields - and then the editable table](/_static/images/screen40_table_block.png)
 ```
 
 <details>
 
 <summary>Rendered output</summary>
 
-![Screenshot of the workflow editing interface, with fields to change the workflow name, tasks, and assigned pages](/_static/images/screen44_workflow_edit.png)
+![The TableBlock component in StreamField, with row header, column header, caption fields - and then the editable table](/_static/images/screen40_table_block.png)
 
 </details>
 
 ### Autodoc
 
-With its [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) feature, Sphinx supports writing documentation in Python docstrings for subsequent integration in the project’s documentation pages. This is a very powerful feature which we highly recommend using to document Wagtail’s APIs.
+With its [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) feature, Sphinx supports writing documentation in Python docstrings for subsequent integration in the project’s documentation pages. This is a very powerful feature that we highly recommend using to document Wagtail’s APIs.
 
     ```{eval-rst}
     .. module:: wagtail.coreutils
@@ -305,7 +367,7 @@ There is some formatting in the documentation which is technically supported, bu
 
 ### Call-outs
 
-We only use `{note}` and `{warning}` call-outs. Avoid `{important}`, `{topic}`, and `{tip}`. If you find one of these, please replace it with `{note}`.
+We only use `{note}` and `{warning}` call-outs. Avoid `{admonition}`, `{important}`, `{topic}`, and `{tip}`. If you find one of these, please replace it with `{note}`.
 
 ### Glossary
 

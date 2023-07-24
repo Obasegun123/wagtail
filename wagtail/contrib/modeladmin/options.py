@@ -1,5 +1,3 @@
-from warnings import warn
-
 from django.conf import settings
 from django.contrib.admin import site as default_django_admin_site
 from django.contrib.auth.models import Permission
@@ -12,10 +10,9 @@ from django.utils.safestring import mark_safe
 from wagtail import hooks
 from wagtail.admin.admin_url_finder import register_admin_url_finder
 from wagtail.admin.checks import check_panels_in_model
+from wagtail.admin.menu import Menu
 from wagtail.admin.panels import ObjectList, extract_panel_definitions_from_model_class
-from wagtail.coreutils import accepts_kwarg
-from wagtail.models import Page, TranslatableMixin
-from wagtail.utils.deprecation import RemovedInWagtail50Warning
+from wagtail.models import Page, ReferenceIndex, TranslatableMixin
 
 from .helpers import (
     AdminURLHelper,
@@ -27,8 +24,8 @@ from .helpers import (
     PagePermissionHelper,
     PermissionHelper,
 )
-from .menus import GroupMenuItem, ModelAdminMenuItem, SubMenu
-from .mixins import ThumbnailMixin  # NOQA
+from .menus import GroupMenuItem, ModelAdminMenuItem
+from .mixins import ThumbnailMixin  # NOQA: F401
 from .views import (
     ChooseParentView,
     CreateView,
@@ -47,6 +44,7 @@ class WagtailRegisterable:
     """
 
     add_to_settings_menu = False
+    add_to_admin_menu = True
     exclude_from_explorer = False
 
     def register_with_wagtail(self):
@@ -58,15 +56,18 @@ class WagtailRegisterable:
         def register_admin_urls():
             return self.get_admin_urls_for_registration()
 
-        menu_hook = (
-            "register_settings_menu_item"
-            if self.add_to_settings_menu
-            else "register_admin_menu_item"
-        )
+        if self.add_to_settings_menu:
+            menu_hook = "register_settings_menu_item"
+        elif self.add_to_admin_menu:
+            menu_hook = "register_admin_menu_item"
+        else:
+            menu_hook = None
 
-        @hooks.register(menu_hook)
-        def register_admin_menu_item():
-            return self.get_menu_item()
+        if menu_hook:
+
+            @hooks.register(menu_hook)
+            def register_admin_menu_item():
+                return self.get_menu_item()
 
         # Overriding the explorer page queryset is a somewhat 'niche' / experimental
         # operation, so only attach that hook if we specifically opt into it
@@ -81,7 +82,12 @@ class WagtailRegisterable:
 
         self.register_admin_url_finders()
 
+        self.register_indexing()
+
     def register_admin_url_finders(self):
+        pass
+
+    def register_indexing(self):
         pass
 
     def will_modify_explorer_page_queryset(self):
@@ -99,6 +105,7 @@ class ModelAdmin(WagtailRegisterable):
 
     model = None
     menu_label = None
+    menu_item_name = None
     menu_icon = None
     menu_order = None
     list_display = ("__str__",)
@@ -160,17 +167,7 @@ class ModelAdmin(WagtailRegisterable):
             self.model, self.inspect_view_enabled
         )
         url_helper_class = self.get_url_helper_class()
-        if accepts_kwarg(url_helper_class, "base_url_path"):
-            self.url_helper = url_helper_class(
-                self.model, base_url_path=self.base_url_path
-            )
-        else:
-            warn(
-                "%s.__init__ needs to be updated to accept a `base_url_path` keyword argument"
-                % url_helper_class.__name__,
-                category=RemovedInWagtail50Warning,
-            )
-            self.url_helper = url_helper_class(self.model)
+        self.url_helper = url_helper_class(self.model, base_url_path=self.base_url_path)
 
         # Needed to support RelatedFieldListFilter
         # See: https://github.com/wagtail/wagtail/issues/5105
@@ -210,6 +207,12 @@ class ModelAdmin(WagtailRegisterable):
         Returns the label text to be used for the menu item.
         """
         return self.menu_label or self.opts.verbose_name_plural.title()
+
+    def get_menu_item_name(self):
+        """
+        Returns the name to be used for the menu item.
+        """
+        return self.menu_item_name
 
     def get_menu_icon(self):
         """
@@ -325,7 +328,7 @@ class ModelAdmin(WagtailRegisterable):
     def get_extra_attrs_for_row(self, obj, context):
         """
         Return a dictionary of HTML attributes to be added to the `<tr>`
-        element for the suppled `obj` when rendering the results table in
+        element for the supplied `obj` when rendering the results table in
         `index_view`. `data-object-pk` is already added by default.
         """
         return {}
@@ -356,18 +359,14 @@ class ModelAdmin(WagtailRegisterable):
         """
         return self.prepopulated_fields or {}
 
-    # RemovedInWagtail50Warning - remove request arg, included here so that old-style super()
-    # calls will still work
-    def get_form_fields_exclude(self, request=None):
+    def get_form_fields_exclude(self):
         """
         Returns a list or tuple of fields names to be excluded from Create/Edit pages.
         """
         return self.form_fields_exclude
 
     def get_index_view_extra_css(self):
-        css = ["wagtailmodeladmin/css/index.css"]
-        css.extend(self.index_view_extra_css)
-        return css
+        return self.index_view_extra_css
 
     def get_index_view_extra_js(self):
         return self.index_view_extra_js
@@ -474,9 +473,7 @@ class ModelAdmin(WagtailRegisterable):
         view_class = self.history_view_class
         return view_class.as_view(**kwargs)(request)
 
-    # RemovedInWagtail50Warning - remove instance and request args, included here so that
-    # old-style super() calls will still work
-    def get_edit_handler(self, instance=None, request=None):
+    def get_edit_handler(self):
         """
         Returns the appropriate edit_handler for this modeladmin class.
         edit_handlers can be defined either on the model itself or on the
@@ -494,16 +491,7 @@ class ModelAdmin(WagtailRegisterable):
             panels = self.model.panels
             edit_handler = ObjectList(panels)
         else:
-            try:
-                fields_to_exclude = self.get_form_fields_exclude()
-            except TypeError:
-                fields_to_exclude = self.get_form_fields_exclude(request=None)
-                warn(
-                    "%s.get_form_fields_exclude should not accept a request argument"
-                    % type(self).__name__,
-                    category=RemovedInWagtail50Warning,
-                )
-
+            fields_to_exclude = self.get_form_fields_exclude()
             panels = extract_panel_definitions_from_model_class(
                 self.model, exclude=fields_to_exclude
             )
@@ -519,9 +507,9 @@ class ModelAdmin(WagtailRegisterable):
         app_label = self.opts.app_label.lower()
         model_name = self.opts.model_name.lower()
         return [
-            "modeladmin/%s/%s/%s.html" % (app_label, model_name, action),
-            "modeladmin/%s/%s.html" % (app_label, action),
-            "modeladmin/%s.html" % (action,),
+            f"modeladmin/{app_label}/{model_name}/{action}.html",
+            f"modeladmin/{app_label}/{action}.html",
+            f"modeladmin/{action}.html",
         ]
 
     def get_index_template(self):
@@ -589,7 +577,7 @@ class ModelAdmin(WagtailRegisterable):
         """
         Utilised by Wagtail's 'register_menu_item' hook to create a menu item
         to access the listing view, or can be called by ModelAdminGroup
-        to create a SubMenu
+        to create a submenu
         """
         return ModelAdminMenuItem(self, order or self.get_menu_order())
 
@@ -686,16 +674,20 @@ class ModelAdmin(WagtailRegisterable):
             )
             register_admin_url_finder(self.model, finder_class)
 
+    def register_indexing(self):
+        ReferenceIndex.register_model(self.model)
+
 
 class ModelAdminGroup(WagtailRegisterable):
     """
     Acts as a container for grouping together mutltiple PageModelAdmin and
-    SnippetModelAdmin instances. Creates a menu item with a SubMenu for
+    SnippetModelAdmin instances. Creates a menu item with a submenu for
     accessing the listing pages of those instances
     """
 
     items = ()
     menu_label = None
+    menu_item_name = None
     menu_order = None
     menu_icon = None
 
@@ -712,6 +704,9 @@ class ModelAdminGroup(WagtailRegisterable):
     def get_menu_label(self):
         return self.menu_label or self.get_app_label_from_subitems()
 
+    def get_menu_item_name(self):
+        return self.menu_item_name
+
     def get_app_label_from_subitems(self):
         for instance in self.modeladmin_instances:
             return instance.opts.app_label.title()
@@ -726,11 +721,11 @@ class ModelAdminGroup(WagtailRegisterable):
     def get_menu_item(self):
         """
         Utilised by Wagtail's 'register_menu_item' hook to create a menu
-        for this group with a SubMenu linking to listing pages for any
+        for this group with a submenu linking to listing pages for any
         associated ModelAdmin instances
         """
         if self.modeladmin_instances:
-            submenu = SubMenu(self.get_submenu_items())
+            submenu = Menu(items=self.get_submenu_items())
             return GroupMenuItem(self, self.get_menu_order(), submenu)
 
     def get_submenu_items(self):
@@ -788,6 +783,10 @@ class ModelAdminGroup(WagtailRegisterable):
     def register_admin_url_finders(self):
         for instance in self.modeladmin_instances:
             instance.register_admin_url_finders()
+
+    def register_indexing(self):
+        for instance in self.modeladmin_instances:
+            instance.register_indexing()
 
 
 def modeladmin_register(modeladmin_class):

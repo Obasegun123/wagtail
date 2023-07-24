@@ -1,3 +1,4 @@
+from django import VERSION as DJANGO_VERSION
 from django.contrib.auth.models import Group, Permission
 from django.test import TestCase
 
@@ -6,7 +7,7 @@ from wagtail.test.testapp.models import BusinessIndex, EventCategory, EventPage
 from wagtail.test.utils import WagtailTestUtils
 
 
-class TestIndexView(TestCase, WagtailTestUtils):
+class TestIndexView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -38,6 +39,25 @@ class TestIndexView(TestCase, WagtailTestUtils):
         for eventpage in response.context["object_list"]:
             self.assertEqual(eventpage.audience, "public")
 
+    def test_filter_multivalue(self):
+        # Filter by audience
+        response = self.get(audience__exact=["public", "private"])
+
+        self.assertEqual(response.status_code, 200)
+
+        if DJANGO_VERSION >= (5, 0):
+            # Multi-valued query parameters are supported as of
+            # https://github.com/django/django/pull/16621
+            # Should return both public and private events
+            self.assertEqual(response.context["result_count"], 4)
+            for eventpage in response.context["object_list"]:
+                self.assertIn(eventpage.audience, ["public", "private"])
+        else:
+            # Should use the last value, thus only return private events
+            self.assertEqual(response.context["result_count"], 1)
+            for eventpage in response.context["object_list"]:
+                self.assertEqual(eventpage.audience, "private")
+
     def test_search(self):
         response = self.get(q="Someone")
 
@@ -62,8 +82,31 @@ class TestIndexView(TestCase, WagtailTestUtils):
         root_page = Page.objects.get(depth=1)
         self.assertNotIn(root_page, response.context["paginator"].object_list)
 
+    def test_page_buttons_are_shown(self):
+        response = self.get()
+        self.assertContains(
+            response,
+            '<a href="/admin/tests/eventpage/inspect/12/" class="button button-secondary button-small" title="Inspect this event page">Inspect</a>',
+        )
+        self.assertContains(
+            response,
+            '<a href="/admin/pages/12/edit/?next=/admin/tests/eventpage/" class="button button-secondary button-small" title="Edit this event page">Edit</a>',
+        )
+        self.assertContains(
+            response,
+            '<a href="/admin/pages/12/copy/?next=/admin/tests/eventpage/" class="button button-small" title="Copy this event page">Copy</a>',
+        )
+        self.assertContains(
+            response,
+            '<a href="/admin/pages/12/unpublish/?next=/admin/tests/eventpage/" class="button button-small" title="Unpublish this event page">Unpublish</a>',
+        )
+        self.assertContains(
+            response,
+            '<a href="/admin/pages/12/delete/?next=/admin/tests/eventpage/" class="button no button-small" title="Delete this event page">Delete</a>',
+        )
 
-class TestExcludeFromExplorer(TestCase, WagtailTestUtils):
+
+class TestExcludeFromExplorer(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -84,7 +127,7 @@ class TestExcludeFromExplorer(TestCase, WagtailTestUtils):
         self.assertContains(response, "Claim your free present!")
 
 
-class TestCreateView(TestCase, WagtailTestUtils):
+class TestCreateView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -106,12 +149,10 @@ class TestCreateView(TestCase, WagtailTestUtils):
 
         expected_path = "/admin/pages/add/tests/businesschild/%d/" % business_index.pk
         expected_next_path = "/admin/tests/businesschild/"
-        self.assertRedirects(
-            response, "%s?next=%s" % (expected_path, expected_next_path)
-        )
+        self.assertRedirects(response, f"{expected_path}?next={expected_next_path}")
 
 
-class TestInspectView(TestCase, WagtailTestUtils):
+class TestInspectView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json", "modeladmintest_test.json"]
 
     def setUp(self):
@@ -176,8 +217,23 @@ class TestInspectView(TestCase, WagtailTestUtils):
         self.assertContains(response, "Birth information")
         self.assertNotContains(response, "author_birth_string")
 
+    def test_back_to_listing(self):
+        response = self.client.get("/admin/modeladmintest/author/inspect/1/")
+        # check that back to listing link exists
+        expected = """
+            <p class="back">
+                    <a href="/admin/modeladmintest/author/">
+                        <svg class="icon icon-arrow-left default" aria-hidden="true">
+                            <use href="#icon-arrow-left"></use>
+                        </svg>
+                        Back to author list
+                    </a>
+            </p>
+        """
+        self.assertContains(response, expected, html=True)
 
-class TestEditView(TestCase, WagtailTestUtils):
+
+class TestEditView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -191,9 +247,7 @@ class TestEditView(TestCase, WagtailTestUtils):
 
         expected_path = "/admin/pages/4/edit/"
         expected_next_path = "/admin/tests/eventpage/"
-        self.assertRedirects(
-            response, "%s?next=%s" % (expected_path, expected_next_path)
-        )
+        self.assertRedirects(response, f"{expected_path}?next={expected_next_path}")
 
     def test_non_existent(self):
         response = self.get(100)
@@ -203,11 +257,11 @@ class TestEditView(TestCase, WagtailTestUtils):
     def test_using_core_page(self):
         # The core page is slightly different to other pages, so exclude it
         root_page = Page.objects.get(depth=1)
-        response = self.client.get("/admin/wagtailcore/page/{}/".format(root_page.id))
+        response = self.client.get(f"/admin/wagtailcore/page/{root_page.id}/")
         self.assertEqual(response.status_code, 404)
 
 
-class TestDeleteView(TestCase, WagtailTestUtils):
+class TestDeleteView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -221,12 +275,10 @@ class TestDeleteView(TestCase, WagtailTestUtils):
 
         expected_path = "/admin/pages/4/delete/"
         expected_next_path = "/admin/tests/eventpage/"
-        self.assertRedirects(
-            response, "%s?next=%s" % (expected_path, expected_next_path)
-        )
+        self.assertRedirects(response, f"{expected_path}?next={expected_next_path}")
 
 
-class TestChooseParentView(TestCase, WagtailTestUtils):
+class TestChooseParentView(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -252,12 +304,40 @@ class TestChooseParentView(TestCase, WagtailTestUtils):
 
         expected_path = "/admin/pages/add/tests/eventpage/2/"
         expected_next_path = "/admin/tests/eventpage/"
-        self.assertRedirects(
-            response, "%s?next=%s" % (expected_path, expected_next_path)
+        self.assertRedirects(response, f"{expected_path}?next={expected_next_path}")
+
+    def test_back_to_listing(self):
+        response = self.client.post("/admin/tests/eventpage/choose_parent/")
+        # check that back to listing link exists
+        expected = """
+            <p class="back">
+                    <a href="/admin/tests/eventpage/">
+                        <svg class="icon icon-arrow-left default" aria-hidden="true">
+                            <use href="#icon-arrow-left"></use>
+                        </svg>
+                        Back to event page list
+                    </a>
+            </p>
+        """
+        self.assertContains(response, expected, html=True)
+
+    def test_page_title_html_escaping(self):
+        homepage = Page.objects.get(url_path="/home/")
+        business_index = BusinessIndex(
+            title="Title with <script>alert('XSS')</script>",
+        )
+        homepage.add_child(instance=business_index)
+
+        response = self.client.get("/admin/tests/businesschild/choose_parent/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Title with <script>alert('XSS')</script>")
+        self.assertContains(
+            response, "Title with &lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;"
         )
 
 
-class TestChooseParentViewForNonSuperuser(TestCase, WagtailTestUtils):
+class TestChooseParentViewForNonSuperuser(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -304,7 +384,7 @@ class TestChooseParentViewForNonSuperuser(TestCase, WagtailTestUtils):
         self.assertNotContains(response, "Private Business Index")
 
 
-class TestEditorAccess(TestCase, WagtailTestUtils):
+class TestEditorAccess(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -319,7 +399,7 @@ class TestEditorAccess(TestCase, WagtailTestUtils):
         self.assertRedirects(response, "/admin/")
 
 
-class TestModeratorAccess(TestCase, WagtailTestUtils):
+class TestModeratorAccess(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):
@@ -336,82 +416,7 @@ class TestModeratorAccess(TestCase, WagtailTestUtils):
         )
 
 
-class TestHeaderBreadcrumbs(TestCase, WagtailTestUtils):
-    """
-    Test that the <ul class="breadcrumbs">... is inserted within the
-    <header> tag for potential future regression.
-    See https://github.com/wagtail/wagtail/issues/3889
-    """
-
-    fixtures = ["test_specific.json"]
-
-    def setUp(self):
-        self.login()
-
-    def test_choose_parent_page(self):
-        response = self.client.get("/admin/tests/eventpage/choose_parent/")
-
-        # check correct templates were used
-        self.assertTemplateUsed(response, "modeladmin/includes/breadcrumb.html")
-        self.assertTemplateUsed(response, "wagtailadmin/shared/header.html")
-
-        # check that home breadcrumb link exists
-        expected = """
-            <li class="breadcrumb-item home">
-                <a href="/admin/" class="breadcrumb-link">
-                    <svg class="icon icon-home home_icon" aria-hidden="true">
-                        <use href="#icon-home"></use>
-                    </svg>
-                    <span class="visuallyhidden">Home</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
-                </a>
-            </li>
-        """
-        self.assertContains(response, expected, html=True)
-
-        # check that the breadcrumbs are after the header opening tag
-        content_str = str(response.content)
-        position_of_header = content_str.index(
-            "<header"
-        )  # intentionally not closing tag
-        position_of_breadcrumbs = content_str.index('<ul class="breadcrumb">')
-        self.assertLess(position_of_header, position_of_breadcrumbs)
-
-    def test_choose_inspect_page(self):
-        response = self.client.get("/admin/tests/eventpage/inspect/4/")
-
-        # check correct templates were used
-        self.assertTemplateUsed(response, "modeladmin/includes/breadcrumb.html")
-        self.assertTemplateUsed(response, "wagtailadmin/shared/header.html")
-
-        # check that home breadcrumb link exists
-        expected = """
-            <li class="breadcrumb-item home">
-                <a href="/admin/" class="breadcrumb-link">
-                    <svg class="icon icon-home home_icon" aria-hidden="true">
-                        <use href="#icon-home"></use>
-                    </svg>
-                    <span class="visuallyhidden">Home</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
-                </a>
-            </li>
-        """
-        self.assertContains(response, expected, html=True)
-
-        # check that the breadcrumbs are after the header opening tag
-        content_str = str(response.content)
-        position_of_header = content_str.index(
-            "<header"
-        )  # intentionally not closing tag
-        position_of_breadcrumbs = content_str.index('<ul class="breadcrumb">')
-        self.assertLess(position_of_header, position_of_breadcrumbs)
-
-
-class TestSearch(TestCase, WagtailTestUtils):
+class TestSearch(WagtailTestUtils, TestCase):
     fixtures = ["test_specific.json"]
 
     def setUp(self):

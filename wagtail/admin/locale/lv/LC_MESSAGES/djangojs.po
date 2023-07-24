@@ -2,11 +2,13 @@
 # Translators:
 # Reinis Rozenbergs <reinisr@gmail.com>, 2022
 # Maris Serzans <maris.serzans@gmail.com>, 2022
+# Aleksandrs Korņijenko <ubarbariska@gmail.com>, 2022
+# Loic Teixeira, 2022
 #
 msgid ""
 msgstr ""
-"Last-Translator: Maris Serzans <maris.serzans@gmail.com>, 2022\n"
-"Language-Team: Latvian (https://www.transifex.com/torchbox/teams/8009/lv/)\n"
+"Last-Translator: Loic Teixeira, 2022\n"
+"Language-Team: Latvian (https://app.transifex.com/torchbox/teams/8009/lv/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: lv\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
@@ -21,6 +23,9 @@ msgstr "Bojāta saite"
 msgid "Close"
 msgstr "Aizvērt"
 
+msgid "Comment"
+msgstr "Komentārs"
+
 msgid "Dashboard"
 msgstr "Informācijas panelis"
 
@@ -30,8 +35,8 @@ msgstr "Dzēst"
 msgid "Edit"
 msgstr "Labot"
 
-msgid "Edit '{title}'"
-msgstr "Rediģēt '{title}'"
+msgid "Edit '%(title)s'"
+msgstr "Rediģēt '%(title)s'"
 
 msgid "Edit your account"
 msgstr "Mainīt konta iestatījumus"
@@ -59,9 +64,6 @@ msgstr "Lapu pārlūks"
 
 msgid "Pages"
 msgstr "Lapas"
-
-msgid "Redo"
-msgstr "Atcelt atsaukšanu"
 
 msgid "Reload saved content"
 msgstr "Pārlādēt saglabāto saturu"
@@ -94,11 +96,8 @@ msgid ""
 "The editor just crashed. Content has been reset to the last saved version."
 msgstr "Redaktors kļūda. Saturs ir atiestatīts uz pēdējo saglabāto versiju."
 
-msgid "Undo"
-msgstr "Atsaukt"
+msgid "This field is required."
+msgstr "Šis lauks ir nepieciešams"
 
-msgid "View child pages of '{title}'"
-msgstr "Apskatīt '{title}' zemāka līmeņa lapas"
-
-msgid "Write here…"
-msgstr "Raksti šeit..."
+msgid "View child pages of '%(title)s'"
+msgstr "Apskatīt '%(title)s' zemāka līmeņa lapas"

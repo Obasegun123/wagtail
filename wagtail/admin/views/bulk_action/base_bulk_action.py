@@ -7,7 +7,7 @@ from django.views.generic import FormView
 
 from wagtail import hooks
 from wagtail.admin import messages
-from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
+from wagtail.admin.utils import get_valid_next_url_from_request
 
 
 class BulkAction(ABC, FormView):
@@ -41,7 +41,7 @@ class BulkAction(ABC, FormView):
             next_url = request.path
         self.next_url = next_url
         self.num_parent_objects = self.num_child_objects = 0
-        if model in self.models:
+        if model in self.get_models():
             self.model = model
         else:
             raise Exception(
@@ -49,6 +49,10 @@ class BulkAction(ABC, FormView):
                     model.__class__.__name__
                 )
             )
+
+    @classmethod
+    def get_models(cls):
+        return cls.models
 
     @classmethod
     def get_queryset(cls, model, object_ids):
@@ -69,8 +73,9 @@ class BulkAction(ABC, FormView):
 
     @classmethod
     def get_default_model(cls):
-        if len(cls.models) == 1:
-            return cls.models[0]
+        models = cls.get_models()
+        if len(models) == 1:
+            return models[0]
         raise Exception(
             "Cannot get default model if number of models is greater than 1"
         )
@@ -129,6 +134,7 @@ class BulkAction(ABC, FormView):
         request = self.request
         self.cleaned_form = form
         objects, objects_without_access = self.get_actionable_objects()
+        self.actionable_objects = objects
         resp = self.prepare_action(objects, objects_without_access)
         if hasattr(resp, "status_code"):
             return resp

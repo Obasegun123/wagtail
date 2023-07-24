@@ -8,7 +8,7 @@ code directly from the relevant provider's site using the oEmbed protocol.
 
 Wagtail has a built-in list of the most common providers and this list can be
 changed [with a setting](customising_embed_providers). Wagtail also supports
-fetching embed code using [Embedly](Embedly) and [custom embed finders](custom_embed_finders).
+fetching embed code using [Embedly](embedly) and [custom embed finders](custom_embed_finders).
 
 ## Embedding content on your site
 
@@ -50,7 +50,7 @@ You can nest embeds into a template by passing the URL and an optional
 
 The `max_width` argument is sent to the provider when fetching the embed code.
 
-```html+Django
+```html+django
 {% load wagtailembeds_tags %}
 
 {# Embed a YouTube video #}
@@ -186,9 +186,9 @@ return an embed.
 
 ### Facebook and Instagram
 
-As of October 2020, Facebook deprecated their public oEmbed APIs. If you would
+As of October 2020, Meta deprecated their public oEmbed APIs. If you would
 like to embed Facebook or Instagram posts in your site, you will need to
-use the new authenticated APIs. This requires you to set up a Facebook
+use the new authenticated APIs. This requires you to set up a Meta
 Developer Account and create a Facebook App that includes the _oEmbed Product_.
 Instructions for creating the necessary app are in the requirements sections of the
 [Facebook](https://developers.facebook.com/docs/plugins/oembed)
@@ -197,7 +197,7 @@ and [Instagram](https://developers.facebook.com/docs/instagram/oembed) documenta
 As of June 2021, the _oEmbed Product_ has been replaced with the _oEmbed Read_
 feature. In order to embed Facebook and Instagram posts your app must activate
 the _oEmbed Read_ feature. Furthermore the app must be reviewed and accepted
-by Facebook. You can find the announcement in the
+by Meta. You can find the announcement in the
 [API changelog](https://developers.facebook.com/docs/graph-api/changelog/version11.0/#oembed).
 
 Apps that activated the oEmbed Product before June 8, 2021 need to activate
@@ -234,7 +234,7 @@ By passing `'omitscript': True` in the configuration, you can indicate that thes
 tags should be omitted from the embed HTML. Note that you will then have to take care of
 loading this script yourself.
 
-(Embedly)=
+(embedly)=
 
 ### Embed.ly
 
@@ -298,7 +298,7 @@ class ExampleFinder(EmbedFinder):
         return {
             'title': "Title of the content",
             'author_name': "Author name",
-            'provider_name': "Provider name (eg. YouTube, Vimeo, etc)",
+            'provider_name': "Provider name (such as YouTube, Vimeo, etc)",
             'type': "Either 'photo', 'video', 'link' or 'rich'",
             'thumbnail_url': "URL to thumbnail image",
             'width': width_in_pixels,
@@ -405,3 +405,5 @@ repopulate the records that are being used on the site.
 You may want to do this if you've changed from oEmbed to Embedly or vice-versa
 as the embed code they generate may be slightly different and lead to
 inconsistency on your site.
+
+In general whenever you make changes to embed settings you are recommended to clear out Embed objects using [`purge_embeds` command](purge_embeds).

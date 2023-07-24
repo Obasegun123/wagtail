@@ -1,17 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { Icon, Portal, initUpgradeNotification, initSkipLink } from '../..';
-import { initModernDropdown, initTooltips } from '../../includes/initTooltips';
+import { Icon, Portal } from '../..';
+import { initTooltips } from '../../includes/initTooltips';
 import { initTabs } from '../../includes/tabs';
-import { dialog } from '../../includes/dialog';
-
-if (process.env.NODE_ENV === 'development') {
-  // Run react-axe in development only, so it does not affect performance
-  // in production, and does not break unit tests either.
-  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-  const axe = require('react-axe');
-  axe(React, ReactDOM, 1000);
-}
+import initCollapsibleBreadcrumbs from '../../includes/breadcrumbs';
+import initSidePanel from '../../includes/sidePanel';
+import {
+  initAnchoredPanels,
+  initCollapsiblePanels,
+} from '../../includes/panels';
+import { initMinimap } from '../../components/Minimap';
 
 // Expose components as globals for third-party reuse.
 window.wagtail.components = {
@@ -23,10 +19,26 @@ window.wagtail.components = {
  * Add in here code to run once the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  initUpgradeNotification();
   initTooltips();
-  initModernDropdown();
   initTabs();
-  initSkipLink();
-  dialog();
+  initCollapsibleBreadcrumbs();
+  initSidePanel();
+  initCollapsiblePanels();
+});
+
+/**
+ * Prefer the document’s DOMContentLoaded if possible.
+ * window `load` only fires once the page’s resources are loaded.
+ */
+window.addEventListener('load', () => {
+  initAnchoredPanels();
+  initMinimap();
+});
+
+/**
+ * When search results are successful, reinitialise widgets
+ * that could be inside the newly injected DOM.
+ */
+window.addEventListener('w-swap:success', () => {
+  initTooltips(); // reinitialise any tooltips
 });

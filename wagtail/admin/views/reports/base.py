@@ -1,32 +1,15 @@
 from django.utils.translation import gettext_lazy as _
-from django.views.generic.base import TemplateResponseMixin, View
-from django.views.generic.list import MultipleObjectMixin
 
+from wagtail.admin.views.generic.models import IndexView
 from wagtail.admin.views.mixins import SpreadsheetExportMixin
 
 
-class ReportView(
-    SpreadsheetExportMixin, TemplateResponseMixin, MultipleObjectMixin, View
-):
+class ReportView(SpreadsheetExportMixin, IndexView):
     header_icon = ""
     page_kwarg = "p"
     template_name = "wagtailadmin/reports/base_report.html"
     title = ""
     paginate_by = 50
-    filterset_class = None
-
-    def filter_queryset(self, queryset):
-        # construct filter instance (self.filters) if not created already
-        if self.filterset_class and self.filters is None:
-            self.filters = self.filterset_class(
-                self.request.GET, queryset=queryset, request=self.request
-            )
-            queryset = self.filters.qs
-        elif self.filters:
-            # if filter object was created on a previous filter_queryset call, re-use it
-            queryset = self.filters.filter_queryset(queryset)
-
-        return self.filters, queryset
 
     def get_filtered_queryset(self):
         return self.filter_queryset(self.get_queryset())
@@ -36,11 +19,8 @@ class ReportView(
         return object_list
 
     def get(self, request, *args, **kwargs):
-        self.filters = None
         self.filters, self.object_list = self.get_filtered_queryset()
-        self.is_export = self.request.GET.get("export") in self.FORMATS
         if self.is_export:
-            self.paginate_by = None
             self.object_list = self.decorate_paginated_queryset(self.object_list)
             return self.as_spreadsheet(self.object_list, self.request.GET.get("export"))
         else:

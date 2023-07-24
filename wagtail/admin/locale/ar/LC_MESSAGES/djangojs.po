@@ -1,15 +1,16 @@
 #
 # Translators:
-# Ahmed Miske Sidi Med <boutien321@gmail.com>, 2022
 # abdulaziz alfuhigi <abajall@gmail.com>, 2022
 # Mohammed Abdul gadir <weekmo@aol.com>, 2022
-# ultraify media <ultraify@gmail.com>, 2022
 # Ahmad Kiswani <kiswani.ahmad@gmail.com>, 2022
+# ultraify media <ultraify@gmail.com>, 2022
+# Younes Oumakhou, 2022
+# Loic Teixeira, 2022
 #
 msgid ""
 msgstr ""
-"Last-Translator: Ahmad Kiswani <kiswani.ahmad@gmail.com>, 2022\n"
-"Language-Team: Arabic (https://www.transifex.com/torchbox/teams/8009/ar/)\n"
+"Last-Translator: Loic Teixeira, 2022\n"
+"Language-Team: Arabic (https://app.transifex.com/torchbox/teams/8009/ar/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
@@ -24,6 +25,9 @@ msgstr "رابط معطوب"
 msgid "Close"
 msgstr "اغلاق"
 
+msgid "Comment"
+msgstr "تعليق"
+
 msgid "Dashboard"
 msgstr "لوحة التحكم"
 
@@ -33,8 +37,8 @@ msgstr "حذف"
 msgid "Edit"
 msgstr "تحرير"
 
-msgid "Edit '{title}'"
-msgstr "تحرير '{title}'"
+msgid "Edit '%(title)s'"
+msgstr "تحرير '%(title)s'"
 
 msgid "Edit your account"
 msgstr "تعديل حسابك"
@@ -51,6 +55,9 @@ msgstr "تحميل..."
 msgid "Missing document"
 msgstr "مستند مفقود"
 
+msgid "More actions"
+msgstr "المزيد من الإجراءات"
+
 msgid "No results"
 msgstr "لاتوجد نتائج"
 
@@ -62,9 +69,6 @@ msgstr "مستكشف الصفحة"
 
 msgid "Pages"
 msgstr "صفحات"
-
-msgid "Redo"
-msgstr "للامام"
 
 msgid "Reload saved content"
 msgstr "اعادة تحميل المحتوى المحفوظ"
@@ -97,11 +101,8 @@ msgid ""
 "The editor just crashed. Content has been reset to the last saved version."
 msgstr "المحرر تحطمت للتو. تمت إعادة تعيين المحتوى إلى آخر إصدار تم حفظه."
 
-msgid "Undo"
-msgstr "تراجع"
+msgid "This field is required."
+msgstr "هذه الخانة مطلوبه."
 
-msgid "View child pages of '{title}'"
-msgstr "أعرض الصفحات التابعة ل '{title}'"
-
-msgid "Write here…"
-msgstr "اكتب هنا..."
+msgid "View child pages of '%(title)s'"
+msgstr "أعرض الصفحات التابعة ل '%(title)s'"

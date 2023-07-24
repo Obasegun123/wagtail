@@ -35,7 +35,7 @@ class Button:
         return self.render()
 
     def __repr__(self):
-        return "<Button: {}>".format(self.label)
+        return f"<Button: {self.label}>"
 
     def __lt__(self, other):
         if not isinstance(other, Button):
@@ -79,7 +79,7 @@ class BaseDropdownMenuButton(Button):
             "buttons": self.dropdown_buttons,
             "label": self.label,
             "title": self.attrs.get("title"),
-            "is_parent": self.is_parent,
+            "classes": self.classes,
         }
 
     def render(self):
@@ -97,7 +97,6 @@ class ButtonWithDropdown(BaseDropdownMenuButton):
     def get_context_data(self):
         context = super().get_context_data()
         context["button_classes"] = self.button_classes
-        context["classes"] = self.classes
         return context
 
     @cached_property
@@ -108,13 +107,10 @@ class ButtonWithDropdown(BaseDropdownMenuButton):
 class ButtonWithDropdownFromHook(BaseDropdownMenuButton):
     template_name = "wagtailadmin/pages/listing/_button_with_dropdown.html"
 
-    def __init__(
-        self, label, hook_name, page, page_perms, is_parent, next_url=None, **kwargs
-    ):
+    def __init__(self, label, hook_name, page, page_perms, next_url=None, **kwargs):
         self.hook_name = hook_name
         self.page = page
         self.page_perms = page_perms
-        self.is_parent = is_parent
         self.next_url = next_url
 
         super().__init__(label, **kwargs)
@@ -129,9 +125,7 @@ class ButtonWithDropdownFromHook(BaseDropdownMenuButton):
 
         buttons = []
         for hook in button_hooks:
-            buttons.extend(
-                hook(self.page, self.page_perms, self.is_parent, self.next_url)
-            )
+            buttons.extend(hook(self.page, self.page_perms, self.next_url))
 
         buttons.sort()
         return buttons

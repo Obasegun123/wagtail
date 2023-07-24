@@ -1,6 +1,8 @@
 import os
+import unittest.mock
 
 from django import template
+from django.apps import apps
 from django.conf import settings
 from django.core import serializers
 from django.template import engines
@@ -58,7 +60,7 @@ class TestImagesJinja(TestCase):
         Get the generated filename for a resized image
         """
         name, ext = os.path.splitext(os.path.basename(image.file.name))
-        return "{}images/{}.{}{}".format(settings.MEDIA_URL, name, filterspec, ext)
+        return f"{settings.MEDIA_URL}images/{name}.{filterspec}{ext}"
 
     def test_image(self):
         self.assertHTMLEqual(
@@ -98,6 +100,19 @@ class TestImagesJinja(TestCase):
     def test_invalid_character(self):
         with self.assertRaises(template.TemplateSyntaxError):
             self.render('{{ image(myimage, "fill-200×200") }}', {"myimage": self.image})
+
+    def test_custom_default_attrs(self):
+        with unittest.mock.patch.object(
+            apps.get_app_config("wagtailimages"),
+            "default_attrs",
+            new={"decoding": "async", "loading": "lazy"},
+        ):
+            self.assertHTMLEqual(
+                self.render(
+                    '{{ image(myimage, "width-200") }}', {"myimage": self.bad_image}
+                ),
+                '<img alt="missing image" src="/media/not-found" width="0" height="0" decoding="async" loading="lazy">',
+            )
 
     def test_chaining_filterspecs(self):
         self.assertHTMLEqual(

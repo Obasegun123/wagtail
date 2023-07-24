@@ -4,7 +4,7 @@
 
 ## Customising the tabbed interface
 
-As standard, Wagtail organises panels for pages into three tabs: 'Content', 'Promote' and 'Settings'. For snippets Wagtail puts all panels into one page. Depending on the requirements of your site, you may wish to customise this for specific page types or snippets - for example, adding an additional tab for sidebar content. This can be done by specifying an `edit_handler` attribute on the page or snippet model. For example:
+As standard, Wagtail organises panels for pages into two tabs: 'Content' and 'Promote'. For snippets Wagtail puts all panels into one page. Depending on the requirements of your site, you may wish to customise this for specific page types or snippets - for example, adding an additional tab for sidebar content. This can be done by specifying an `edit_handler` attribute on the page or snippet model. For example:
 
 ```python
 from wagtail.admin.panels import TabbedInterface, ObjectList
@@ -13,24 +13,23 @@ class BlogPage(Page):
     # field definitions omitted
 
     content_panels = [
-        FieldPanel('title', classname="full title"),
+        FieldPanel('title', classname="title"),
         FieldPanel('date'),
-        FieldPanel('body', classname="full"),
+        FieldPanel('body'),
     ]
     sidebar_content_panels = [
         FieldPanel('advert'),
-        InlinePanel('related_links', label="Related links"),
+        InlinePanel('related_links', heading="Related links", label="Related link"),
     ]
 
     edit_handler = TabbedInterface([
         ObjectList(content_panels, heading='Content'),
         ObjectList(sidebar_content_panels, heading='Sidebar content'),
         ObjectList(Page.promote_panels, heading='Promote'),
-        ObjectList(Page.settings_panels, heading='Settings', classname="settings"),
     ])
 ```
 
-(rich-text)=
+(rich_text)=
 
 ## Rich Text (HTML)
 
@@ -45,13 +44,13 @@ class BookPage(Page):
     body = RichTextField()
 
     content_panels = Page.content_panels + [
-        FieldPanel('body', classname="full"),
+        FieldPanel('body'),
     ]
 ```
 
-`RichTextField` inherits from Django's basic `TextField` field, so you can pass any field parameters into `RichTextField` as if using a normal Django field. This field does not need a special panel and can be defined with `FieldPanel`.
+`RichTextField` inherits from Django's basic `TextField` field, so you can pass any field parameters into `RichTextField` as if using a normal Django field. Its `max_length` will ignore any rich text formatting. This field does not need a special panel and can be defined with `FieldPanel`.
 
-However, template output from `RichTextField` is special and needs to be filtered in order to preserve embedded content. See [](rich-text-filter).
+However, template output from `RichTextField` is special and needs to be filtered in order to preserve embedded content. See [](rich_text_filter).
 
 (rich_text_features)=
 
@@ -70,7 +69,7 @@ body = RichTextField(features=['h2', 'h3', 'bold', 'italic', 'link'])
 
 The feature identifiers provided on a default Wagtail installation are as follows:
 
--   `h1`, `h2`, `h3`, `h4`, `h5`, `h6` - heading elements
+-   `h2`, `h3`, `h4` - heading elements
 -   `bold`, `italic` - bold / italic text
 -   `ol`, `ul` - ordered / unordered lists
 -   `hr` - horizontal rules
@@ -79,8 +78,9 @@ The feature identifiers provided on a default Wagtail installation are as follow
 -   `image` - embedded images
 -   `embed` - embedded media (see [](embedded_content))
 
-We have few additional feature identifiers as well. They are not enabled by default, but you can use them in your list of identifiers. These are as follows:
+We have a few additional feature identifiers as well. They are not enabled by default, but you can use them in your list of identifiers. These are as follows:
 
+-   `h1`, `h5`, `h6` - heading elements
 -   `code` - inline code
 -   `superscript`, `subscript`, `strikethrough` - text formatting
 -   `blockquote` - blockquote
@@ -89,6 +89,8 @@ The process for creating new features is described in the following pages:
 
 -   [](../../extending/rich_text_internals)
 -   [](../../extending/extending_draftail)
+
+You can also provide a setting for naming a group of rich text features. See [WAGTAILADMIN_RICH_TEXT_EDITORS](wagtailadmin_rich_text_editors).
 
 (rich_text_image_formats)=
 
@@ -107,20 +109,20 @@ register_image_format(Format('thumbnail', 'Thumbnail', 'richtext-image thumbnail
 
 To begin, import the `Format` class, `register_image_format` function, and optionally `unregister_image_format` function. To register a new `Format`, call the `register_image_format` with the `Format` object as the argument. The `Format` class takes the following constructor arguments:
 
-**`name`**  
+**`name`**\
 The unique key used to identify the format. To unregister this format, call `unregister_image_format` with this string as the only argument.
 
-**`label`**  
+**`label`**\
 The label used in the chooser form when inserting the image into the `RichTextField`.
 
-**`classnames`**  
+**`classnames`**\
 The string to assign to the `class` attribute of the generated `<img>` tag.
 
 ```{note}
 Any class names you provide must have CSS rules matching them written separately, as part of the front end CSS code. Specifying a `classnames` value of `left` will only ensure that class is output in the generated markup, it won't cause the image to align itself left.
 ```
 
-**`filter_spec`**  
+**`filter_spec`**
 The string specification to create the image rendition. For more, see [](image_tag).
 
 To unregister, call `unregister_image_format` with the string of the `name` of the `Format` as the only argument.
@@ -140,7 +142,7 @@ Unregistering ``Format`` objects will cause errors viewing or editing pages that
 
 Wagtail automatically generates forms using the panels configured on the model.
 By default, this form subclasses [WagtailAdminModelForm](wagtail.admin.forms.WagtailAdminModelForm),
-or [WagtailAdminPageForm](wagtail.admin.forms.WagtailAdminPageForm). for pages.
+or [WagtailAdminPageForm](wagtail.admin.forms.WagtailAdminPageForm) for pages.
 A custom base form class can be configured by setting the `base_form_class` attribute on any model.
 Custom forms for snippets must subclass [WagtailAdminModelForm](wagtail.admin.forms.WagtailAdminModelForm),
 and custom forms for pages must subclass [WagtailAdminPageForm](wagtail.admin.forms.WagtailAdminPageForm).

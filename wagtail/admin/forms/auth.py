@@ -20,9 +20,10 @@ class LoginForm(AuthenticationForm):
 
     def __init__(self, request=None, *args, **kwargs):
         super().__init__(request=request, *args, **kwargs)
-        self.fields["username"].widget.attrs["placeholder"] = (
-            gettext_lazy("Enter your %s") % self.username_field.verbose_name
-        )
+        self.fields["username"].widget.attrs["placeholder"] = gettext_lazy(
+            "Enter your %(username_field_name)s"
+        ) % {"username_field_name": self.username_field.verbose_name}
+        self.fields["username"].widget.attrs["autofocus"] = ""
 
     @property
     def extra_fields(self):
@@ -37,6 +38,12 @@ class PasswordResetForm(DjangoPasswordResetForm):
         max_length=254,
         required=True,
     )
+
+    @property
+    def extra_fields(self):
+        for field_name in self.fields.keys():
+            if field_name not in ["email"]:
+                yield field_name, self[field_name]
 
 
 class PasswordChangeForm(DjangoPasswordChangeForm):

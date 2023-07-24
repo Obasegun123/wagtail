@@ -41,10 +41,12 @@ class ThumbnailMixin:
             "src": self.thumb_default,
             "width": self.thumb_image_width,
             "class": self.thumb_classname,
+            "decoding": "async",
+            "loading": "lazy",
         }
         if not image:
             if self.thumb_default:
-                return mark_safe("<img{}>".format(flatatt(img_attrs)))
+                return mark_safe(f"<img{flatatt(img_attrs)}>")
             return ""
 
         # try to get a rendition of the image to use
@@ -53,4 +55,4 @@ class ThumbnailMixin:
         spec = self.thumb_image_filter_spec
         rendition = get_rendition_or_not_found(image, spec)
         img_attrs.update({"src": rendition.url})
-        return mark_safe("<img{}>".format(flatatt(img_attrs)))
+        return mark_safe(f"<img{flatatt(img_attrs)}>")

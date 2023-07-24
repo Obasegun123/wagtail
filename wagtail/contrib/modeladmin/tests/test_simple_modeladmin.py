@@ -2,10 +2,10 @@ import datetime
 from io import BytesIO
 from unittest import mock
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core import checks
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils.timezone import make_aware
 from openpyxl import load_workbook
@@ -13,6 +13,8 @@ from openpyxl import load_workbook
 from wagtail.admin.admin_url_finder import AdminURLFinder
 from wagtail.admin.panels import FieldPanel, TabbedInterface
 from wagtail.contrib.modeladmin.helpers.search import DjangoORMSearchHandler
+from wagtail.documents.models import Document
+from wagtail.documents.tests.utils import get_test_document_file
 from wagtail.images.models import Image
 from wagtail.images.tests.utils import get_test_image_file
 from wagtail.models import Locale, ModelLogEntry, Page
@@ -24,11 +26,11 @@ from wagtail.test.modeladmintest.models import (
     Token,
     TranslatableBook,
 )
-from wagtail.test.modeladmintest.wagtail_hooks import BookModelAdmin
+from wagtail.test.modeladmintest.wagtail_hooks import BookModelAdmin, EventsAdminGroup
 from wagtail.test.utils import WagtailTestUtils
 
 
-class TestBookIndexView(TestCase, WagtailTestUtils):
+class TestBookIndexView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -89,7 +91,8 @@ class TestBookIndexView(TestCase, WagtailTestUtils):
             data_lines[1], "Charlie and the Chocolate Factory,Roald Dahl,1916-09-13\r"
         )
         self.assertEqual(
-            data_lines[2], "The Chronicles of Narnia,Roald Dahl,1898-11-29\r"
+            data_lines[2],
+            "The Chronicles of the Lord of Narnia,Roald Dahl,1898-11-29\r",
         )
         self.assertEqual(data_lines[3], "The Hobbit,J. R. R. Tolkien,1892-01-03\r")
         self.assertEqual(
@@ -117,7 +120,8 @@ class TestBookIndexView(TestCase, WagtailTestUtils):
             ["Charlie and the Chocolate Factory", "Roald Dahl", "1916-09-13"],
         )
         self.assertEqual(
-            cell_array[2], ["The Chronicles of Narnia", "Roald Dahl", "1898-11-29"]
+            cell_array[2],
+            ["The Chronicles of the Lord of Narnia", "Roald Dahl", "1898-11-29"],
         )
         self.assertEqual(
             cell_array[3], ["The Hobbit", "J. R. R. Tolkien", "1892-01-03"]
@@ -154,6 +158,13 @@ class TestBookIndexView(TestCase, WagtailTestUtils):
             response, '<span class="result-count">2 out of 4</span>', html=True
         )
 
+        # The search form should retain the filter
+        self.assertContains(
+            response,
+            '<input type="hidden" name="author__id__exact" value="1">',
+            html=True,
+        )
+
         for book in response.context["object_list"]:
             self.assertEqual(book.author_id, 1)
 
@@ -170,19 +181,6 @@ class TestBookIndexView(TestCase, WagtailTestUtils):
             data_lines[2], "The Lord of the Rings,J. R. R. Tolkien,1892-01-03\r"
         )
         self.assertEqual(data_lines[3], "")
-
-    def test_search_indexed(self):
-        response = self.get(q="of")
-
-        self.assertEqual(response.status_code, 200)
-
-        # There are two books where the title contains 'of'
-        self.assertEqual(response.context["result_count"], 2)
-
-        # The result count content is shown in the header
-        self.assertContains(
-            response, '<span class="result-count">2 out of 4</span>', html=True
-        )
 
     def test_search_form_present(self):
         # Test the backend search handler allows the search form to render
@@ -226,7 +224,38 @@ class TestBookIndexView(TestCase, WagtailTestUtils):
         self.assertEqual(response.context["result_count"], 4)
 
 
-class TestAuthorIndexView(TestCase, WagtailTestUtils):
+class TestBookIndexViewSearch(WagtailTestUtils, TransactionTestCase):
+    fixtures = ["modeladmintest_test.json"]
+
+    def setUp(self):
+        self.login()
+
+        img = Image.objects.create(
+            title="LOTR cover",
+            file=get_test_image_file(),
+        )
+        book = Book.objects.get(title="The Lord of the Rings")
+        book.cover_image = img
+        book.save()
+
+    def get(self, **params):
+        return self.client.get("/admin/modeladmintest/book/", params)
+
+    def test_search_indexed(self):
+        response = self.get(q="lord")
+
+        self.assertEqual(response.status_code, 200)
+
+        # There are two books where the title contains 'lord'
+        self.assertEqual(response.context["result_count"], 2)
+
+        # The result count content is shown in the header
+        self.assertContains(
+            response, '<span class="result-count">2 out of 4</span>', html=True
+        )
+
+
+class TestAuthorIndexView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -263,9 +292,42 @@ class TestAuthorIndexView(TestCase, WagtailTestUtils):
         """
         self.assertContains(response, test_html, html=True)
 
+    def test_title_column_links_to_edit_view_by_default(self):
+        response = self.get()
+        self.assertEqual(response.status_code, 200)
+        test_html = """
+            <div class="title-wrapper"><a href="/admin/modeladmintest/author/edit/1/" title="Edit this author">J. R. R. Tolkien</a></div>
+        """
+        self.assertContains(response, test_html, html=True)
+
+    @mock.patch(
+        "wagtail.contrib.modeladmin.helpers.permission.PermissionHelper.user_can_edit_obj",
+        return_value=False,
+    )
+    def test_title_column_links_to_inspect_view_when_user_cannot_edit(self, *mocks):
+        response = self.get()
+        self.assertEqual(response.status_code, 200)
+        test_html = """
+            <div class="title-wrapper"><a href="/admin/modeladmintest/author/inspect/1/" title="Inspect this author">J. R. R. Tolkien</a></div>
+        """
+        self.assertContains(response, test_html, html=True)
+
+    @mock.patch(
+        "wagtail.contrib.modeladmin.helpers.permission.PermissionHelper.user_can_inspect_obj",
+        return_value=False,
+    )
+    @mock.patch(
+        "wagtail.contrib.modeladmin.helpers.permission.PermissionHelper.user_can_edit_obj",
+        return_value=False,
+    )
+    def test_title_column_is_not_linked_when_user_cannot_edit_or_inspect(self, *mocks):
+        response = self.get()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<td class="field-name title">J. R. R. Tolkien')
+
 
 @override_settings(WAGTAIL_I18N_ENABLED=True)
-class TestTranslatableBookIndexView(TestCase, WagtailTestUtils):
+class TestTranslatableBookIndexView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -317,7 +379,7 @@ class TestTranslatableBookIndexView(TestCase, WagtailTestUtils):
         self.assertContains(response, "Le Seigneur des anneaux", html=True)
 
 
-class TestCreateView(TestCase, WagtailTestUtils):
+class TestCreateView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -376,12 +438,7 @@ class TestCreateView(TestCase, WagtailTestUtils):
 
         # Check that a form error was raised
         self.assertFormError(response, "form", "title", "This field is required.")
-        self.assertContains(
-            response,
-            """<p class="error-message"><span>This field is required.</span></p>""",
-            count=1,
-            html=True,
-        )
+        self.assertContains(response, "error-message", count=1)
 
     def test_exclude_passed_to_extract_panel_definitions(self):
         path_to_form_fields_exclude_property = (
@@ -439,7 +496,7 @@ class TestCreateView(TestCase, WagtailTestUtils):
 
 
 @override_settings(WAGTAIL_I18N_ENABLED=True)
-class TestTranslatableCreateView(TestCase, WagtailTestUtils):
+class TestTranslatableCreateView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -454,18 +511,47 @@ class TestTranslatableCreateView(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 200)
 
         # Check that the locale select exists and is set correctly
-        expected = '<a href="javascript:void(0)" aria-label="French" class="c-dropdown__button u-btn-current w-no-underline">'
-        self.assertContains(response, expected)
+        self.assertRegex(
+            response.content.decode(),
+            r"data-locale-selector[^<]+<button[^<]+<svg[^<]+<use[^<]+<\/use[^<]+<\/svg[^<]+French",
+        )
 
         # Check that the other locale link is right
-        expected = """
-        <a href="/admin/modeladmintest/translatablebook/create/?locale=en" aria-label="English" class="u-link is-live w-no-underline">
-            English
-        </a>"""
-        self.assertContains(response, expected, html=True)
+        expected = '<a href="/admin/modeladmintest/translatablebook/create/?locale=en" data-locale-selector-link>'
+        self.assertIn(expected, response.content.decode())
 
 
-class TestInspectView(TestCase, WagtailTestUtils):
+class TestRevisableCreateView(WagtailTestUtils, TestCase):
+    def setUp(self):
+        self.login()
+
+    def post(self, post_data):
+        return self.client.post("/admin/modeladmintest/publisher/create/", post_data)
+
+    def test_create_with_revision(self):
+        data = {"name": "foo"}
+        response = self.post(data)
+        self.assertRedirects(response, "/admin/modeladmintest/publisher/")
+
+        instances = Publisher.objects.filter(name="foo")
+        instance = instances.first()
+        self.assertEqual(instances.count(), 1)
+
+        # The revision should be created
+        revisions = instance.revisions
+        revision = revisions.first()
+        self.assertEqual(revisions.count(), 1)
+        self.assertEqual(revision.content["name"], "foo")
+
+        # The log entry should have the revision attached
+        log_entries = ModelLogEntry.objects.for_instance(instance).filter(
+            action="wagtail.create"
+        )
+        self.assertEqual(log_entries.count(), 1)
+        self.assertEqual(log_entries.first().revision, revision)
+
+
+class TestInspectView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -526,12 +612,41 @@ class TestInspectView(TestCase, WagtailTestUtils):
         response = self.get_for_book(1)
         self.assertContains(response, "J. R. R. Tolkien", 1)
 
+    def test_book_extract_document_html_escaping(self):
+        doc = Document.objects.create(
+            title="Title with <script>alert('XSS')</script>",
+            file=get_test_document_file(),
+        )
+        book = Book.objects.get(title="The Lord of the Rings")
+        book.extract_document = doc
+        book.save()
+        response = self.get_for_book(1)
+        self.assertNotContains(response, "Title with <script>alert('XSS')</script>")
+        self.assertContains(
+            response, "Title with &lt;script&gt;alert(&#x27;XSS&#x27;)&lt;/script&gt;"
+        )
+
     def test_non_existent(self):
         response = self.get_for_book(100)
         self.assertEqual(response.status_code, 404)
 
+    def test_back_to_listing(self):
+        response = self.client.get("/admin/modeladmintest/author/inspect/1/")
+        # check that back to listing link exists
+        expected = """
+            <p class="back">
+                    <a href="/admin/modeladmintest/author/">
+                        <svg class="icon icon-arrow-left default" aria-hidden="true">
+                            <use href="#icon-arrow-left"></use>
+                        </svg>
+                        Back to author list
+                    </a>
+            </p>
+        """
+        self.assertContains(response, expected, html=True)
 
-class TestEditView(TestCase, WagtailTestUtils):
+
+class TestEditView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -559,9 +674,7 @@ class TestEditView(TestCase, WagtailTestUtils):
         self.assertContains(response, "The Lord of the Rings")
 
         # "Last updated" timestamp should be present
-        self.assertContains(
-            response, 'data-wagtail-tooltip="Sept. 30, 2021, 10:01 a.m."'
-        )
+        self.assertContains(response, 'data-tippy-content="Sept. 30, 2021, 10:01 a.m."')
         # History link should be present
         self.assertContains(response, 'href="/admin/modeladmintest/book/history/1/"')
 
@@ -605,12 +718,7 @@ class TestEditView(TestCase, WagtailTestUtils):
 
         # Check that a form error was raised
         self.assertFormError(response, "form", "title", "This field is required.")
-        self.assertContains(
-            response,
-            """<p class="error-message"><span>This field is required.</span></p>""",
-            count=1,
-            html=True,
-        )
+        self.assertContains(response, "error-message", count=1)
 
     def test_exclude_passed_to_extract_panel_definitions(self):
         path_to_form_fields_exclude_property = (
@@ -668,7 +776,7 @@ class TestEditView(TestCase, WagtailTestUtils):
 
 
 @override_settings(WAGTAIL_I18N_ENABLED=True)
-class TestTranslatableBookEditView(TestCase, WagtailTestUtils):
+class TestTranslatableBookEditView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -695,13 +803,46 @@ class TestTranslatableBookEditView(TestCase, WagtailTestUtils):
 
         # Check the locale switcher is there
         expected = """
-        <a href="/admin/modeladmintest/translatablebook/edit/1/?locale=en" aria-label="English" class="u-link is-live w-no-underline">
+        <a href="/admin/modeladmintest/translatablebook/edit/1/?locale=en" data-locale-selector-link>
             English
         </a>"""
         self.assertContains(response, expected, html=True)
 
 
-class TestPageSpecificViews(TestCase, WagtailTestUtils):
+class TestRevisableEditView(WagtailTestUtils, TestCase):
+    def setUp(self):
+        self.login()
+        self.instance = Publisher.objects.create(name="foo")
+
+    def post(self, post_data):
+        return self.client.post(
+            "/admin/modeladmintest/publisher/edit/%s/" % self.instance.pk, post_data
+        )
+
+    def test_edit_with_revision(self):
+        data = {"name": "bar"}
+        response = self.post(data)
+        self.assertRedirects(response, "/admin/modeladmintest/publisher/")
+
+        instances = Publisher.objects.filter(name="bar")
+        instance = instances.first()
+        self.assertEqual(instances.count(), 1)
+
+        # The revision should be created
+        revisions = instance.revisions
+        revision = revisions.first()
+        self.assertEqual(revisions.count(), 1)
+        self.assertEqual(revision.content["name"], "bar")
+
+        # The log entry should have the revision attached
+        log_entries = ModelLogEntry.objects.for_instance(instance).filter(
+            action="wagtail.edit"
+        )
+        self.assertEqual(log_entries.count(), 1)
+        self.assertEqual(log_entries.first().revision, revision)
+
+
+class TestPageSpecificViews(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
     expected_status_code = 404
 
@@ -713,7 +854,7 @@ class TestPageSpecificViews(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, self.expected_status_code)
 
 
-class TestConfirmDeleteView(TestCase, WagtailTestUtils):
+class TestConfirmDeleteView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -745,7 +886,7 @@ class TestConfirmDeleteView(TestCase, WagtailTestUtils):
         self.assertFalse(Book.objects.filter(id=1).exists())
 
 
-class TestDeleteViewWithProtectedRelation(TestCase, WagtailTestUtils):
+class TestDeleteViewWithProtectedRelation(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -803,7 +944,7 @@ class TestDeleteViewWithProtectedRelation(TestCase, WagtailTestUtils):
         self.assertTrue(Author.objects.filter(id=5).exists())
 
 
-class TestDeleteViewModelReprPrimary(TestCase, WagtailTestUtils):
+class TestDeleteViewModelReprPrimary(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -814,48 +955,109 @@ class TestDeleteViewModelReprPrimary(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 302)
 
 
-class TestEditorAccess(TestCase, WagtailTestUtils):
+class TestEditorAccess(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
         # Create a user
-        user = self.create_user(username="test2", password="password")
-        user.groups.add(Group.objects.get(pk=2))
-        self.user = user
+        self.user = self.create_user(username="test2", password="password")
+        self.group = Group.objects.get(name="Editors")
+        self.user.groups.add(self.group)
+        self.book_content_type = ContentType.objects.get_for_model(Book)
+
         # Login
         self.login(username="test2", password="password")
-
-        return user
 
     def test_index_permitted(self):
         response = self.client.get("/admin/modeladmintest/book/")
         self.assertRedirects(response, "/admin/")
 
-    def test_inpspect_permitted(self):
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="add_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.get("/admin/modeladmintest/book/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_inspect_permitted(self):
         response = self.client.get("/admin/modeladmintest/book/inspect/2/")
         self.assertRedirects(response, "/admin/")
+
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="add_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.get("/admin/modeladmintest/book/inspect/2/")
+        self.assertEqual(response.status_code, 200)
 
     def test_create_permitted(self):
         response = self.client.get("/admin/modeladmintest/book/create/")
         self.assertRedirects(response, "/admin/")
 
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="add_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.get("/admin/modeladmintest/book/create/")
+        self.assertEqual(response.status_code, 200)
+
     def test_edit_permitted(self):
         response = self.client.get("/admin/modeladmintest/book/edit/2/")
         self.assertRedirects(response, "/admin/")
 
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="change_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.get("/admin/modeladmintest/book/edit/2/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_url_finder_without_permission(self):
         url_finder = AdminURLFinder(self.user)
         self.assertIsNone(url_finder.get_edit_url(Book.objects.get(id=2)))
+
+    def test_admin_url_finder_with_permission(self):
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="change_book", content_type=self.book_content_type
+            )
+        )
+        url_finder = AdminURLFinder(self.user)
+        self.assertEqual(
+            url_finder.get_edit_url(Book.objects.get(id=2)),
+            "/admin/modeladmintest/book/edit/2/",
+        )
 
     def test_delete_get_permitted(self):
         response = self.client.get("/admin/modeladmintest/book/delete/2/")
         self.assertRedirects(response, "/admin/")
 
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="delete_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.get("/admin/modeladmintest/book/delete/2/")
+        self.assertEqual(response.status_code, 200)
+
     def test_delete_post_permitted(self):
         response = self.client.post("/admin/modeladmintest/book/delete/2/")
         self.assertRedirects(response, "/admin/")
 
+        self.group.permissions.add(
+            Permission.objects.get(
+                codename="delete_book", content_type=self.book_content_type
+            )
+        )
+        response = self.client.post("/admin/modeladmintest/book/delete/2/")
+        self.assertRedirects(response, "/admin/modeladmintest/book/")
 
-class TestHistoryView(TestCase, WagtailTestUtils):
+
+class TestHistoryView(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
 
     def setUp(self):
@@ -874,11 +1076,11 @@ class TestHistoryView(TestCase, WagtailTestUtils):
         self.assertContains(response, "<td>Created</td>", html=True)
         self.assertContains(
             response,
-            '<div class="human-readable-date" title="Sept. 30, 2021, 10:01 a.m.">',
+            'data-tippy-content="Sept. 30, 2021, 10:01 a.m."',
         )
 
 
-class TestQuoting(TestCase, WagtailTestUtils):
+class TestQuoting(WagtailTestUtils, TestCase):
     fixtures = ["modeladmintest_test.json"]
     expected_status_code = 200
 
@@ -911,49 +1113,7 @@ class TestQuoting(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 200)
 
 
-class TestHeaderBreadcrumbs(TestCase, WagtailTestUtils):
-    """
-    Test that the <ul class="breadcrumbs">... is inserted within the
-    <header> tag for potential future regression.
-    See https://github.com/wagtail/wagtail/issues/3889
-    """
-
-    fixtures = ["modeladmintest_test.json"]
-
-    def setUp(self):
-        self.login()
-
-    def test_choose_inspect_model(self):
-        response = self.client.get("/admin/modeladmintest/author/inspect/1/")
-
-        # check correct templates were used
-        self.assertTemplateUsed(response, "modeladmin/includes/breadcrumb.html")
-        self.assertTemplateUsed(response, "wagtailadmin/shared/header.html")
-
-        # check that home breadcrumb link exists
-        expected = """
-            <li class="breadcrumb-item home">
-                <a href="/admin/" class="breadcrumb-link">
-                    <svg class="icon icon-home home_icon" aria-hidden="true">
-                        <use href="#icon-home"></use>
-                    </svg>
-                    <span class="visuallyhidden">Home</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
-                </a>
-            </li>
-        """
-        self.assertContains(response, expected, html=True)
-
-        # check that the breadcrumbs are before the first header closing tag
-        content_str = str(response.content)
-        position_of_header_close = content_str.index("</header>")
-        position_of_breadcrumbs = content_str.index('<ul class="breadcrumb">')
-        self.assertGreater(position_of_header_close, position_of_breadcrumbs)
-
-
-class TestPanelConfigurationChecks(TestCase, WagtailTestUtils):
+class TestPanelConfigurationChecks(WagtailTestUtils, TestCase):
     def setUp(self):
         self.warning_id = "wagtailadmin.W002"
 
@@ -1029,3 +1189,42 @@ There are no default tabs on non-Page models so there will be no\
         # clean up for future checks
         delattr(Publisher, "content_panels")
         delattr(Publisher, "edit_handler")
+
+
+class TestMenuSetting(WagtailTestUtils, TestCase):
+    fixtures = ["modeladmintest_test.json"]
+
+    def setUp(self):
+        self.login()
+
+    def test_default_menu_setting_model_admin(self):
+        modeladmin = BookModelAdmin()
+
+        menu_item = modeladmin.get_menu_item()
+        self.assertEqual(menu_item.label, "Books")
+        self.assertEqual(menu_item.name, "books")
+
+    def test_custom_menu_setting_model_admin(self):
+        modeladmin = BookModelAdmin()
+        modeladmin.menu_label = "Book Model Label"
+        modeladmin.menu_item_name = "bookitem"
+
+        menu_item = modeladmin.get_menu_item()
+        self.assertEqual(menu_item.label, "Book Model Label")
+        self.assertEqual(menu_item.name, "bookitem")
+
+    def test_default_menu_setting_model_admin_group(self):
+        modeladmin = EventsAdminGroup()
+
+        menu_item = modeladmin.get_menu_item()
+        self.assertEqual(menu_item.label, "Events")
+        self.assertEqual(menu_item.name, "events")
+
+    def test_custom_menu_setting_model_admin_group(self):
+        modeladmin = EventsAdminGroup()
+        modeladmin.menu_label = "Event Model Label"
+        modeladmin.menu_item_name = "eventitem"
+
+        menu_item = modeladmin.get_menu_item()
+        self.assertEqual(menu_item.label, "Event Model Label")
+        self.assertEqual(menu_item.name, "eventitem")

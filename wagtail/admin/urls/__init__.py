@@ -17,19 +17,23 @@ from wagtail.admin.urls import pages as wagtailadmin_pages_urls
 from wagtail.admin.urls import password_reset as wagtailadmin_password_reset_urls
 from wagtail.admin.urls import reports as wagtailadmin_reports_urls
 from wagtail.admin.urls import workflows as wagtailadmin_workflows_urls
-from wagtail.admin.views import account, chooser, home, tags, userbar
+from wagtail.admin.views import account, chooser, dismissibles, home, tags, userbar
 from wagtail.admin.views.bulk_action import index as bulk_actions
 from wagtail.admin.views.pages import listing
 from wagtail.utils.urlpatterns import decorate_urlpatterns
 
 urlpatterns = [
-    path("", home.home, name="wagtailadmin_home"),
+    path("", home.HomeView.as_view(), name="wagtailadmin_home"),
     path("test404/", TemplateView.as_view(template_name="wagtailadmin/404.html")),
     path("api/", include(api_urls)),
     path("failwhale/", home.error_test, name="wagtailadmin_error_test"),
     # TODO: Move into wagtailadmin_pages namespace
-    path("pages/", listing.index, name="wagtailadmin_explore_root"),
-    path("pages/<int:parent_page_id>/", listing.index, name="wagtailadmin_explore"),
+    path("pages/", listing.IndexView.as_view(), name="wagtailadmin_explore_root"),
+    path(
+        "pages/<int:parent_page_id>/",
+        listing.IndexView.as_view(),
+        name="wagtailadmin_explore",
+    ),
     # bulk actions
     path(
         "bulk/<str:app_label>/<str:model_name>/<str:action>/",
@@ -38,31 +42,40 @@ urlpatterns = [
     ),
     path("pages/", include(wagtailadmin_pages_urls, namespace="wagtailadmin_pages")),
     # TODO: Move into wagtailadmin_pages namespace
-    path("choose-page/", chooser.browse, name="wagtailadmin_choose_page"),
+    path("choose-page/", chooser.BrowseView.as_view(), name="wagtailadmin_choose_page"),
     path(
         "choose-page/<int:parent_page_id>/",
-        chooser.browse,
+        chooser.BrowseView.as_view(),
         name="wagtailadmin_choose_page_child",
     ),
-    path("choose-page/search/", chooser.search, name="wagtailadmin_choose_page_search"),
+    path(
+        "choose-page/search/",
+        chooser.SearchView.as_view(),
+        name="wagtailadmin_choose_page_search",
+    ),
+    path(
+        "choose-page/chosen-multiple/",
+        chooser.ChosenMultipleView.as_view(),
+        name="wagtailadmin_choose_page_chosen_multiple",
+    ),
     path(
         "choose-external-link/",
-        chooser.external_link,
+        chooser.ExternalLinkView.as_view(),
         name="wagtailadmin_choose_page_external_link",
     ),
     path(
         "choose-email-link/",
-        chooser.email_link,
+        chooser.EmailLinkView.as_view(),
         name="wagtailadmin_choose_page_email_link",
     ),
     path(
         "choose-phone-link/",
-        chooser.phone_link,
+        chooser.PhoneLinkView.as_view(),
         name="wagtailadmin_choose_page_phone_link",
     ),
     path(
         "choose-anchor-link/",
-        chooser.anchor_link,
+        chooser.AnchorLinkView.as_view(),
         name="wagtailadmin_choose_page_anchor_link",
     ),
     path("tag-autocomplete/", tags.autocomplete, name="wagtailadmin_tag_autocomplete"),
@@ -85,9 +98,9 @@ urlpatterns = [
     path("account/", account.account, name="wagtailadmin_account"),
     path("logout/", account.LogoutView.as_view(), name="wagtailadmin_logout"),
     path(
-        "jsi18n/",
-        JavaScriptCatalog.as_view(packages=["wagtail.admin"]),
-        name="wagtailadmin_javascript_catalog",
+        "dismissibles/",
+        dismissibles.DismissiblesView.as_view(),
+        name="wagtailadmin_dismissibles",
     ),
 ]
 
@@ -133,6 +146,12 @@ urlpatterns += [
     ),
     # Password reset
     path("password_reset/", include(wagtailadmin_password_reset_urls)),
+    # JS translation catalog
+    path(
+        "jsi18n/",
+        JavaScriptCatalog.as_view(packages=["wagtail.admin"]),
+        name="wagtailadmin_javascript_catalog",
+    ),
 ]
 
 

@@ -15,28 +15,30 @@
 # Mauricio Baeza <python@amigos.email>, 2015
 # Mauricio Baeza <python@amigos.email>, 2014
 # Oscar Luciano Espirilla Flores, 2020
+# Oscar Luciano Espirilla Flores, 2020
+# X Bello <xbello@gmail.com>, 2022
 # José Luis <alagunajs@gmail.com>, 2016-2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 11:54+0000\n"
-"Last-Translator: Amós Oviedo <amos.oviedo@gmail.com>, 2014,2021-2022\n"
-"Language-Team: Spanish (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: X Bello <xbello@gmail.com>, 2022\n"
+"Language-Team: Spanish (http://app.transifex.com/torchbox/wagtail/language/"
 "es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
 
 msgid "Wagtail users"
 msgstr "Usuarios Wagtail"
 
-msgid "Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."
-msgstr ""
-"Obligatorio. 30 caracteres o menos. Letras, dígitos y @/./+/-/_ solamente."
+msgid "Required. Letters, digits and @/./+/-/_ only."
+msgstr "Obligatorio. Letras, dígitos y @/./+/-/_ solamente."
 
 msgid "This value may contain only letters, numbers and @/./+/-/_ characters."
 msgstr ""
@@ -138,6 +140,7 @@ msgid "Assign role to 1 user"
 msgid_plural "Assign role to %(counter)s users"
 msgstr[0] "Asignar rol a 1 usuario"
 msgstr[1] "Asignar rol a %(counter)s usuarios"
+msgstr[2] "Asignar rol a %(counter)s usuarios"
 
 msgid "Assign role"
 msgstr "Asignar rol"
@@ -149,6 +152,7 @@ msgid "You don't have permission to edit this user"
 msgid_plural "You don't have permission to edit these users"
 msgstr[0] "No tienes permiso para editar este usuario"
 msgstr[1] "No tienes permiso para editar estos usuarios"
+msgstr[2] "No tienes permiso para editar estos usuarios"
 
 msgid "Yes, assign"
 msgstr "Sí, asignar"
@@ -161,6 +165,7 @@ msgid "Delete 1 user"
 msgid_plural "Delete %(counter)s users"
 msgstr[0] "Eliminar 1 usuario"
 msgstr[1] "Eliminar %(counter)s usuarios"
+msgstr[2] "Eliminar %(counter)s usuarios"
 
 msgid "Delete"
 msgstr "Eliminar"
@@ -172,6 +177,7 @@ msgid "You don't have permission to delete this user"
 msgid_plural "You don't have permission to delete these users"
 msgstr[0] "No tienes permiso para eliminar este usuario"
 msgstr[1] "No tienes permiso para eliminar estos usuarios"
+msgstr[2] "No tienes permiso para eliminar estos usuarios"
 
 msgid "Yes, delete"
 msgstr "Si, eliminarlo"
@@ -184,6 +190,7 @@ msgid "Change active state for 1 user"
 msgid_plural "Change active state for %(counter)s users"
 msgstr[0] "Cambiar estado activo para 1 usuario"
 msgstr[1] "Cambiar estado activo para %(counter)s usuarios"
+msgstr[2] "Cambiar estado activo para %(counter)s usuarios"
 
 msgid "Set active state"
 msgstr "Establecer estado activo"
@@ -214,6 +221,9 @@ msgstr[0] ""
 msgstr[1] ""
 "El grupo '%(group_name)s' tiene <strong>%(group_user_count)s</strong> "
 "miembros."
+msgstr[2] ""
+"El grupo '%(group_name)s' tiene <strong>%(group_user_count)s</strong> "
+"miembros."
 
 msgid ""
 "Deleting this group will revoke this group's permissions from all member "
@@ -237,9 +247,6 @@ msgstr "Ver usuarios en este grupo"
 msgid "Save"
 msgstr "Guardar"
 
-msgid "Permissions"
-msgstr "Permisos"
-
 msgid "Object permissions"
 msgstr "Permisos del objeto"
 
@@ -251,6 +258,15 @@ msgstr "Agregar"
 
 msgid "Change"
 msgstr "Cambiar"
+
+msgid "Publish"
+msgstr "Publicar"
+
+msgid "Lock"
+msgstr "Bloquear"
+
+msgid "Unlock"
+msgstr "Desbloquear"
 
 msgid "Custom permissions"
 msgstr "Permisos personalizados"
@@ -306,9 +322,6 @@ msgstr "Seleccionar todos los usuarios de la lista"
 msgid "Username"
 msgstr "Nombre de usuario"
 
-msgid "Level"
-msgstr "Nivel"
-
 msgid "Status"
 msgstr "Estado"
 
@@ -325,14 +338,11 @@ msgid "Inactive"
 msgstr "Inactivo"
 
 #, python-format
-msgid "%(time_period)s ago"
-msgstr "Hace %(time_period)s"
-
-#, python-format
 msgid "There is %(counter)s match"
 msgid_plural "There are %(counter)s matches"
 msgstr[0] "Hay %(counter)s coincidencia"
 msgstr[1] "Hay %(counter)s coincidencias"
+msgstr[2] "Hay %(counter)s coincidencias"
 
 #, python-format
 msgid "Sorry, no users match \"<em>%(query_string)s</em>\""
@@ -354,6 +364,10 @@ msgstr ""
 "No hay usuarios configurados. ¿Por qué no <a href=\"%(wagtailusers_add_url)s"
 "\">añadir alguno</a>?"
 
+#, python-format
+msgid "user %(id)s (deleted)"
+msgstr "usuario %(id)s (eliminado)"
+
 msgid "Assign role to selected users"
 msgstr "Asignar rol a los usuarios seleccionados"
 
@@ -362,6 +376,7 @@ msgid "%(num_parent_objects)d user has been assigned as %(role)s"
 msgid_plural "%(num_parent_objects)d users have been assigned as %(role)s"
 msgstr[0] "%(num_parent_objects)d usuario ha sido asignado como %(role)s"
 msgstr[1] "%(num_parent_objects)d usuarios han sido asignados como %(role)s"
+msgstr[2] "%(num_parent_objects)d usuarios han sido asignados como %(role)s"
 
 msgid "Delete selected users"
 msgstr "Eliminar usuarios seleccionados"
@@ -371,6 +386,7 @@ msgid "%(num_parent_objects)d user has been deleted"
 msgid_plural "%(num_parent_objects)d users have been deleted"
 msgstr[0] "%(num_parent_objects)d usuario ha sido eliminado"
 msgstr[1] "%(num_parent_objects)d usuarios han sido eliminados"
+msgstr[2] "%(num_parent_objects)d usuarios han sido eliminados"
 
 msgid "Change the active state for selected users"
 msgstr "Cambiar el estado activo para los usuarios seleccionados"
@@ -380,12 +396,14 @@ msgid "%(num_parent_objects)d user has been marked as active"
 msgid_plural "%(num_parent_objects)d users have been marked as active"
 msgstr[0] "%(num_parent_objects)d usuario ha sido marcado como activo"
 msgstr[1] "%(num_parent_objects)d usuarios han sido marcados como activos"
+msgstr[2] "%(num_parent_objects)d usuarios han sido marcados como activos"
 
 #, python-format
 msgid "%(num_parent_objects)d user has been marked as inactive"
 msgid_plural "%(num_parent_objects)d users have been marked as inactive"
 msgstr[0] "%(num_parent_objects)d usuario ha sido marcado como inactivo"
 msgstr[1] "%(num_parent_objects)d usuarios han sido marcados como inactivos"
+msgstr[2] "%(num_parent_objects)d usuarios han sido marcados como inactivos"
 
 msgid "Groups"
 msgstr "Grupos"
@@ -396,44 +414,38 @@ msgstr "Agregar un grupo"
 msgid "Search groups"
 msgstr "Buscar grupos"
 
-#, python-brace-format
-msgid "Group '{0}' created."
-msgstr "Grupo '{0}' creado."
+#, python-format
+msgid "Group '%(object)s' created."
+msgstr "Grupo '%(object)s' creado."
 
-#, python-brace-format
-msgid "Group '{0}' updated."
-msgstr "Grupo '{0}' actualizado."
+#, python-format
+msgid "Group '%(object)s' updated."
+msgstr "Grupo '%(object)s' actualizado."
 
 msgid "The group could not be saved due to errors."
 msgstr "El grupo no pudo ser gaurdado debido a errores."
 
-#, python-brace-format
-msgid "Group '{0}' deleted."
-msgstr "Grupo '{0}' eliminado."
+#, python-format
+msgid "Group '%(object)s' deleted."
+msgstr "Grupo '%(object)s' eliminado."
 
-msgid "Search users"
-msgstr "Buscar usuarios"
-
-#, python-brace-format
-msgid "User '{0}' created."
-msgstr "Usuario '{0}' creado."
-
-msgid "Edit"
-msgstr "Editar"
-
-msgid "The user could not be created due to errors."
-msgstr "El usuario no pudo ser creado debido a errores."
-
-#, python-brace-format
-msgid "User '{0}' updated."
-msgstr "Usuario '{0}' actualizado."
+#, python-format
+msgid "User '%(object)s' updated."
+msgstr "Usuario '%(object)s' actualizado."
 
 msgid "The user could not be saved due to errors."
 msgstr "El usuario no pudo ser guardado debido a errores."
 
-#, python-brace-format
-msgid "User '{0}' deleted."
-msgstr "Usuario '{0}' eliminado."
+#, python-format
+msgid "Editing %(object)s"
+msgstr "Editando %(object)s"
+
+#, python-format
+msgid "User '%(object)s' deleted."
+msgstr "Usuario '%(object)s' eliminado."
+
+msgid "Edit"
+msgstr "Editar"
 
 msgid "Edit this user"
 msgstr "Editar este usuario"

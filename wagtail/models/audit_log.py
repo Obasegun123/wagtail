@@ -10,12 +10,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from wagtail.log_actions import registry as log_action_registry
+from wagtail.users.utils import get_deleted_user_display_name
 
 
 class LogEntryQuerySet(models.QuerySet):
@@ -64,8 +66,19 @@ class LogEntryQuerySet(models.QuerySet):
             {}
         )  # lookup of (content_type_id, stringified_object_id) to instance
         for content_type_id, object_ids in ids_by_content_type.items():
-            model = ContentType.objects.get_for_id(content_type_id).model_class()
-            model_instances = model.objects.in_bulk(object_ids)
+            try:
+                content_type = ContentType.objects.get_for_id(content_type_id)
+                model = content_type.model_class()
+            except ContentType.DoesNotExist:
+                model = None
+
+            if model:
+                model_instances = model.objects.in_bulk(object_ids)
+            else:
+                # The model class for the logged instance no longer exists,
+                # so we have no instance to return. Return None instead.
+                model_instances = {object_id: None for object_id in object_ids}
+
             for object_id, instance in model_instances.items():
                 instances_by_id[(content_type_id, str(object_id))] = instance
 
@@ -150,7 +163,7 @@ class BaseLogEntry(models.Model):
     label = models.TextField()
 
     action = models.CharField(max_length=255, blank=True, db_index=True)
-    data = models.JSONField(blank=True, default=dict)
+    data = models.JSONField(blank=True, default=dict, encoder=DjangoJSONEncoder)
     timestamp = models.DateTimeField(verbose_name=_("timestamp (UTC)"), db_index=True)
     uuid = models.UUIDField(
         blank=True,
@@ -168,11 +181,23 @@ class BaseLogEntry(models.Model):
         related_name="+",
     )
 
+    # Pointer to a specific page revision
+    revision = models.ForeignKey(
+        "wagtailcore.Revision",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
+        related_name="+",
+    )
+
     # Flags for additional context to the 'action' made by the user (or system).
     content_changed = models.BooleanField(default=False, db_index=True)
     deleted = models.BooleanField(default=False)
 
     objects = BaseLogEntryManager()
+
+    wagtail_reference_index_ignore = True
 
     class Meta:
         abstract = True
@@ -188,9 +213,10 @@ class BaseLogEntry(models.Model):
         if not log_action_registry.action_exists(self.action):
             raise ValidationError(
                 {
-                    "action": _("The log action '{}' has not been registered.").format(
-                        self.action
+                    "action": _(
+                        "The log action '%(action_name)s' has not been registered."
                     )
+                    % {"action_name": self.action}
                 }
             )
 
@@ -211,8 +237,7 @@ class BaseLogEntry(models.Model):
         if self.user_id:
             user = self.user
             if user is None:
-                # User has been deleted. Using a string placeholder as the user id could be non-numeric
-                return _("user %(id)s (deleted)") % {"id": self.user_id}
+                return get_deleted_user_display_name(self.user_id)
 
             try:
                 full_name = user.get_full_name().strip()

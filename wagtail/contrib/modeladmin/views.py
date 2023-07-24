@@ -1,6 +1,7 @@
 import warnings
 from collections import OrderedDict
 
+from django import VERSION as DJANGO_VERSION
 from django import forms
 from django.conf import settings
 from django.contrib.admin import FieldListFilter
@@ -29,8 +30,8 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
+from django.utils.html import format_html
 from django.utils.http import urlencode
-from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -44,8 +45,7 @@ from wagtail.admin.views.generic.base import WagtailAdminTemplateMixin
 from wagtail.admin.views.mixins import SpreadsheetExportMixin
 from wagtail.log_actions import log
 from wagtail.log_actions import registry as log_registry
-from wagtail.models import Locale, TranslatableMixin
-from wagtail.utils.deprecation import RemovedInWagtail50Warning
+from wagtail.models import Locale, RevisionMixin, TranslatableMixin
 
 from .forms import ParentChooserForm
 
@@ -165,18 +165,7 @@ class ModelFormView(WMABaseView, FormView):
         return form
 
     def get_edit_handler(self):
-        try:
-            edit_handler = self.model_admin.get_edit_handler()
-        except TypeError:
-            edit_handler = self.model_admin.get_edit_handler(
-                instance=None, request=None
-            )
-            warnings.warn(
-                "%s.get_edit_handler should not accept instance or request arguments"
-                % type(self.model_admin).__name__,
-                category=RemovedInWagtail50Warning,
-            )
-
+        edit_handler = self.model_admin.get_edit_handler()
         return edit_handler.bind_to_model(self.model_admin.model)
 
     def get_form_class(self):
@@ -246,9 +235,9 @@ class ModelFormView(WMABaseView, FormView):
         return fields
 
     def get_success_message(self, instance):
-        return _("%(model_name)s '%(instance)s' created.") % {
+        return _("%(model_name)s '%(object)s' created.") % {
             "model_name": capfirst(self.opts.verbose_name),
-            "instance": instance,
+            "object": instance,
         }
 
     def get_success_message_buttons(self, instance):
@@ -257,7 +246,9 @@ class ModelFormView(WMABaseView, FormView):
 
     def get_error_message(self):
         model_name = self.verbose_name
-        return _("The %s could not be created due to errors.") % model_name
+        return _("The %(object)s could not be created due to errors.") % {
+            "object": model_name
+        }
 
     def form_valid(self, form):
         self.instance = form.save()
@@ -284,8 +275,7 @@ class InstanceSpecificView(WMABaseView):
         super().__init__(model_admin)
         self.instance_pk = unquote(instance_pk)
         self.pk_quoted = quote(self.instance_pk)
-        filter_kwargs = {}
-        filter_kwargs[self.pk_attname] = self.instance_pk
+        filter_kwargs = {self.pk_attname: self.instance_pk}
         object_qs = model_admin.model._default_manager.get_queryset().filter(
             **filter_kwargs
         )
@@ -327,6 +317,10 @@ class IndexView(SpreadsheetExportMixin, WMABaseView):
     # template tag - see https://docs.djangoproject.com/en/stable/ref/contrib/admin/#django.contrib.admin.ModelAdmin.sortable_by
     sortable_by = None
 
+    # add_facets is required by the django.contrib.admin.filters.ListFilter.choices method
+    # as of Django 5.0 - see https://github.com/django/django/pull/16495
+    add_facets = False
+
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         # Only continue if logged in user has list permission
@@ -350,7 +344,11 @@ class IndexView(SpreadsheetExportMixin, WMABaseView):
         except ValueError:
             self.page_num = 0
 
-        self.params = dict(request.GET.items())
+        if DJANGO_VERSION >= (5, 0):
+            self.params = request.GET.copy()
+        else:
+            self.params = request.GET.dict()
+
         if self.PAGE_VAR in self.params:
             del self.params[self.PAGE_VAR]
         if self.ERROR_FLAG in self.params:
@@ -406,7 +404,7 @@ class IndexView(SpreadsheetExportMixin, WMABaseView):
 
     def get_buttons_for_obj(self, obj):
         return self.button_helper.get_buttons_for_obj(
-            obj, classnames_add=["button-small", "button-secondary"]
+            obj, classnames_add=["button-small"]
         )
 
     def get_search_results(self, request, queryset, search_term):
@@ -639,12 +637,21 @@ class IndexView(SpreadsheetExportMixin, WMABaseView):
             # Finally, we apply the remaining lookup parameters from the query
             # string (i.e. those that haven't already been processed by the
             # filters).
-            qs = qs.filter(**remaining_lookup_params)
+            if DJANGO_VERSION >= (5, 0):
+                from django.contrib.admin.utils import (
+                    build_q_object_from_lookup_parameters,
+                )
+
+                qs = qs.filter(
+                    build_q_object_from_lookup_parameters(remaining_lookup_params)
+                )
+            else:
+                qs = qs.filter(**remaining_lookup_params)
         except (SuspiciousOperation, ImproperlyConfigured):
             # Allow certain types of errors to be re-raised as-is so that the
             # caller can treat them in a special way.
             raise
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # Every other error is caught with a naked except, because we don't
             # have any other way of validating lookup parameters. They might be
             # invalid if the keyword arguments are incorrect, or if the values
@@ -784,11 +791,22 @@ class CreateView(ModelFormView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        log(instance=self.instance, action="wagtail.create")
+        revision = None
+
+        # Save revision if the model inherits from RevisionMixin
+        if isinstance(self.instance, RevisionMixin):
+            revision = self.instance.save_revision(user=self.request.user)
+
+        log(
+            instance=self.instance,
+            action="wagtail.create",
+            revision=revision,
+            content_changed=True,
+        )
         return response
 
     def get_meta_title(self):
-        return _("Create new %s") % self.verbose_name
+        return _("Create new %(object)s") % {"object": self.verbose_name}
 
     def get_page_subtitle(self):
         return capfirst(self.verbose_name)
@@ -848,12 +866,12 @@ class EditView(ModelFormView, InstanceSpecificView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_meta_title(self):
-        return _("Editing %s") % self.verbose_name
+        return _("Editing %(object)s") % {"object": self.verbose_name}
 
     def get_success_message(self, instance):
-        return _("%(model_name)s '%(instance)s' updated.") % {
+        return _("%(model_name)s '%(object)s' updated.") % {
             "model_name": capfirst(self.verbose_name),
-            "instance": instance,
+            "object": instance,
         }
 
     def get_context_data(self, **kwargs):
@@ -878,14 +896,30 @@ class EditView(ModelFormView, InstanceSpecificView):
 
     def get_error_message(self):
         name = self.verbose_name
-        return _("The %s could not be saved due to errors.") % name
+        return _("The %(object)s could not be saved due to errors.") % {"object": name}
 
     def get_template_names(self):
         return self.model_admin.get_edit_template()
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        log(instance=self.instance, action="wagtail.edit")
+        revision = None
+
+        self.has_content_changes = form.has_changed()
+
+        # Save revision if the model inherits from RevisionMixin
+        if isinstance(self.instance, RevisionMixin):
+            revision = self.instance.save_revision(
+                user=self.request.user,
+                changed=self.has_content_changes,
+            )
+
+        log(
+            instance=self.instance,
+            action="wagtail.edit",
+            revision=revision,
+            content_changed=self.has_content_changes,
+        )
         return response
 
 
@@ -896,7 +930,7 @@ class ChooseParentView(WMABaseView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_page_title(self):
-        return _("Add %s") % self.verbose_name
+        return _("Add %(object)s") % {"object": self.verbose_name}
 
     def get_form(self, request):
         parents = self.permission_helper.get_valid_parent_pages(request.user)
@@ -944,25 +978,22 @@ class DeleteView(InstanceSpecificView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_meta_title(self):
-        return _("Confirm deletion of %s") % self.verbose_name
+        return _("Confirm deletion of %(object)s") % {"object": self.verbose_name}
 
     def confirmation_message(self):
-        return (
-            _(
-                "Are you sure you want to delete this %s? If other things in your "
-                "site are related to it, they may also be affected."
-            )
-            % self.verbose_name
-        )
+        return _(
+            "Are you sure you want to delete this %(object)s? If other things in your "
+            "site are related to it, they may also be affected."
+        ) % {"object": self.verbose_name}
 
     def delete_instance(self):
         self.instance.delete()
 
     def post(self, request, *args, **kwargs):
         try:
-            msg = _("%(model_name)s '%(instance)s' deleted.") % {
+            msg = _("%(model_name)s '%(object)s' deleted.") % {
                 "model_name": self.verbose_name,
-                "instance": self.instance,
+                "object": self.instance,
             }
             with transaction.atomic():
                 log(instance=self.instance, action="wagtail.delete")
@@ -1038,7 +1069,7 @@ class InspectView(InstanceSpecificView):
         )
 
     def get_meta_title(self):
-        return _("Inspecting %s") % self.verbose_name
+        return _("Inspecting %(object)s") % {"object": self.verbose_name}
 
     def get_field_label(self, field_name, field=None):
         """Return a label to display for a field"""
@@ -1105,14 +1136,12 @@ class InspectView(InstanceSpecificView):
         """Render a link to a document"""
         document = getattr(self.instance, field_name)
         if document:
-            return mark_safe(
-                '<a href="%s">%s <span class="meta">(%s, %s)</span></a>'
-                % (
-                    document.url,
-                    document.title,
-                    document.file_extension.upper(),
-                    filesizeformat(document.file.size),
-                )
+            return format_html(
+                '<a href="{}">{} <span class="meta">({}, {})</span></a>',
+                document.url,
+                document.title,
+                document.file_extension.upper(),
+                filesizeformat(document.file.size),
             )
         return self.model_admin.get_empty_value_display(field_name)
 

@@ -3,7 +3,9 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
+# 79353a696ad19dc202b261b3067b7640_bec941e, 2015
 # Dimitri Fekas, 2022
+# fekioh, 2022
 # jim dal <dimitrisdal@gmail.com>, 2014
 # Nick Mavrakis <mavrakis.n@gmail.com>, 2017
 # serafeim <serafeim@torchbox.com>, 2014
@@ -11,14 +13,15 @@
 # Wasilis Mandratzis-Walz, 2015
 # 79353a696ad19dc202b261b3067b7640_bec941e, 2015
 # Yiannis Inglessis <negtheone@gmail.com>, 2016
+# Yiannis Inglessis <negtheone@gmail.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 19:01+0000\n"
-"Last-Translator: Dimitri Fekas, 2022\n"
-"Language-Team: Greek (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Yiannis Inglessis <negtheone@gmail.com>, 2016\n"
+"Language-Team: Greek (http://app.transifex.com/torchbox/wagtail/language/"
 "el/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -26,33 +29,48 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgid "Publish"
+msgstr "Δημοσίευση"
+
+msgid "Submit for moderation"
+msgstr "Υποβολή για έλεγχο"
+
+#, python-format
+msgid "Resubmit to %(task_name)s"
+msgstr "Υποβολή σε %(task_name)s"
+
+#, python-format
+msgid "Submit to %(workflow_name)s"
+msgstr "Υποβολή σε %(workflow_name)s"
+
+msgid "Restart workflow "
+msgstr "Επανεκκίνηση ροής εργασιών"
+
+msgid "Cancel workflow "
+msgstr "Ακύρωση ροής εργασιών"
+
+msgid "Unpublish"
+msgstr "Κατάργηση δημοσίευσης"
+
 msgid "Delete"
 msgstr "Διαγραφή"
 
 msgid "Save"
 msgstr "Αποθήκευση"
 
+msgid "Locked"
+msgstr "Κλειδωμένο"
+
+#, python-format
+msgid "%(label)s and Publish"
+msgstr "%(label)s και έκδοση"
+
 msgid "Wagtail snippets"
 msgstr "Αποσπάσματα Wagtail"
 
-msgid "Choose"
-msgstr "Επιλογή"
-
-msgid "Search"
-msgstr "Αναζήτηση"
-
 #, python-format
-msgid "Sorry, no snippets match \"<em>%(query_string)s</em>\""
-msgstr "Λυπούμαστε, δεν υπάρχουν snippets με το \"<em>%(query_string)s</em>\""
-
-msgid "Last updated"
-msgstr "Τελευταία αναθεώρηση"
-
-msgid "History"
-msgstr "Ιστορικό"
-
-msgid "Saving…"
-msgstr "Αποθήκευση…"
+msgid "%(model_name)s '%(object)s' deleted."
+msgstr "%(model_name)s '%(object)s' διαγράφηκε."
 
 #, python-format
 msgid "Delete %(snippet_type_name)s"
@@ -81,6 +99,21 @@ msgstr "Ναι, να διαγραφεί"
 msgid "No, don't delete"
 msgstr "Ακύρωση διαγραφής"
 
+msgid "Last updated"
+msgstr "Τελευταία αναθεώρηση"
+
+msgid "History"
+msgstr "Ιστορικό"
+
+msgid "Saving…"
+msgstr "Αποθήκευση…"
+
+msgid "Replace current draft"
+msgstr "Αντικατάσταση του τρέχοντος draft"
+
+msgid "Save draft"
+msgstr "Αποθήκευση σχεδίου"
+
 #, python-format
 msgid "New  %(snippet_type_name)s"
 msgstr "Δημιουργία %(snippet_type_name)s"
@@ -91,29 +124,19 @@ msgstr "Δημιουργία"
 msgid "Actions"
 msgstr "Ενέργειες"
 
-#, python-format
-msgid "Editing %(snippet_type_name)s - %(instance)s"
-msgstr "Διόρθωση %(snippet_type_name)s - %(instance)s"
-
-msgid "Editing"
-msgstr "Διόρθωση"
+msgid "Snippets"
+msgstr "Snippets"
 
 msgid "Usage"
 msgstr "Χρήση"
 
-msgid "Snippets"
-msgstr "Snippets"
+#, python-format
+msgid "Snippets %(snippet_type_name_plural)s"
+msgstr "Snippets %(snippet_type_name_plural)s"
 
 #, python-format
-msgid "Select all %(snippet_type_name_plural)s"
-msgstr "Επιλογή όλων %(snippet_type_name_plural)s"
-
-msgid "Title"
-msgstr "Τίτλος"
-
-#, python-format
-msgid "Select %(snippet)s"
-msgstr "Επιλογή %(snippet)s"
+msgid "Add %(snippet_type_name)s"
+msgstr "Προσθήκη %(snippet_type_name)s"
 
 #, python-format
 msgid ""
@@ -123,76 +146,41 @@ msgstr ""
 "Δεν υπάρχουν %(snippet_type_name_plural)s. Θέλετε να <a href="
 "\"%(wagtailsnippets_create_url)s\">προσθέσετε μερικά</a>;"
 
-#, python-format
-msgid "Snippets %(snippet_type_name_plural)s"
-msgstr "Snippets %(snippet_type_name_plural)s"
+msgid "Live version"
+msgstr "Τρέχουσα έκδοση"
 
-#, python-format
-msgid "Snippets <span>%(snippet_type_name_plural)s</span>"
-msgstr "Snippets <span>%(snippet_type_name_plural)s</span>"
+msgid "Current draft"
+msgstr "Τρέχον σχέδιο"
 
-#, python-format
-msgid "Add %(snippet_type_name)s"
-msgstr "Προσθήκη %(snippet_type_name)s"
-
-#, python-format
-msgid "Usage of %(title)s"
-msgstr "Χρήση του  %(title)s"
-
-msgid "Usage of"
-msgstr "Χρήση του "
-
-msgid "Parent"
-msgstr "Γονέας"
-
-msgid "Type"
-msgstr "Τύπος"
-
-msgid "Status"
-msgstr "Κατάσταση"
-
-msgid "Edit this page"
-msgstr "Επεξεργασία αυτής της σελίδας"
-
-#, python-format
-msgid "Search %(snippet_type_name)s"
-msgstr "Αναζήτηση %(snippet_type_name)s"
-
-msgid "The snippet could not be created due to errors."
-msgstr "Δεν ήταν δυνατή η δημιουργία του snippet."
-
-#, python-format
-msgid "%(snippet_type)s '%(instance)s' created."
-msgstr "%(snippet_type)s '%(instance)s' δημιουργήθηκε"
+msgid "Preview"
+msgstr "Προεπισκόπηση"
 
 msgid "Edit"
 msgstr "Επεξεργασία "
 
-#, python-format
-msgid "%(snippet_type)s '%(instance)s' updated."
-msgstr "%(snippet_type)s '%(instance)s' αναθεωρήθηκε."
+msgid "Choose"
+msgstr "Επιλογή"
+
+msgid "Name"
+msgstr "Όνομα"
+
+msgid "The snippet could not be created due to errors."
+msgstr "Δεν ήταν δυνατή η δημιουργία του snippet."
 
 msgid "The snippet could not be saved due to errors."
 msgstr "Δεν ήταν δυνατή η αποθήκευση του snippet."
 
-#, python-format
-msgid "%(snippet_type)s '%(instance)s' deleted."
-msgstr "%(snippet_type)s '%(instance)s' διαγράφηκε."
-
-#, python-format
-msgid "%(count)d %(snippet_type)s deleted."
-msgid_plural "%(count)d %(snippet_type)s deleted."
-msgstr[0] "%(count)d %(snippet_type)s διαγράφηκε."
-msgstr[1] "%(count)d %(snippet_type)s διαγράφηκε."
-
-msgid "Snippet history"
-msgstr "Ιστορικό αποσπάσματος"
-
 msgid "Action"
 msgstr "Ενέργεια"
 
+msgid "User"
+msgstr "Χρήστης"
+
 msgid "Date"
 msgstr "Ημερομηνία"
+
+msgid "Snippet history"
+msgstr "Ιστορικό αποσπάσματος"
 
 #, python-format
 msgid "Edit '%(title)s'"
@@ -203,13 +191,13 @@ msgid "Delete '%(title)s'"
 msgstr "Διαγραφή '%(title)s'"
 
 #, python-format
-msgid "Choose %s"
-msgstr "Επιλογή %s"
+msgid "Choose %(object)s"
+msgstr "Επιλογή %(object)s"
 
 #, python-format
-msgid "Choose another %s"
-msgstr "Επιλογή διαφορετικού %s"
+msgid "Choose another %(object)s"
+msgstr "Επιλογή διαφορετικού %(object)s"
 
 #, python-format
-msgid "Edit this %s"
-msgstr "Επεξεργασία αυτου %s"
+msgid "Edit this %(object)s"
+msgstr "Επεξεργαστείτε το %(object)s"

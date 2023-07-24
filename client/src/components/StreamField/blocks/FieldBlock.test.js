@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
+import $ from 'jquery';
 import { FieldBlockDefinition } from './FieldBlock';
 
-import $ from 'jquery';
 window.$ = $;
 
 window.comments = {
@@ -24,7 +22,7 @@ class DummyWidgetDefinition {
 
   render(placeholder, name, id, initialState) {
     if (this.throwErrorOnRender) {
-      throw new Error();
+      throw new Error('Mock rendering error');
     }
 
     const widgetName = this.widgetName;
@@ -53,12 +51,6 @@ class DummyWidgetDefinition {
   }
 }
 
-class ValidationError {
-  constructor(messages) {
-    this.messages = messages;
-  }
-}
-
 describe('telepath: wagtail.blocks.FieldBlock', () => {
   let boundBlock;
 
@@ -83,8 +75,7 @@ describe('telepath: wagtail.blocks.FieldBlock', () => {
         label: 'Test Field',
         required: true,
         icon: 'placeholder',
-        classname:
-          'field char_field widget-text_input fieldname-test_charblock',
+        classname: 'w-field w-field--char_field w-field--text_input',
         helpText: 'drink <em>more</em> water',
       },
     );
@@ -138,10 +129,12 @@ describe('telepath: wagtail.blocks.FieldBlock', () => {
   });
 
   test('setError() renders errors', () => {
-    boundBlock.setError([
-      new ValidationError(['Field must not contain the letter E']),
-      new ValidationError(['Field must contain a story about kittens']),
-    ]);
+    boundBlock.setError({
+      messages: [
+        'Field must not contain the letter E',
+        'Field must contain a story about kittens',
+      ],
+    });
     expect(document.body.innerHTML).toMatchSnapshot();
   });
 });
@@ -170,8 +163,7 @@ describe('telepath: wagtail.blocks.FieldBlock with comments enabled', () => {
         label: 'Test Field',
         required: true,
         icon: 'placeholder',
-        classname:
-          'field char_field widget-text_input fieldname-test_charblock',
+        classname: 'w-field w-field--char_field w-field--text_input',
         helpText: 'drink <em>more</em> water',
         showAddCommentButton: true,
         strings: {
@@ -198,6 +190,9 @@ describe('telepath: wagtail.blocks.FieldBlock catches widget render errors', () 
   let boundBlock;
 
   beforeEach(() => {
+    // mock console.error to ensure it does not bubble to the logs
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
     // Create mocks for callbacks
     constructor = jest.fn();
     setState = jest.fn();
@@ -213,14 +208,14 @@ describe('telepath: wagtail.blocks.FieldBlock catches widget render errors', () 
         label: 'Test Field',
         required: true,
         icon: 'placeholder',
-        classname:
-          'field char_field widget-text_input fieldname-test_charblock',
+        classname: 'w-field w-field--char_field w-field--text_input',
         helpText: 'drink <em>more</em> water',
       },
     );
 
     // Render it
     document.body.innerHTML = '<div id="placeholder"></div>';
+
     boundBlock = blockDef.render(
       $('#placeholder'),
       'the-prefix',
@@ -228,7 +223,16 @@ describe('telepath: wagtail.blocks.FieldBlock catches widget render errors', () 
     );
   });
 
+  afterEach(() => {
+    /* eslint-disable no-console */
+    console.error.mockRestore();
+  });
+
   test('it renders correctly', () => {
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith(
+      new Error('Mock rendering error'),
+    );
     expect(document.body.innerHTML).toMatchSnapshot();
   });
 });

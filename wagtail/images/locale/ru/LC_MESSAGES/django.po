@@ -5,16 +5,23 @@
 # Translators:
 # eb5b5ee62bf6428e621432b9e62de6b8_d17f633, 2014
 # Andrey <talkerbox@live.com>, 2016
+# Andrey <talkerbox@live.com>, 2016
+# eb5b5ee62bf6428e621432b9e62de6b8_d17f633, 2014
 # Eugene <eugene.mechanism@gmail.com>, 2014-2016
+# gsstver <gsstver@gmail.com>, 2016
 # Matt Westcott <matthew@torchbox.com>, 2015
+# Matt Westcott <matthew@torchbox.com>, 2015,2022
 # Mikalai Radchuk <radchuk.m@gmail.com>, 2016
 # Mikhail Sidorov <pevzi23@gmail.com>, 2019-2020
 # Rustam Mirzaev <mirus@2x2.pw>, 2017
 # sergeybe <sergeybe@gmail.com>, 2020
+# sergeybe <sergeybe@gmail.com>, 2020
 # Sergey Komarov <sjkomarov@gmail.com>, 2014
+# Sergey Mazanov <mvver@outlook.com>, 2021
 # Влад <integration.into.society@gmail.com>, 2022
 # Влад <integration.into.society@gmail.com>, 2021-2022
 # Мирон Левицкий <miron200504@gmail.com>, 2018
+# Михаил Герасимов, 2019
 # Михаил Герасимов, 2019
 # gsstver <gsstver@gmail.com>, 2016
 # Sergey Mazanov <mvver@outlook.com>, 2021
@@ -22,10 +29,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-20 21:05+0000\n"
 "Last-Translator: Влад <integration.into.society@gmail.com>, 2021-2022\n"
-"Language-Team: Russian (http://www.transifex.com/torchbox/wagtail/language/"
+"Language-Team: Russian (http://app.transifex.com/torchbox/wagtail/language/"
 "ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,9 +44,6 @@ msgstr ""
 
 msgid "Wagtail images"
 msgstr "Изображения Wagtail"
-
-msgid "GIF, JPEG, PNG, WEBP"
-msgstr "GIF, JPEG, PNG, WEBP"
 
 #, python-format
 msgid ""
@@ -54,24 +58,29 @@ msgid "Supported formats: %(supported_formats)s."
 msgstr "Поддерживаемые форматы: %(supported_formats)s."
 
 #, python-format
-msgid "Not a supported image format. Supported formats: %s."
-msgstr "Не поддерживаемый формат изображения. Поддерживаемые форматы: %s."
+msgid "Not a supported image format. Supported formats: %(supported_formats)s."
+msgstr ""
+"Не поддерживаемый формат изображения. Поддерживаемые форматы: "
+"%(supported_formats)s."
 
 #, python-format
-msgid "Not a valid %s image."
-msgstr "Невалидное %s изображение."
+msgid ""
+"This file is too big (%(file_size)s). Maximum filesize %(max_filesize)s."
+msgstr ""
+"Файл слишком большой (%(file_size)s). Максимальный размер файла "
+"%(max_filesize)s."
 
 #, python-format
-msgid "This file is too big (%%s). Maximum filesize %s."
-msgstr "Файл слишком большой (%%s). Максимальный размер файла %s."
+msgid ""
+"This file has too many pixels (%(num_pixels)s). Maximum pixels "
+"%(max_pixels_count)s."
+msgstr ""
+"В этом файле слишком много пикселей (%(num_pixels)s). Максимум пикселей "
+"%(max_pixels_count)s."
 
 #, python-format
-msgid "This file has too many pixels (%%s). Maximum pixels %s."
-msgstr "В этом файле слишком много пикселей (%%). Максимум пикселей %s."
-
-#, python-format
-msgid "This file is too big. Maximum filesize %s."
-msgstr "Файл слишком большой. Максимальный размер файла %s."
+msgid "This file is too big. Maximum filesize %(max_filesize)s."
+msgstr "Файл слишком большой. Максимальный размер файла %(max_filesize)s."
 
 msgid "Full width"
 msgstr "По ширине"
@@ -173,6 +182,14 @@ msgstr "Изображение"
 msgid "images"
 msgstr "Изображения"
 
+#, python-format
+msgid "Add tags to 1 image"
+msgid_plural "Add tags to %(counter)s images"
+msgstr[0] "Добавить теги к 1 изображению"
+msgstr[1] "Добавить теги к %(counter)s изображениям"
+msgstr[2] "Добавить теги к %(counter)s изображениям"
+msgstr[3] "Добавить теги к %(counter)s изображениям"
+
 msgid "Add tags to images"
 msgstr "Добавить теги к изображениям"
 
@@ -195,6 +212,14 @@ msgstr "Да, добавить"
 
 msgid "No, don't add"
 msgstr "Нет, не добавлять"
+
+#, python-format
+msgid "Add 1 image to new collection"
+msgid_plural "Add %(counter)s images to new collection"
+msgstr[0] "Добавить 1 изображение в новую коллекцию"
+msgstr[1] "Добавить %(counter)s изображений в новую коллекцию"
+msgstr[2] "Добавить %(counter)s изображений в новую коллекцию"
+msgstr[3] "Добавить %(counter)s изображений в новую коллекцию"
 
 msgid "Add images to collection"
 msgstr "Добавить изображения в коллекцию"
@@ -258,17 +283,16 @@ msgstr "Да, удалить"
 msgid "No, don't delete"
 msgstr "Нет, не удалять"
 
-msgid "Choose an image"
-msgstr "Выберите изображение"
-
-msgid "Search"
-msgstr "Поиск"
-
-msgid "Upload"
-msgstr "Загрузка"
-
 msgid "Popular tags"
 msgstr "Популярные теги"
+
+msgid ""
+"Upload successful. However, your new image seems to be a duplicate of an "
+"existing image. You may delete it if it wasn't required."
+msgstr ""
+"Загрузка прошла успешно. Однако ваше новое изображение кажется дубликатом "
+"существующего изображения. Вы можете удалить его, если в нем нет "
+"необходимости."
 
 msgid "Existing"
 msgstr "Существующие"
@@ -285,14 +309,44 @@ msgstr "Использовать существующие и удалять но
 msgid "Latest images"
 msgstr "Недавние изображения"
 
+msgid "You haven't uploaded any images in this collection."
+msgstr "Вы не загрузили ни одного изображения в эту коллекцию."
+
+msgid "You haven't uploaded any images."
+msgstr "Вы не загрузили ни одного изображения."
+
+msgid ""
+"Why not <a class=\"upload-one-now\" href=\"#tab-upload\" data-tab-"
+"trigger>upload one now</a>?"
+msgstr ""
+"Почему бы не <a class=\"upload-one-now\" href=\"#tab-upload\" data-tab-"
+"trigger>загрузить один сейчас</a>?"
+
 msgid "Choose a format"
 msgstr "Выберите формат"
 
 msgid "Insert image"
 msgstr "Вставить изображение"
 
-msgid "Uploading…"
-msgstr "Загрузка..."
+#, python-format
+msgid ""
+"<span>%(total)s</span> Image <span class=\"visuallyhidden\">created in "
+"%(site_name)s</span>"
+msgid_plural ""
+"<span>%(total)s</span> Images <span class=\"visuallyhidden\">created in "
+"%(site_name)s</span>"
+msgstr[0] ""
+"<span>%(total)s</span> Изображение <span class=\"visuallyhidden\">создано в "
+"%(site_name)s</span>"
+msgstr[1] ""
+"<span>%(total)s</span> Изображений <span class=\"visuallyhidden\">создано в "
+"%(site_name)s</span>"
+msgstr[2] ""
+"<span>%(total)s</span> Изображений <span class=\"visuallyhidden\">создано в "
+"%(site_name)s </span>"
+msgstr[3] ""
+"<span>%(total)s</span> Изображений <span class=\"visuallyhidden\">создано в "
+"%(site_name)s</span>"
 
 msgid "Change image file:"
 msgstr "Изменить файл изображения:"
@@ -306,9 +360,6 @@ msgstr "Добавить изображение"
 msgid "Save"
 msgstr "Сохранить"
 
-msgid "Delete image"
-msgstr "Удалить изображение"
-
 msgid "Keep new image"
 msgstr "Оставить новое изображение"
 
@@ -321,6 +372,12 @@ msgstr "Редактирование изображения %(title)s"
 
 msgid "Editing"
 msgstr "Редактирование"
+
+msgid "Delete image"
+msgstr "Удалить изображение"
+
+msgid "Image focal point"
+msgstr "Центр внимания изображения"
 
 msgid "URL Generator"
 msgstr "URL Генератор"
@@ -359,14 +416,28 @@ msgstr "Использование"
 msgid "Images"
 msgstr "Изображения"
 
+msgid "Sort by"
+msgstr "Сортировать по"
+
+msgid "Entries per page"
+msgstr "Записей на странице"
+
 msgid "Popular Tags:"
 msgstr "Популярные тэги:"
 
-msgid "Clear choice"
-msgstr "Очистить выбор"
+msgid "Clear"
+msgstr "Очистить"
 
 msgid "Select all images in listing"
 msgstr "Выбрать все изображения из списка"
+
+#, python-format
+msgid "There is %(counter)s match"
+msgid_plural "There are %(counter)s matches"
+msgstr[0] "Есть %(counter)s совпадение"
+msgstr[1] "Есть %(counter)s совпадений"
+msgstr[2] "Есть %(counter)s совпадений"
+msgstr[3] "Есть %(counter)s совпадений"
 
 msgid "Select image"
 msgstr "Выбрать изображение"
@@ -410,28 +481,6 @@ msgid ""
 msgstr ""
 "Обратите внимание, что большие изображения будет выглядеть меньше при "
 "предварительном просмотре здесь, чтобы они поместились на экране."
-
-#, python-format
-msgid "Usage of %(title)s"
-msgstr "Использование %(title)s"
-
-msgid "Usage of"
-msgstr "Использование"
-
-msgid "Title"
-msgstr "Заголовок"
-
-msgid "Parent"
-msgstr "Родительский элемент"
-
-msgid "Type"
-msgstr "Тип"
-
-msgid "Status"
-msgstr "Статус"
-
-msgid "Edit this page"
-msgstr "Редактировать эту страницу"
 
 msgid "Add multiple images"
 msgstr "Добавить несколько изображений"
@@ -486,6 +535,9 @@ msgstr "Права доступа к изображению"
 msgid "Add an image permission"
 msgstr "Добавить права доступа к изображению"
 
+msgid "Tags"
+msgstr "Тэги"
+
 msgid "Tag"
 msgstr "Тэг"
 
@@ -528,12 +580,45 @@ msgstr[1] "%(num_parent_objects)d изображений было удалено
 msgstr[2] "%(num_parent_objects)d изображений было удалено"
 msgstr[3] "%(num_parent_objects)d  изображений было удалено"
 
+msgid "Upload"
+msgstr "Загрузка"
+
+msgid "Uploading…"
+msgstr "Загрузка..."
+
+msgid "Choose an image"
+msgstr "Выберите изображение"
+
+msgid "Choose another image"
+msgstr "Выбрать другое изображение"
+
+msgid "Edit this image"
+msgstr "Редактировать это изображение"
+
+msgid "Newest"
+msgstr "Новее"
+
+msgid "Oldest"
+msgstr "Старее"
+
+msgid "Title: (A -> Z)"
+msgstr "Заголовок: (А -> Я)"
+
+msgid "Title: (Z -> A)"
+msgstr "Заголовок: (Я -> А)"
+
+msgid "File size: (low to high)"
+msgstr "Размер файла: (от меньшего к большему)"
+
+msgid "File size: (high to low)"
+msgstr "Размер файла: (от большого к меньшему)"
+
 msgid "Search images"
 msgstr "Поиск изображений"
 
-#, python-brace-format
-msgid "Image '{0}' updated."
-msgstr "Изображение '{0}' обновлено."
+#, python-format
+msgid "Image '%(image_title)s' updated."
+msgstr "Изображение '%(image_title)s' обновлено."
 
 msgid "Edit again"
 msgstr "Править снова"
@@ -548,13 +633,13 @@ msgstr ""
 "Файл исходного изображения не найден. Пожалуйста, измените или удалите "
 "изображение."
 
-#, python-brace-format
-msgid "Image '{0}' deleted."
-msgstr "Изображение '{0}' удалено."
+#, python-format
+msgid "Image '%(image_title)s' deleted."
+msgstr "Изображение '%(image_title)s' удалено."
 
-#, python-brace-format
-msgid "Image '{0}' added."
-msgstr "Изображение '{0}' добавлено."
+#, python-format
+msgid "Image '%(image_title)s' added."
+msgstr "Изображение '%(image_title)s' добавлено."
 
 msgid "The image could not be created due to errors."
 msgstr "Это изображение не может быть создано из-за ошибок."
@@ -572,6 +657,3 @@ msgstr[3] "%(count)s изображений"
 
 msgid "Change image"
 msgstr "Изменить изображение"
-
-msgid "Edit this image"
-msgstr "Править это изображение"

@@ -3,13 +3,19 @@ const vanillaRTL = require('tailwindcss-vanilla-rtl');
 /**
  * Design Tokens
  */
-const colors = require('./src/tokens/colors');
+const { staticColors, transparencies } = require('./src/tokens/colors');
+const {
+  generateColorVariables,
+  generateThemeColorVariables,
+} = require('./src/tokens/colorVariables');
+const colorThemes = require('./src/tokens/colorThemes');
 const {
   fontFamily,
   fontSize,
   fontWeight,
   letterSpacing,
   lineHeight,
+  listStyleType,
   typeScale,
 } = require('./src/tokens/typography');
 const { breakpoints } = require('./src/tokens/breakpoints');
@@ -30,13 +36,24 @@ const scrollbarThin = require('./src/plugins/scrollbarThin');
  * themeColors: For converting our design tokens into a format that tailwind accepts
  */
 const themeColors = Object.fromEntries(
-  Object.entries(colors).map(([key, hues]) => {
+  Object.entries(staticColors).map(([key, hues]) => {
     const shades = Object.fromEntries(
-      Object.entries(hues).map(([k, shade]) => [k, shade.hex]),
+      Object.entries(hues).map(([k, shade]) => [
+        k,
+        `var(${shade.cssVariable})`,
+      ]),
     );
     return [key, shades];
   }),
 );
+
+const lightThemeColors = colorThemes.light.reduce((colorTokens, category) => {
+  Object.entries(category.tokens).forEach(([name, token]) => {
+    // eslint-disable-next-line no-param-reassign
+    colorTokens[name] = `var(${token.cssVariable})`;
+  });
+  return colorTokens;
+}, {});
 
 /**
  * Root Tailwind config, reusable for other projects.
@@ -49,12 +66,24 @@ module.exports = {
     },
     colors: {
       ...themeColors,
-      inherit: 'inherit',
-      current: 'currentColor',
-      transparent: 'transparent',
+      ...lightThemeColors,
+      'white-10': 'var(--w-color-white-10)',
+      'white-15': 'var(--w-color-white-15)',
+      'white-50': 'var(--w-color-white-50)',
+      'white-80': 'var(--w-color-white-80)',
+      'black-5': 'var(--w-color-black-5)',
+      'black-10': 'var(--w-color-black-10)',
+      'black-20': 'var(--w-color-black-20)',
+      'black-25': 'var(--w-color-black-25)',
+      'black-35': 'var(--w-color-black-35)',
+      'black-50': 'var(--w-color-black-50)',
+      // Color keywords.
+      'inherit': 'inherit',
+      'current': 'currentColor',
+      'transparent': 'transparent',
       /* allow system colours https://www.w3.org/TR/css-color-4/#css-system-colors */
-      LinkText: 'LinkText',
-      ButtonText: 'ButtonText',
+      'LinkText': 'LinkText',
+      'ButtonText': 'ButtonText',
     },
     fontFamily: {
       sans: 'var(--w-font-sans)',
@@ -63,6 +92,7 @@ module.exports = {
     fontSize,
     fontWeight,
     lineHeight,
+    listStyleType,
     letterSpacing,
     borderRadius,
     borderWidth,
@@ -70,12 +100,11 @@ module.exports = {
       ...boxShadow,
       none: 'none',
     },
-    spacing,
+    spacing: {
+      ...spacing,
+      'slim-header': '50px',
+    },
     extend: {
-      opacity: {
-        15: '0.15',
-        85: '0.85',
-      },
       outlineOffset: {
         inside: '-3px',
       },
@@ -132,11 +161,25 @@ module.exports = {
      */
     plugin(({ addBase }) => {
       addBase({
-        ':root': {
+        /** Support for web components */
+        ':root, :host': {
           '--w-font-sans': fontFamily.sans.join(', '),
           '--w-font-mono': fontFamily.mono.join(', '),
+          ...transparencies,
+          ...generateColorVariables(staticColors),
+          ...generateThemeColorVariables(colorThemes.light),
         },
+        '.w-theme-system': {
+          '@media (prefers-color-scheme: dark)': generateThemeColorVariables(
+            colorThemes.dark,
+          ),
+        },
+        '.w-theme-dark': generateThemeColorVariables(colorThemes.dark),
       });
+    }),
+    /** Support for aria-expanded=true variant */
+    plugin(({ addVariant }) => {
+      addVariant('expanded', '&[aria-expanded=true]');
     }),
   ],
   corePlugins: {

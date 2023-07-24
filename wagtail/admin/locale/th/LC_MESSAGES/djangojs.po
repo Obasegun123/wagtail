@@ -1,11 +1,12 @@
 #
 # Translators:
 # Walaksawan Vervoort <nula_wala@yahoo.com>, 2022
+# Loic Teixeira, 2022
 #
 msgid ""
 msgstr ""
-"Last-Translator: Walaksawan Vervoort <nula_wala@yahoo.com>, 2022\n"
-"Language-Team: Thai (https://www.transifex.com/torchbox/teams/8009/th/)\n"
+"Last-Translator: Loic Teixeira, 2022\n"
+"Language-Team: Thai (https://app.transifex.com/torchbox/teams/8009/th/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: th\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -25,8 +26,8 @@ msgstr "ลบ,ลบทิ้ง"
 msgid "Edit"
 msgstr "แก้ไข"
 
-msgid "Edit '{title}'"
-msgstr "แก้ไข'{title}'"
+msgid "Edit '%(title)s'"
+msgstr "แก้ไข'%(title)s'"
 
 msgid "Edit your account"
 msgstr "แก้ไขบัญชีของคุณ"
@@ -48,9 +49,6 @@ msgstr "หน้า"
 
 msgid "Pages"
 msgstr "หลายหน้า"
-
-msgid "Redo"
-msgstr "ทำใหม่"
 
 msgid "Reload saved content"
 msgstr "โหลดเนื้อหาที่คุณเซฟใหม่อีกครั้ง"
@@ -80,8 +78,5 @@ msgid ""
 "The editor just crashed. Content has been reset to the last saved version."
 msgstr "โปรแกรมที่แก้ไขมีปัญหา เนื้อหาเก่าได้ถูกเซฟไว้เรียบร้อยแล้ว"
 
-msgid "Undo"
-msgstr "ถอยหลัง"
-
-msgid "Write here…"
-msgstr "พิมพ์ข้อความตรงนี้"
+msgid "This field is required."
+msgstr "ไฟล์นี้จำเป็นต้องใช้"

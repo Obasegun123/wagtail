@@ -73,8 +73,6 @@ class CopyPageAction:
         return self._uuid_mapping[old_uuid]
 
     def check(self, skip_permission_checks=False):
-        from wagtail.models import UserPagePermissionsProxy
-
         # Essential data model checks
         if self.page._state.adding:
             raise CopyPageIntegrityError("Page.copy() called on an unsaved page")
@@ -102,9 +100,7 @@ class CopyPageAction:
                 )
 
             if self.keep_live:
-                destination_perms = UserPagePermissionsProxy(self.user).for_page(
-                    self.to
-                )
+                destination_perms = self.to.permissions_for_user(self.user)
 
                 if not destination_perms.can_publish_subpage():
                     raise CopyPagePermissionError(
@@ -187,6 +183,7 @@ class CopyPageAction:
         # Copy revisions
         if self.copy_revisions:
             for revision in page.revisions.all():
+                use_as_latest_revision = revision.pk == page.latest_revision_id
                 revision.pk = None
                 revision.submitted_for_moderation = False
                 revision.approved_go_live_at = None
@@ -230,13 +227,16 @@ class CopyPageAction:
 
                 # Save
                 revision.save()
+                # If this revision was designated the latest revision, update the page copy to point to the copied revision
+                if use_as_latest_revision:
+                    page_copy.latest_revision = revision
 
         # Create a new revision
         # This code serves a few purposes:
         # * It makes sure update_attrs gets applied to the latest revision
         # * It bumps the last_revision_created_at value so the new page gets ordered as if it was just created
         # * It sets the user of the new revision so it's possible to see who copied the page by looking at its history
-        latest_revision = page_copy.get_latest_revision_as_page()
+        latest_revision = page_copy.get_latest_revision_as_object()
 
         if update_attrs:
             for field, value in update_attrs.items():
@@ -245,11 +245,25 @@ class CopyPageAction:
         latest_revision_as_page_revision = latest_revision.save_revision(
             user=self.user, changed=False, clean=False
         )
+
+        # save_revision should have updated this in the database - update the in-memory copy for consistency
+        page_copy.latest_revision = latest_revision_as_page_revision
+
         if self.keep_live:
             page_copy.live_revision = latest_revision_as_page_revision
             page_copy.last_published_at = latest_revision_as_page_revision.created_at
             page_copy.first_published_at = latest_revision_as_page_revision.created_at
-            page_copy.save(clean=False)
+            # The call to save_revision above will have updated several fields of the page record, including
+            # draft_title and latest_revision. These changes are not reflected in page_copy, so we must only
+            # update the specific fields set above to avoid overwriting them.
+            page_copy.save(
+                clean=False,
+                update_fields=[
+                    "live_revision",
+                    "last_published_at",
+                    "first_published_at",
+                ],
+            )
 
         if page_copy.live:
             page_published.send(
@@ -311,7 +325,7 @@ class CopyPageAction:
         if self.recursive:
             numchild = 0
 
-            for child_page in page.get_children().specific():
+            for child_page in page.get_children().specific().iterator():
                 newdepth = _mpnode_attrs[1] + 1
                 child_mpnode_attrs = (
                     Page._get_path(_mpnode_attrs[0], newdepth, numchild),

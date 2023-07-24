@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from wagtail.admin.search import SearchArea
 from wagtail.admin.ui.sidebar import (
+    ActionMenuItem,
     LinkMenuItem,
     MainMenuModule,
     PageExplorerMenuItem,
@@ -30,7 +31,7 @@ class TestAdaptLinkMenuItem(TestCase):
                         "label": "Link",
                         "name": "link",
                         "url": "/link/",
-                        "attrs": None,
+                        "attrs": {},
                     }
                 ],
             },
@@ -90,6 +91,7 @@ class TestAdaptSubMenuItem(TestCase):
                         "icon_name": "",
                         "classnames": "",
                         "footer_text": "Footer text",
+                        "attrs": {},
                     },
                     [
                         {
@@ -101,7 +103,7 @@ class TestAdaptSubMenuItem(TestCase):
                                     "icon_name": "link-icon",
                                     "classnames": "",
                                     "url": "/link/",
-                                    "attrs": None,
+                                    "attrs": {},
                                 }
                             ],
                         }
@@ -132,6 +134,7 @@ class TestAdaptSubMenuItem(TestCase):
                         "icon_name": "",
                         "classnames": "",
                         "footer_text": "",
+                        "attrs": {},
                     },
                     [
                         {
@@ -143,7 +146,7 @@ class TestAdaptSubMenuItem(TestCase):
                                     "icon_name": "link-icon",
                                     "classnames": "",
                                     "url": "/link/",
-                                    "attrs": None,
+                                    "attrs": {},
                                 }
                             ],
                         }
@@ -163,7 +166,7 @@ class TestAdaptPageExplorerMenuItem(TestCase):
                 "_type": "wagtail.sidebar.PageExplorerMenuItem",
                 "_args": [
                     {
-                        "attrs": None,
+                        "attrs": {},
                         "classnames": "",
                         "icon_name": "",
                         "label": "Pages",
@@ -185,7 +188,7 @@ class TestAdaptSearchModule(TestCase):
         )
 
 
-class TestAdaptMainMenuModule(DjangoTestCase, WagtailTestUtils):
+class TestAdaptMainMenuModule(WagtailTestUtils, DjangoTestCase):
     def test_adapt(self):
         main_menu = [
             LinkMenuItem("pages", "Pages", "/pages/"),
@@ -194,7 +197,7 @@ class TestAdaptMainMenuModule(DjangoTestCase, WagtailTestUtils):
             LinkMenuItem(
                 "account", "Account", reverse("wagtailadmin_account"), icon_name="user"
             ),
-            LinkMenuItem(
+            ActionMenuItem(
                 "logout", "Logout", reverse("wagtailadmin_logout"), icon_name="logout"
             ),
         ]
@@ -217,7 +220,7 @@ class TestAdaptMainMenuModule(DjangoTestCase, WagtailTestUtils):
                                     "icon_name": "",
                                     "classnames": "",
                                     "url": "/pages/",
-                                    "attrs": None,
+                                    "attrs": {},
                                 }
                             ],
                         }
@@ -232,20 +235,21 @@ class TestAdaptMainMenuModule(DjangoTestCase, WagtailTestUtils):
                                     "icon_name": "user",
                                     "classnames": "",
                                     "url": reverse("wagtailadmin_account"),
-                                    "attrs": None,
+                                    "attrs": {},
                                 }
                             ],
                         },
                         {
-                            "_type": "wagtail.sidebar.LinkMenuItem",
+                            "_type": "wagtail.sidebar.ActionMenuItem",
                             "_args": [
                                 {
                                     "name": "logout",
                                     "label": "Logout",
                                     "icon_name": "logout",
                                     "classnames": "",
-                                    "url": reverse("wagtailadmin_logout"),
-                                    "attrs": None,
+                                    "action": reverse("wagtailadmin_logout"),
+                                    "method": "POST",
+                                    "attrs": {},
                                 }
                             ],
                         },

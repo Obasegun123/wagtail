@@ -5,26 +5,33 @@
 # Translators:
 # eb5b5ee62bf6428e621432b9e62de6b8_d17f633, 2014
 # Andrey <talkerbox@live.com>, 2016
+# Andrey <talkerbox@live.com>, 2016
+# eb5b5ee62bf6428e621432b9e62de6b8_d17f633, 2014
+# Eugene <eugene.mechanism@gmail.com>, 2017
 # Eugene <eugene.mechanism@gmail.com>, 2014-2016
 # Eugene <eugene.mechanism@gmail.com>, 2017
 # Никита Викторович <hnknta@gmail.com>, 2014
 # Mikhail Sidorov <pevzi23@gmail.com>, 2019
 # sergeybe <sergeybe@gmail.com>, 2020
+# sergeybe <sergeybe@gmail.com>, 2020
 # Sergey Komarov <sjkomarov@gmail.com>, 2014
 # Tatsiana Tsygan <art.tatsiana@gmail.com>, 2018
+# Vassily <zuber.kg@gmail.com>, 2017
 # Vassily <zuber.kg@gmail.com>, 2017
 # Влад <integration.into.society@gmail.com>, 2022
 # Влад <integration.into.society@gmail.com>, 2021-2022
 # Мирон Левицкий <miron200504@gmail.com>, 2018
 # Михаил Герасимов, 2019
+# Михаил Герасимов, 2019
+# Никита Викторович <hnknta@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-19 11:54+0000\n"
-"Last-Translator: Влад <integration.into.society@gmail.com>, 2021-2022\n"
-"Language-Team: Russian (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Михаил Герасимов, 2019\n"
+"Language-Team: Russian (http://app.transifex.com/torchbox/wagtail/language/"
 "ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,10 +44,8 @@ msgstr ""
 msgid "Wagtail users"
 msgstr "Пользователи Wagtail"
 
-msgid "Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."
-msgstr ""
-"Обязательное. 30 символов или меньше. Только буквы, цифры и символы @/./+/-/"
-"_."
+msgid "Required. Letters, digits and @/./+/-/_ only."
+msgstr "Только буквы, цифры и @/./+/-/_."
 
 msgid "This value may contain only letters, numbers and @/./+/-/_ characters."
 msgstr "Это значение может содержать только буквы, цифры и символы @/./+/-/_"
@@ -137,6 +142,14 @@ msgstr "профиль пользователя"
 msgid "user profiles"
 msgstr "профили пользователя"
 
+#, python-format
+msgid "Assign role to 1 user"
+msgid_plural "Assign role to %(counter)s users"
+msgstr[0] "Назначить роль 1 пользователю"
+msgstr[1] "Назначить роль %(counter)s пользователям"
+msgstr[2] "Назначить роль %(counter)s пользователям"
+msgstr[3] "Назначить роль %(counter)s пользователям"
+
 msgid "Assign role"
 msgstr "Назначить роль"
 
@@ -156,6 +169,14 @@ msgstr "Да, назначить"
 msgid "No, don't assign"
 msgstr "Нет, не назначать"
 
+#, python-format
+msgid "Delete 1 user"
+msgid_plural "Delete %(counter)s users"
+msgstr[0] "Удалить пользователя"
+msgstr[1] "Удалить %(counter)s пользователей"
+msgstr[2] "Удалить %(counter)s пользователей"
+msgstr[3] "Удалить %(counter)s пользователей"
+
 msgid "Delete"
 msgstr "Удалить"
 
@@ -174,6 +195,14 @@ msgstr "Да, удалить"
 
 msgid "No, don't delete"
 msgstr "Нет, не удалять"
+
+#, python-format
+msgid "Change active state for 1 user"
+msgid_plural "Change active state for %(counter)s users"
+msgstr[0] "Изменить активное состояние для 1 пользователя"
+msgstr[1] "Изменить активное состояние для %(counter)s пользователей"
+msgstr[2] "Изменить активное состояние для %(counter)s пользователей"
+msgstr[3] "Изменить активное состояние для %(counter)s пользователей"
 
 msgid "Set active state"
 msgstr "Установить активное состояние"
@@ -216,9 +245,6 @@ msgstr "Просмотр пользователей группы"
 msgid "Save"
 msgstr "Сохранить"
 
-msgid "Permissions"
-msgstr "Разрешения"
-
 msgid "Object permissions"
 msgstr "Разрешения объекта"
 
@@ -230,6 +256,15 @@ msgstr "Добавить"
 
 msgid "Change"
 msgstr "Изменить"
+
+msgid "Publish"
+msgstr "Опубликовать"
+
+msgid "Lock"
+msgstr "Блокировка"
+
+msgid "Unlock"
+msgstr "Разблокировать"
 
 msgid "Custom permissions"
 msgstr "Пользовательские разрешения"
@@ -285,9 +320,6 @@ msgstr "Выбрать всех пользователей в списке"
 msgid "Username"
 msgstr "Имя пользователя"
 
-msgid "Level"
-msgstr "Уровень"
-
 msgid "Status"
 msgstr "Статус"
 
@@ -304,8 +336,12 @@ msgid "Inactive"
 msgstr "Неактивный"
 
 #, python-format
-msgid "%(time_period)s ago"
-msgstr "%(time_period)s назад"
+msgid "There is %(counter)s match"
+msgid_plural "There are %(counter)s matches"
+msgstr[0] "Есть %(counter)s совпадение"
+msgstr[1] "Есть %(counter)s совпадений"
+msgstr[2] "Есть %(counter)s совпадений"
+msgstr[3] "Есть %(counter)s совпадений"
 
 #, python-format
 msgid "Sorry, no users match \"<em>%(query_string)s</em>\""
@@ -329,14 +365,50 @@ msgstr ""
 "Пользователи не сконфигурированы. <a href=\"%(wagtailusers_add_url)s"
 "\">Добавить пользователя</a>."
 
+#, python-format
+msgid "user %(id)s (deleted)"
+msgstr "пользователь 1%(id)s (удален)"
+
 msgid "Assign role to selected users"
 msgstr "Назначить роль выбранным пользователям"
+
+#, python-format
+msgid "%(num_parent_objects)d user has been assigned as %(role)s"
+msgid_plural "%(num_parent_objects)d users have been assigned as %(role)s"
+msgstr[0] "%(num_parent_objects)dпользователь был назначен как %(role)s"
+msgstr[1] "%(num_parent_objects)dпользователи были назначены как %(role)s"
+msgstr[2] "%(num_parent_objects)d пользователи были назначены как %(role)s"
+msgstr[3] "%(num_parent_objects)d пользователи были назначены как %(role)s"
 
 msgid "Delete selected users"
 msgstr "Удалить выбранных пользователей"
 
+#, python-format
+msgid "%(num_parent_objects)d user has been deleted"
+msgid_plural "%(num_parent_objects)d users have been deleted"
+msgstr[0] "%(num_parent_objects)d пользователь был удален"
+msgstr[1] "%(num_parent_objects)d пользователей было удалено"
+msgstr[2] "%(num_parent_objects)d пользователей было удалено"
+msgstr[3] "%(num_parent_objects)d пользователей было удалено"
+
 msgid "Change the active state for selected users"
 msgstr "Изменить активное состояние для выбранных пользователей"
+
+#, python-format
+msgid "%(num_parent_objects)d user has been marked as active"
+msgid_plural "%(num_parent_objects)d users have been marked as active"
+msgstr[0] "%(num_parent_objects)d пользователь был отмечен как активный"
+msgstr[1] "%(num_parent_objects)d  пользователей было отмечено как активные"
+msgstr[2] "%(num_parent_objects)d  пользователей было отмечено как активные"
+msgstr[3] "%(num_parent_objects)d пользователей было отмечено как активные"
+
+#, python-format
+msgid "%(num_parent_objects)d user has been marked as inactive"
+msgid_plural "%(num_parent_objects)d users have been marked as inactive"
+msgstr[0] "%(num_parent_objects)d пользователь был отмечен как неактивный"
+msgstr[1] "%(num_parent_objects)d пользователей было отмечено как неактивные"
+msgstr[2] "%(num_parent_objects)d пользователей было отмечено как неактивные"
+msgstr[3] "%(num_parent_objects)d пользователей было отмечено как неактивные"
 
 msgid "Groups"
 msgstr "Группы"
@@ -347,44 +419,38 @@ msgstr "Добавить группу"
 msgid "Search groups"
 msgstr "Поиск групп"
 
-#, python-brace-format
-msgid "Group '{0}' created."
-msgstr "Группа '{0}' создана."
+#, python-format
+msgid "Group '%(object)s' created."
+msgstr "Группа '%(object)s' создана."
 
-#, python-brace-format
-msgid "Group '{0}' updated."
-msgstr "Группа '{0}' обновлена."
+#, python-format
+msgid "Group '%(object)s' updated."
+msgstr "Группа '%(object)s' обновлена."
 
 msgid "The group could not be saved due to errors."
 msgstr "Группа не может быть сохранена из-за ошибок."
 
-#, python-brace-format
-msgid "Group '{0}' deleted."
-msgstr "Группа '{0}' удалена."
+#, python-format
+msgid "Group '%(object)s' deleted."
+msgstr "Группа '%(object)s' удалена."
 
-msgid "Search users"
-msgstr "Поиск пользователей"
-
-#, python-brace-format
-msgid "User '{0}' created."
-msgstr "Пользователь '{0}' создан."
-
-msgid "Edit"
-msgstr "Править"
-
-msgid "The user could not be created due to errors."
-msgstr "Пользователь не может быть создан из-за ошибок."
-
-#, python-brace-format
-msgid "User '{0}' updated."
-msgstr "Пользователь '{0}' обновлен."
+#, python-format
+msgid "User '%(object)s' updated."
+msgstr "Пользователь '%(object)s' обновлен."
 
 msgid "The user could not be saved due to errors."
 msgstr "Пользователь но может быть сохранен из-за ошибок."
 
-#, python-brace-format
-msgid "User '{0}' deleted."
-msgstr "Пользователь '{0}' удалён."
+#, python-format
+msgid "Editing %(object)s"
+msgstr "Редактирование %(object)s"
+
+#, python-format
+msgid "User '%(object)s' deleted."
+msgstr "Пользователь '%(object)s' удалён."
+
+msgid "Edit"
+msgstr "Править"
 
 msgid "Edit this user"
 msgstr "Редактировать этого пользователя"

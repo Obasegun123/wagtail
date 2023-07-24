@@ -1,4 +1,4 @@
-from wagtail.admin.menu import Menu, MenuItem, SubmenuMenuItem
+from wagtail.admin.menu import MenuItem, SubmenuMenuItem
 
 
 class ModelAdminMenuItem(MenuItem):
@@ -20,6 +20,7 @@ class ModelAdminMenuItem(MenuItem):
         super().__init__(
             label=model_admin.get_menu_label(),
             url=url,
+            name=model_admin.get_menu_item_name(),
             classnames=classnames,
             icon_name=icon_name,
             order=order,
@@ -47,29 +48,8 @@ class GroupMenuItem(SubmenuMenuItem):
         super().__init__(
             label=modeladmingroup.get_menu_label(),
             menu=menu,
+            name=modeladmingroup.get_menu_item_name(),
             classnames=classnames,
             icon_name=icon_name,
             order=order,
         )
-
-    def is_shown(self, request):
-        """
-        If there aren't any visible items in the submenu, don't bother to show
-        this menu item
-        """
-        for menuitem in self.menu._registered_menu_items:
-            if menuitem.is_shown(request):
-                return True
-        return False
-
-
-class SubMenu(Menu):
-    """
-    A sub-class of wagtail's Menu, used by AppModelAdmin. We just want to
-    override __init__, so that we can specify the items to include on
-    initialisation
-    """
-
-    def __init__(self, menuitem_list):
-        self._registered_menu_items = menuitem_list
-        self.construct_hook_name = None

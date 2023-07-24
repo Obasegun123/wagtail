@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-09-11 15:42+0000\n"
-"Last-Translator: Dzikri Hakim <dzikers@gmail.com>, 2018\n"
-"Language-Team: Indonesian (Indonesia) (http://www.transifex.com/torchbox/"
+"Last-Translator: M. Febrian Ramadhana <febrian@ramadhana.me>, 2018\n"
+"Language-Team: Indonesian (Indonesia) (http://app.transifex.com/torchbox/"
 "wagtail/language/id_ID/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,8 +30,12 @@ msgid "Date to"
 msgstr "sampai tanggal"
 
 #, python-format
-msgid "There is another field with the label %s, please change one of them."
-msgstr "Terdapat isian lain dengan label %s, mohon untuk mengganti salah satu."
+msgid ""
+"There is another field with the label %(label_name)s, please change one of "
+"them."
+msgstr ""
+"Terdapat isian lain dengan label %(label_name)s, mohon untuk mengganti salah "
+"satu."
 
 msgid "Single line text"
 msgstr "Teks satu baris"
@@ -122,8 +126,8 @@ msgid "subject"
 msgstr "subyek"
 
 #, python-format
-msgid "%s submissions"
-msgstr "%s hasil."
+msgid "%(model_name)s submissions"
+msgstr "%(model_name)s hasil."
 
 #, python-format
 msgid "Delete form data %(title)s"
@@ -140,24 +144,6 @@ msgstr "Formulir"
 
 msgid "Pages"
 msgstr "Halaman"
-
-#, python-format
-msgid "Submissions of %(form_title)s"
-msgstr "Hasil dari %(form_title)s"
-
-#, python-format
-msgid "Form data <span>%(form_title)s</span>"
-msgstr "Data formulir <span>%(form_title)s</span>"
-
-msgid "Filter"
-msgstr "Saring"
-
-msgid "Download CSV"
-msgstr "Unduh CSV"
-
-#, python-format
-msgid "There have been no submissions of the '%(title)s' form."
-msgstr "Tidak terdapat hasil untuk formulir '%(title)s'."
 
 msgid "Title"
 msgstr "Judul"
@@ -176,6 +162,20 @@ msgstr "Hasil terakhir"
 
 msgid "No form pages have been created."
 msgstr "Tidak ada halaman formulir yang dibuat."
+
+#, python-format
+msgid "Submissions of %(form_title)s"
+msgstr "Hasil dari %(form_title)s"
+
+msgid "Download CSV"
+msgstr "Unduh CSV"
+
+#, python-format
+msgid "There have been no submissions of the '%(title)s' form."
+msgstr "Tidak terdapat hasil untuk formulir '%(title)s'."
+
+msgid "Filter"
+msgstr "Saring"
 
 #, python-format
 msgid "One submission has been deleted."

@@ -1,13 +1,22 @@
 export default function initCollapsibleBreadcrumbs() {
   const breadcrumbsContainer = document.querySelector('[data-breadcrumb-next]');
-  const slimHeader = document.querySelector('[data-slim-header]');
 
   if (!breadcrumbsContainer) {
     return;
   }
+
+  const header = breadcrumbsContainer.closest(
+    breadcrumbsContainer.dataset.headerSelector || 'header',
+  );
+
+  if (!header) return;
+
   const breadcrumbsToggle = breadcrumbsContainer.querySelector(
     '[data-toggle-breadcrumbs]',
   );
+
+  if (!breadcrumbsToggle) return;
+
   const breadcrumbItems = breadcrumbsContainer.querySelectorAll(
     '[data-breadcrumb-item]',
   );
@@ -20,7 +29,6 @@ export default function initCollapsibleBreadcrumbs() {
   let open = false;
   let mouseExitedToggle = true;
   let keepOpen = false;
-  let hideBreadcrumbsWithDelay;
 
   function hideBreadcrumbs() {
     breadcrumbItems.forEach((breadcrumb) => {
@@ -40,15 +48,10 @@ export default function initCollapsibleBreadcrumbs() {
   }
 
   function showBreadcrumbs() {
-    breadcrumbItems.forEach((breadcrumb, index) => {
-      setTimeout(() => {
-        // eslint-disable-next-line no-param-reassign
-        breadcrumb.hidden = false;
-
-        setTimeout(() => {
-          breadcrumb.classList.add(cssClass.maxWidth);
-        }, 50);
-      }, index * 10);
+    breadcrumbItems.forEach((breadcrumb) => {
+      // eslint-disable-next-line no-param-reassign
+      breadcrumb.hidden = false;
+      breadcrumb.classList.add(cssClass.maxWidth);
     });
     breadcrumbsToggle.setAttribute('aria-expanded', 'true');
     open = true;
@@ -110,17 +113,10 @@ export default function initCollapsibleBreadcrumbs() {
     mouseExitedToggle = true;
   });
 
-  slimHeader.addEventListener('mouseleave', () => {
+  header.addEventListener('mouseleave', () => {
     if (!keepOpen) {
-      hideBreadcrumbsWithDelay = setTimeout(() => {
-        hideBreadcrumbs();
-        //  Give a little bit of time before closing in case the user changes their mind
-      }, 500);
+      hideBreadcrumbs();
     }
-  });
-
-  slimHeader.addEventListener('mouseenter', () => {
-    clearTimeout(hideBreadcrumbsWithDelay);
   });
 
   document.addEventListener('keydown', (e) => {

@@ -6,7 +6,7 @@ from wagtail.admin.panels import (
     ObjectList,
     TabbedInterface,
 )
-from wagtail.models import Page, TranslatableMixin
+from wagtail.models import Page, RevisionMixin, TranslatableMixin
 from wagtail.search import index
 
 
@@ -35,6 +35,9 @@ class Book(models.Model, index.Indexed):
     title = models.CharField(max_length=255)
     cover_image = models.ForeignKey(
         "wagtailimages.Image", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    extract_document = models.ForeignKey(
+        "wagtaildocs.Document", on_delete=models.SET_NULL, null=True, blank=True
     )
 
     search_fields = [
@@ -79,7 +82,7 @@ class Token(models.Model):
         return self.key
 
 
-class Publisher(models.Model):
+class Publisher(RevisionMixin, models.Model):
     name = models.CharField(max_length=50)
     headquartered_in = models.CharField(max_length=50, null=True, blank=True)
 
@@ -154,6 +157,15 @@ class Friend(models.Model):
 
     def __str__(self):
         return self.first_name
+
+
+class Enemy(models.Model):
+    """model used to test add_to_admin_menu usage in ModelAdminMenuItem"""
+
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
 
 
 class RelatedLink(models.Model):

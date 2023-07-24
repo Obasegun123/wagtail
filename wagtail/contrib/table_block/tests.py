@@ -474,7 +474,7 @@ class TestTableBlockForm(WagtailTestUtils, SimpleTestCase):
                 "label": "Test tableblock",
                 "required": True,
                 "icon": "table",
-                "classname": "field char_field widget-table_input fieldname-test_tableblock",
+                "classname": "w-field w-field--char_field w-field--table_input",
                 "showAddCommentButton": True,
                 "strings": {"ADD_COMMENT": "Add Comment"},
             },
@@ -491,7 +491,7 @@ class TestTableBlockForm(WagtailTestUtils, SimpleTestCase):
 
 
 # TODO(telepath) replace this with a functional test
-class TestTableBlockPageEdit(TestCase, WagtailTestUtils):
+class TestTableBlockPageEdit(WagtailTestUtils, TestCase):
     def setUp(self):
         self.value = {
             "first_row_is_table_header": True,
@@ -524,7 +524,7 @@ class TestTableBlockPageEdit(TestCase, WagtailTestUtils):
         # check page + field renders
         self.assertContains(
             response,
-            '<div data-contentpath="table" class="field char_field widget-table_input fieldname-table">',
+            '<div data-contentpath="table" class="w-field w-field--char_field w-field--table_input">',
         )
         # check data
         self.assertContains(response, "Battlestar")

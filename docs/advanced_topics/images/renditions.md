@@ -16,7 +16,7 @@ If `myimage` had a filename of `foo.jpg`, a new rendition of the image file call
 Argument options are identical to the `{% image %}` template tag's filter spec, and should be separated with `|`.
 
 The generated `Rendition` object will have properties specific to that version of the image, such as
-`url`, `width` and `height`, so something like this could be used in an API generator, for example:
+`url`, `width` and `height`. Hence, something like this could be used in an API generator, for example:
 
 ```python
 url = myimage.get_rendition('fill-300x186|jpegquality-60').url
@@ -34,15 +34,73 @@ be accessed through the Rendition's `image` property:
 
 See also: [](image_tag)
 
+(image_renditions_multiple)=
+
+## Generating multiple renditions for an image
+
+You can generate multiple renditions of the same image from Python using the native `get_renditions()` method. It will accept any number of 'specification' strings, and will generate a set of matching renditions much more efficiently than generating each one individually. For example:
+
+```python
+image.get_renditions('width-600', 'height-400', 'fill-300x186|jpegquality-60')
+```
+
+The return value is a dictionary of renditions keyed by the specification strings that were provided to the method. The return value from the above example would look something like this:
+
+```python
+{
+    "width-600": <Rendition: Rendition object (7)>,
+    "height-400": <Rendition: Rendition object (8)>,
+    "fill-300x186|jpegquality-60": <Rendition: Rendition object (9)>,
+}
+```
+
+(caching_image_renditions)=
+
+## Caching image renditions
+
+Wagtail will cache image rendition lookups, which can improve the performance of pages which include many images.
+
+By default, Wagtail will try to use the cache called "renditions". If no such cache exists, it will fall back to using the default cache.
+
 (prefetching_image_renditions)=
 
 ## Prefetching image renditions
 
-```{versionadded} 3.0
-This following guidance is only applicable in Wagtail versions 3.0 and above.
+When using a queryset to render a list of images or objects with images, you can prefetch the renditions needed with a single additional query. For long lists of items, or where multiple renditions are used for each item, this can provide a significant boost to performance.
+
+### Image QuerySets
+
+When working with an Image QuerySet, you can make use of Wagtail's built-in `prefetch_renditions` queryset method to prefetch the renditions needed.
+
+For example, say you were rendering a list of all the images uploaded by a user:
+
+```python
+def get_images_uploaded_by_user(user):
+    return ImageModel.objects.filter(uploaded_by_user=user)
 ```
 
-When using a queryset to render a list of objects with images, you can make use of Django's built-in `prefetch_related()` queryset method to prefetch the renditions needed for rendering with a single additional query. For long lists of items, or where multiple renditions are used for each item, this can provide a significant boost to performance.
+The above can be modified slightly to prefetch the renditions of the images returned:
+
+```python
+def get_images_uploaded_by_user(user)::
+    return ImageModel.objects.filter(uploaded_by_user=user).prefetch_renditions()
+```
+
+The above will prefetch all renditions even if we may not need them.
+
+If images in your project tend to have very large numbers of renditions, and you know in advance the ones you need, you might want to consider specifying a set of filters to the `prefetch_renditions` method and only select the renditions you need for rendering. For example:
+
+```python
+def get_images_uploaded_by_user(user):
+    # Only specify the renditions required for rendering
+    return ImageModel.objects.filter(uploaded_by_user=user).prefetch_renditions(
+        "fill-700x586", "min-600x400", "max-940x680"
+    )
+```
+
+### Non Image Querysets
+
+If you're working with a non Image Model, you can make use of Django's built-in `prefetch_related()` queryset method to prefetch renditions.
 
 For example, say you were rendering a list of events (with thumbnail images for each). Your code might look something like this:
 
@@ -58,7 +116,7 @@ def get_events():
     return EventPage.objects.live().select_related("listing_image").prefetch_related("listing_image__renditions")
 ```
 
-If images in your project tend to have very large numbers of renditions, and you know in advance the ones you need, you might want to consider using a `Prefetch` object to select only the renditions you need for rendering. For example:
+If you know in advance the renditions you'll need, you can filter the renditions queryset to use:
 
 ```python
 from django.db.models import Prefetch
@@ -66,26 +124,22 @@ from wagtail.images import get_image_model
 
 
 def get_events():
-    # These are the renditions required for rendering
-    renditions_queryset = get_image_model().get_rendition_model().objects.filter(
-        filter_spec__in=["fill-300x186", "fill-600x400", "fill-940x680"]
-    )
+    Image = get_image_model()
+    filters = ["fill-300x186", "fill-600x400", "fill-940x680"]
 
     # `Prefetch` is used to fetch only the required renditions
-    return EventPage.objects.live().select_related("listing_image").prefetch_related(
-        Prefetch("listing_image__renditions", queryset=renditions_queryset)
+    prefetch_images_and_renditions = Prefetch(
+        "listing_image",
+        queryset=Image.objects.prefetch_renditions(*filters)
     )
+    return EventPage.objects.live().prefetch_related(prefetch_images_and_renditions)
 ```
 
 (image_rendition_methods)=
 
 ## Model methods involved in rendition generation
 
-```{versionadded} 3.0
-The following method references are only applicable to Wagtail versions 3.0 and above.
-```
-
-The following `AbstractImage` model methods are involved in finding and generating a renditions. If using a custom image model, you can customise the behaviour of either of these methods by overriding them on your model:
+The following `AbstractImage` model methods are involved in finding and generating renditions. If using a custom image model, you can customise the behaviour of either of these methods by overriding them on your model:
 
 ```{eval-rst}
 .. automodule:: wagtail.images.models
@@ -98,6 +152,12 @@ The following `AbstractImage` model methods are involved in finding and generati
     .. automethod:: find_existing_rendition
 
     .. automethod:: create_rendition
+
+    .. automethod:: get_renditions
+
+    .. automethod:: find_existing_renditions
+
+    .. automethod:: create_renditions
 
     .. automethod:: generate_rendition_file
 ```

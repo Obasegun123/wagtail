@@ -5,13 +5,13 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from wagtail import hooks
-from wagtail.admin.tests.pages.timestamps import local_datetime
 from wagtail.models import GroupPagePermission, Locale, Page
 from wagtail.test.testapp.models import SimplePage, SingleEventPage, StandardIndex
 from wagtail.test.utils import WagtailTestUtils
+from wagtail.test.utils.timestamps import local_datetime
 
 
-class TestPageExplorer(TestCase, WagtailTestUtils):
+class TestPageExplorer(WagtailTestUtils, TestCase):
     def setUp(self):
         # Find root page
         self.root_page = Page.objects.get(id=2)
@@ -63,24 +63,17 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "wagtailadmin/pages/index.html")
         self.assertEqual(Page.objects.get(id=1), response.context["parent_page"])
-        self.assertTrue(
-            response.context["pages"]
-            .paginator.object_list.filter(id=self.root_page.id)
-            .exists()
-        )
+        self.assertIn(self.root_page, response.context["pages"])
 
     def test_explore_root_shows_icon(self):
         response = self.client.get(reverse("wagtailadmin_explore_root"))
         self.assertEqual(response.status_code, 200)
 
         # Administrator (or user with add_site permission) should see the
-        # sites link with the icon-site icon
+        # sites link with its icon
         self.assertContains(
             response,
-            (
-                """<a href="/admin/sites/" class="icon icon-site" """
-                """title="Sites menu"></a>"""
-            ),
+            '<a href="/admin/sites/" title="Sites menu"><svg',
         )
 
     def test_ordering(self):
@@ -220,7 +213,7 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
         self.assertTemplateUsed(response, "wagtailadmin/pages/index.html")
 
         # Check that we got the correct page
-        self.assertEqual(response.context["pages"].number, 2)
+        self.assertEqual(response.context["page_obj"].number, 2)
 
     def test_pagination_invalid(self):
         self.make_pages()
@@ -231,11 +224,7 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
         )
 
         # Check response
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "wagtailadmin/pages/index.html")
-
-        # Check that we got page one
-        self.assertEqual(response.context["pages"].number, 1)
+        self.assertEqual(response.status_code, 404)
 
     def test_pagination_out_of_range(self):
         self.make_pages()
@@ -245,14 +234,7 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
         )
 
         # Check response
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "wagtailadmin/pages/index.html")
-
-        # Check that we got the last page
-        self.assertEqual(
-            response.context["pages"].number,
-            response.context["pages"].paginator.num_pages,
-        )
+        self.assertEqual(response.status_code, 404)
 
     @override_settings(USE_L10N=True, USE_THOUSAND_SEPARATOR=True)
     def test_no_thousand_separators_in_bulk_action_checkbox(self):
@@ -359,7 +341,7 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
             content_type=missing_page_content_type
         )
 
-        # try to browse the the listing that contains the missing model
+        # try to browse the listing that contains the missing model
         response = self.client.get(
             reverse("wagtailadmin_explore", args=(self.root_page.id,))
         )
@@ -374,8 +356,19 @@ class TestPageExplorer(TestCase, WagtailTestUtils):
         self.assertTemplateUsed(response, "wagtailadmin/pages/index.html")
 
 
-class TestBreadcrumb(TestCase, WagtailTestUtils):
+class TestBreadcrumb(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
+
+    def test_breadcrumb_next_present(self):
+        self.user = self.login()
+
+        # get the explorer view for a subpage of a SimplePage
+        page = Page.objects.get(url_path="/home/secret-plans/steal-underpants/")
+        response = self.client.get(reverse("wagtailadmin_explore", args=(page.id,)))
+        self.assertEqual(response.status_code, 200)
+
+        # The data-breadcrumb-next should be present
+        self.assertContains(response, "data-breadcrumb-next")
 
     def test_breadcrumb_uses_specific_titles(self):
         self.user = self.login()
@@ -389,22 +382,45 @@ class TestBreadcrumb(TestCase, WagtailTestUtils):
             "wagtailadmin_explore",
             args=(Page.objects.get(url_path="/home/secret-plans/").id,),
         )
+
         expected = (
             """
-            <li class="breadcrumb-item">
-                <a class="breadcrumb-link" href="%s"><span class="title">Secret plans (simple page)</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="%s">
+                    Secret plans (simple page)
                 </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
             </li>
         """
             % expected_url
         )
+
         self.assertContains(response, expected, html=True)
 
 
-class TestPageExplorerSignposting(TestCase, WagtailTestUtils):
+class TestPageExplorerSidePanel(WagtailTestUtils, TestCase):
+    fixtures = ["test.json"]
+
+    def test_side_panel_present(self):
+        self.user = self.login()
+
+        # get the explorer view for a subpage of a SimplePage
+        page = Page.objects.get(url_path="/home/secret-plans/steal-underpants/")
+        response = self.client.get(reverse("wagtailadmin_explore", args=(page.id,)))
+        self.assertEqual(response.status_code, 200)
+
+        # The side panel should be present with data-form-side-explorer attribute
+        html = response.content.decode()
+        self.assertTagInHTML(
+            "<aside data-form-side data-form-side-explorer>",
+            html,
+            allow_extra_attrs=True,
+        )
+
+
+class TestPageExplorerSignposting(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -567,7 +583,7 @@ class TestPageExplorerSignposting(TestCase, WagtailTestUtils):
         )
 
 
-class TestExplorablePageVisibility(TestCase, WagtailTestUtils):
+class TestExplorablePageVisibility(WagtailTestUtils, TestCase):
     """
     Test the way that the Explorable Pages functionality manifests within the Explorer.
     This is isolated in its own test case because it requires a custom page tree and custom set of
@@ -621,38 +637,36 @@ class TestExplorablePageVisibility(TestCase, WagtailTestUtils):
         response = self.client.get(reverse("wagtailadmin_explore", args=[6]))
         self.assertEqual(response.status_code, 200)
         expected = """
-            <li class="home breadcrumb-item">
-                <a class="breadcrumb-link" href="/admin/pages/">
-                    <svg class="icon icon-site home_icon" aria-hidden="true">
-                        <use href="#icon-site"></use>
-                    </svg>
-                    <span class="visuallyhidden">Root</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="/admin/pages/">
+                    Root
                 </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
+            </li>
+
+        """
+        self.assertContains(response, expected, html=True)
+        expected = """
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="/admin/pages/4/">
+                    Welcome to example.com!
+                </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
             </li>
         """
         self.assertContains(response, expected, html=True)
         expected = """
-            <li class="breadcrumb-item">
-                <a class="breadcrumb-link" href="/admin/pages/4/">
-                    <span class="title">Welcome to example.com!</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="/admin/pages/5/">
+                    Content
                 </a>
-            </li>
-        """
-        self.assertContains(response, expected, html=True)
-        expected = """
-            <li class="breadcrumb-item">
-                <a class="breadcrumb-link" href="/admin/pages/5/">
-                    <span class="title">Content</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
-                </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
             </li>
         """
         self.assertContains(response, expected, html=True)
@@ -664,27 +678,24 @@ class TestExplorablePageVisibility(TestCase, WagtailTestUtils):
         # While at "Page 1", Josh should see the breadcrumbs leading only as far back as the example.com homepage,
         # since it's his Closest Common Ancestor.
         expected = """
-            <li class="home breadcrumb-item">
-                <a class="breadcrumb-link" href="/admin/pages/4/">
-                    <svg class="icon icon-site home_icon" aria-hidden="true">
-                        <use href="#icon-site"></use>
-                    </svg>
-                    <span class="visuallyhidden">Home</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="/admin/pages/4/">
+                    Root
                 </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
             </li>
         """
         self.assertContains(response, expected, html=True)
         expected = """
-            <li class="breadcrumb-item">
-                <a class="breadcrumb-link" href="/admin/pages/5/">
-                    <span class="title">Content</span>
-                    <svg class="icon icon-arrow-right arrow_right_icon" aria-hidden="true">
-                        <use href="#icon-arrow-right"></use>
-                    </svg>
+            <li class="w-h-full w-flex w-items-center w-overflow-hidden w-transition w-duration-300 w-whitespace-nowrap w-flex-shrink-0 w-font-bold w-max-w-0" data-breadcrumb-item hidden>
+                <a class="w-flex w-items-center w-h-full w-text-text-label w-pr-0.5 w-text-14 w-no-underline w-outline-offset-inside hover:w-underline hover:w-text-text-label w-h-full" href="/admin/pages/5/">
+                    Content
                 </a>
+                <svg class="icon icon-arrow-right w-w-4 w-h-4 w-ml-3" aria-hidden="true">
+                    <use href="#icon-arrow-right"></use>
+                </svg>
             </li>
         """
         self.assertContains(response, expected, html=True)
@@ -711,7 +722,7 @@ class TestExplorablePageVisibility(TestCase, WagtailTestUtils):
 
 
 @override_settings(WAGTAIL_I18N_ENABLED=True)
-class TestLocaleSelector(TestCase, WagtailTestUtils):
+class TestLocaleSelector(WagtailTestUtils, TestCase):
     fixtures = ["test.json"]
 
     def setUp(self):
@@ -726,15 +737,18 @@ class TestLocaleSelector(TestCase, WagtailTestUtils):
         response = self.client.get(
             reverse("wagtailadmin_explore", args=[self.events_page.id])
         )
+        html = response.content.decode()
 
-        self.assertContains(response, '<li class="header-meta--locale">')
+        self.assertContains(response, 'id="status-sidebar-english"')
+        self.assertContains(response, "Switch locales")
 
         add_translation_url = reverse(
             "wagtailadmin_explore", args=[self.translated_events_page.id]
         )
-        self.assertContains(
-            response,
-            f'<a href="{add_translation_url}" aria-label="French" class="u-link is-live w-no-underline">',
+        self.assertTagInHTML(
+            f'<a href="{add_translation_url}" lang="fr">French</a>',
+            html,
+            allow_extra_attrs=True,
         )
 
     @override_settings(WAGTAIL_I18N_ENABLED=False)
@@ -742,13 +756,16 @@ class TestLocaleSelector(TestCase, WagtailTestUtils):
         response = self.client.get(
             reverse("wagtailadmin_explore", args=[self.events_page.id])
         )
+        html = response.content.decode()
 
-        self.assertNotContains(response, '<li class="header-meta--locale">')
+        self.assertNotContains(response, "Switch locales")
 
         add_translation_url = reverse(
             "wagtailadmin_explore", args=[self.translated_events_page.id]
         )
-        self.assertNotContains(
-            response,
-            f'<a href="{add_translation_url}" aria-label="French" class="u-link is-live w-no-underline">',
+        self.assertTagInHTML(
+            f'<a href="{add_translation_url}" lang="fr">French</a>',
+            html,
+            allow_extra_attrs=True,
+            count=0,
         )

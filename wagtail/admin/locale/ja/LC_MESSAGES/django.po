@@ -3,14 +3,20 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
+# bayside kent, 2022
 # Daigo Shitara <stain.witness@gmail.com>, 2014,2016
+# Hiroki Sawano, 2021
 # Hiroki Sawano, 2021
 # shuhei hirota, 2019
 # Kinoshita Shinji <shinji.kino@gmail.com>, 2020
 # kojikojikojikoji, 2021
 # kojikojikojikoji, 2021
+# Matt Westcott <matthew@torchbox.com>, 2023
+# kojikojikojikoji, 2021
 # umepon0626 <ryuichi-astrona@ymobile.ne.jp>, 2019
+# shuhei hirota, 2019
 # Tri Minh <minh.nguyentri.95@gmail.com>, 2019
+# umepon0626 <ryuichi-astrona@ymobile.ne.jp>, 2019
 # 小口英昭 <oguchi@bluff-lab.com>, 2019
 # 山本 卓也 <takuya.miraidenshi@gmail.com>, 2019
 # 溝江 智徳 <tomo.mizoe@gmail.com>, 2019
@@ -19,10 +25,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wagtail\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-29 14:46+0100\n"
+"POT-Creation-Date: 2023-04-20 11:47+0100\n"
 "PO-Revision-Date: 2014-02-21 15:50+0000\n"
-"Last-Translator: Hiroki Sawano, 2021\n"
-"Language-Team: Japanese (http://www.transifex.com/torchbox/wagtail/language/"
+"Last-Translator: Matt Westcott <matthew@torchbox.com>, 2023\n"
+"Language-Team: Japanese (http://app.transifex.com/torchbox/wagtail/language/"
 "ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,11 +42,13 @@ msgstr "公開"
 msgid "Submit for moderation"
 msgstr "承認を受ける"
 
-msgid "Resubmit to {}"
-msgstr "{}に再提出する"
+#, python-format
+msgid "Resubmit to %(task_name)s"
+msgstr "%(task_name)sに再提出する"
 
-msgid "Submit to {}"
-msgstr "{}に提出する"
+#, python-format
+msgid "Submit to %(workflow_name)s"
+msgstr "%(workflow_name)sに提出する"
 
 msgid "Restart workflow "
 msgstr "ワークフローを再開"
@@ -50,9 +58,6 @@ msgstr "ワークフローの中止"
 
 msgid "Unpublish"
 msgstr "非公開に設定"
-
-msgid "Delete"
-msgstr "削除"
 
 msgid "Save Draft"
 msgstr "原稿を保存"
@@ -107,8 +112,8 @@ msgid "Enter password"
 msgstr "パスワードを入力してください"
 
 #, python-format
-msgid "Enter your %s"
-msgstr "%sを入力してください"
+msgid "Enter your %(username_field_name)s"
+msgstr "%(username_field_name)sを入力してください"
 
 msgid "Enter your email address to reset your password"
 msgstr "パスワードをリセットするにはEメールアドレスを入力してください"
@@ -116,14 +121,23 @@ msgstr "パスワードをリセットするにはEメールアドレスを入�
 msgid "URL"
 msgstr "URL"
 
+msgid "Search term"
+msgstr "検索語"
+
+msgid "Search"
+msgstr "検索"
+
+msgid "All collections"
+msgstr "全部コレクション"
+
+msgid "Collection"
+msgstr "コレクション"
+
 msgid "Parent"
 msgstr "上位階層"
 
 msgid "You cannot have multiple permission records for the same collection."
 msgstr "同一コレクション内で複数の権限を持つことはできません"
-
-msgid "Collection"
-msgstr "コレクション"
 
 msgid "Add"
 msgstr "追加"
@@ -137,11 +151,20 @@ msgstr "編集"
 msgid "Edit collections"
 msgstr "コレクションを編集"
 
+msgid "Delete"
+msgstr "削除"
+
 msgid "Delete collections"
 msgstr "コレクションを削除"
 
 msgid "You cannot edit another user's comment."
 msgstr "他ユーザーのコメントは編集できません。"
+
+msgid "Go live date/time must be before expiry date/time"
+msgstr "公開予定日は削除予定日よりも前に設定されていなければなりません。"
+
+msgid "Expiry date/time must be in the future"
+msgstr "削除予定日を過ぎています。"
 
 msgid "New title"
 msgstr "新規タイトル"
@@ -192,26 +215,13 @@ msgstr "\"%(page_title)s\" にコピーする権限がありません。"
 
 #, python-format
 msgid ""
-"This slug is already in use within the context of its parent page \"%s\""
-msgstr "このスラッグ（\"%s\"）は親ページで既に使用されています。"
+"This slug is already in use within the context of its parent page "
+"\"%(parent_page_title)s\""
+msgstr ""
+"このスラッグ（\"%(parent_page_title)s\"）は親ページで既に使用されています。"
 
 msgid "You cannot copy a page into itself when copying subpages"
 msgstr "サブページをコピーするとき、それ自身にコピーすることはできません。"
-
-msgid "This slug is already in use"
-msgstr "このスラッグはすでに使われています"
-
-msgid "Go live date/time must be before expiry date/time"
-msgstr "公開予定日は削除予定日よりも前に設定されていなければなりません。"
-
-msgid "Expiry date/time must be in the future"
-msgstr "削除予定日を過ぎています。"
-
-msgid "Search"
-msgstr "検索"
-
-msgid "Search term"
-msgstr "検索語"
 
 msgid "Visibility"
 msgstr "可視性"
@@ -225,9 +235,10 @@ msgstr "1グループ以上を選択してください"
 msgid "All types"
 msgstr "全タイプ"
 
-#, python-brace-format
-msgid "This page already has workflow '{0}' assigned."
-msgstr "このページは既に'{0}'が割り振られているワークフローがあります。"
+#, python-format
+msgid "This page already has workflow '%(workflow_name)s' assigned."
+msgstr ""
+"このページは既に'%(workflow_name)s'が割り振られているワークフローがあります。"
 
 msgid "You cannot assign this workflow to the same page multiple times."
 msgstr "同じページにこのワークフローを割り当てることはできません。"
@@ -238,11 +249,11 @@ msgstr "ワークフローに名前をつけてください"
 msgid "Add tasks to your workflow"
 msgstr "ワークフローにタスクを追加"
 
-msgid "Scheduled publishing"
-msgstr "予定公開日"
+msgid "Task"
+msgstr "タスク"
 
-msgid "Privacy"
-msgstr "公開設定"
+msgid "Page title"
+msgstr "ページタイトル"
 
 msgid "For search engines"
 msgstr "検索エンジンのため"
@@ -258,15 +269,6 @@ msgstr "プロモート"
 
 msgid "Settings"
 msgstr "設定"
-
-msgid "Status"
-msgstr "ステータス"
-
-msgid "Comments"
-msgstr "コメント"
-
-msgid "Preview"
-msgstr "プレビュー"
 
 msgid "Error 404: Page not found"
 msgstr "404エラー：ページが見つかりません"
@@ -288,14 +290,6 @@ msgstr "他のアクション"
 
 msgid "Save account details"
 msgstr "アカウントの詳細を保存"
-
-msgid "Change password"
-msgstr "パスワードを変更する"
-
-msgid ""
-"Your password can't be changed here. Please contact a site administrator."
-msgstr ""
-"パスワードを変更することができません。サイトの管理者に連絡してください。"
 
 msgid "Reset password"
 msgstr "パスワードを再設定"
@@ -344,11 +338,11 @@ msgstr "パスワードが再設定されました"
 msgid "Reset your password"
 msgstr "パスワードを再設定"
 
-msgid "Upload a profile picture:"
-msgstr "プロフィール画像をアップロード"
-
 msgid "Reset to default"
 msgstr "デフォルトに戻す"
+
+msgid "Upload a profile picture:"
+msgstr "プロフィール画像をアップロード"
 
 msgid "Internal link"
 msgstr "内部リンク"
@@ -389,6 +383,13 @@ msgstr "外部リンクを追加"
 msgid "Add a phone link"
 msgstr "電話番号のリンクを追加"
 
+#, python-format
+msgid "Explore subpages of '%(title)s'"
+msgstr "%(title)sのサブページを閲覧"
+
+msgid "Explore"
+msgstr "閲覧"
+
 msgid "Collection privacy"
 msgstr "コレクションプライバシー"
 
@@ -398,14 +399,17 @@ msgstr "このコレクションは親ページにより非公開に設定され
 msgid "You can edit the privacy settings on:"
 msgstr "公開設定を編集："
 
+msgid "Save"
+msgstr "保存"
+
 msgid ""
 "Privacy settings determine who is able to view documents in this collection."
 msgstr ""
 "プライバシー設定により、このコレクション内のドキュメントを閲覧できるユーザー"
 "が決まります。"
 
-msgid "Save"
-msgstr "保存"
+msgid "Privacy"
+msgstr "公開設定"
 
 msgid "Set collection privacy. Current status: Public"
 msgstr "コレクションのプライバシーを設定する。現在の状態：公開"
@@ -438,11 +442,37 @@ msgstr ""
 msgid "Yes, delete"
 msgstr "はい、削除します"
 
+msgid "No, don't delete"
+msgstr "いいえ、削除しません"
+
+#, python-format
+msgid "Unpublish %(title)s"
+msgstr "%(title)sを非公開に設定"
+
+msgid "Yes, unpublish it"
+msgstr "はい、非公開に設定します。"
+
+msgid "No, don't unpublish"
+msgstr "いいえ、非公開にしません"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
 msgid "Update"
 msgstr "アップデート"
 
-msgid "Dashboard"
-msgstr "ダッシュボード"
+#, python-format
+msgid "Comparing %(title)s"
+msgstr "%(title)sを比較"
+
+msgid "Comparing"
+msgstr "比較"
+
+msgid "Fields"
+msgstr "フィールド"
+
+msgid "Changes"
+msgstr "変更"
 
 #, python-format
 msgid "Welcome to the %(site_name)s Wagtail CMS"
@@ -494,20 +524,20 @@ msgstr "承認"
 msgid "Reject"
 msgstr "拒否"
 
+msgid "Preview"
+msgstr "プレビュー"
+
 msgid "Your most recent edits"
 msgstr "最近の編集"
+
+msgid "Status"
+msgstr "ステータス"
 
 msgid "Date"
 msgstr "日付"
 
 msgid "Site summary"
 msgstr "サイトの概要"
-
-msgid "Your pages in a workflow"
-msgstr "あなたのページはワークフローに含まれています"
-
-msgid "Task"
-msgstr "タスク"
 
 msgid "Task started"
 msgstr "タスク開始時刻"
@@ -518,6 +548,9 @@ msgstr "修正依頼"
 msgid "Awaiting"
 msgstr "待機中"
 
+msgid "Close"
+msgstr "閉じる"
+
 msgid "Awaiting your review"
 msgstr "あなたのレビューの待機中"
 
@@ -527,19 +560,19 @@ msgstr "タスク"
 msgid "Sign in"
 msgstr "サインイン"
 
+msgid "Sign in to Wagtail"
+msgstr "Wagtailへサインイン"
+
 #, python-format
 msgid "Your %(username_field)s and password didn't match. Please try again."
 msgstr ""
 "%(username_field)sとパスワードが一致しませんでした。再度ためしてください。"
 
-msgid "Sign in to Wagtail"
-msgstr "Wagtailへサインイン"
+msgid "Forgotten password?"
+msgstr "パスワードをお忘れですか？"
 
 msgid "Signing in…"
 msgstr "サインイン中..."
-
-msgid "Forgotten password?"
-msgstr "パスワードをお忘れですか？"
 
 #, python-format
 msgid "The page \"%(title)s\" has been approved."
@@ -614,21 +647,6 @@ msgstr "ページの公開設定"
 msgid "This page has been made private by a parent page."
 msgstr "このページは親ページにより非公開に設定されています。"
 
-msgid "Privacy changes apply to all children of this page too."
-msgstr "公開設定の変更はすべての孫ページに反映されます。"
-
-msgid "Set page privacy. Current status: Public"
-msgstr "ページプライバシーを設定する。現在の状態：公開"
-
-msgid "Set page privacy. Current status: Private"
-msgstr "ページプライバシーを設定する。現在の状態：非公開"
-
-msgid "Page privacy. Current status: Public"
-msgstr "ページプライバシーの現在の状態：公開"
-
-msgid "Page privacy. Current status: Private"
-msgstr "ページプライバシーの現在の状態：非公開"
-
 msgid "Save the page before leaving"
 msgstr "離れる前に保存してください"
 
@@ -661,14 +679,8 @@ msgstr "作成するページのタイプを選択"
 msgid "Pages using %(page_type)s"
 msgstr "%(page_type)sを使用するページ"
 
-msgid "No, don't delete"
-msgstr "いいえ、削除しません"
-
 msgid "Move"
 msgstr "移動"
-
-msgid "No, don't unpublish"
-msgstr "いいえ、非公開にしません"
 
 msgid "This action cannot be undone."
 msgstr "このアクションは元に戻せません。"
@@ -716,21 +728,11 @@ msgstr "%(title)sとその子ページを移動してよろしいですか？"
 msgid "Yes, move this page"
 msgstr "はい、このページを移動します。"
 
-#, python-format
-msgid "Unpublish %(title)s"
-msgstr "%(title)sを非公開に設定"
-
 msgid "Are you sure you want to unpublish this page?"
 msgstr "このページを非公開に設定してよろしいですか？"
 
-msgid "Yes, unpublish it"
-msgstr "はい、非公開に設定します。"
-
 msgid "Publish page"
 msgstr "公開する"
-
-msgid "Cancel"
-msgstr "キャンセル"
 
 #, python-format
 msgid "Pages using %(page_class_verbose_name)s"
@@ -786,18 +788,11 @@ msgid "Current draft"
 msgstr "現在の下書き"
 
 #, python-format
-msgid "%(time_period)s ago"
-msgstr "%(time_period)s前"
-
-#, python-format
 msgid "Exploring %(title)s"
 msgstr "%(title)sを閲覧"
 
 msgid "Drag"
 msgstr "ドラッグ"
-
-msgid "Updated"
-msgstr "更新"
 
 msgid "Configure a site now."
 msgstr "サイトを設定する"
@@ -811,13 +806,6 @@ msgstr "<a href=\"%(add_page_url)s\">ページを作成</a>"
 
 msgid "This page is locked to further editing"
 msgstr "このページにはロックがかかっています。"
-
-#, python-format
-msgid "Explore subpages of '%(title)s'"
-msgstr "%(title)sのサブページを閲覧"
-
-msgid "Explore"
-msgstr "閲覧"
 
 #, python-format
 msgid "Explore child pages of '%(title)s'"
@@ -851,41 +839,97 @@ msgstr "分類する"
 msgid "Enable ordering of child pages"
 msgstr "子ページに順番をつける"
 
-#, python-format
-msgid "Select a new parent page for %(title)s"
-msgstr "%(title)sの親ページを選択"
+msgid "Updated"
+msgstr "更新"
 
-#, python-format
-msgid "Select a new parent page for <span>%(title)s</span>"
-msgstr "<span>%(title)s</span>の親ページを選択"
+msgid "Confirm"
+msgstr "確認"
 
-msgid "Preview error"
-msgstr "プレビューエラー"
+msgid "History"
+msgstr "履歴"
 
-msgid "Close"
-msgstr "閉じる"
-
-msgid "Current status:"
-msgstr "現在のステータス"
+msgid "Compare with previous version"
+msgstr "前の改定と比較する"
 
 msgid "Cancel scheduled publish"
 msgstr "予定された公開を取り消す"
 
+msgid "Page types"
+msgstr "ページタイプ"
+
+msgid "Enter a search term above"
+msgstr "検索語を入力"
+
+msgid "No pages use"
+msgstr "この語を使用するページはありません。"
+
 #, python-format
-msgid "Comparing %(title)s"
-msgstr "%(title)sを比較"
+msgid "Add %(label)s"
+msgstr "%(label)sを追加"
 
-msgid "Comparing"
-msgstr "比較"
+msgid "Move up"
+msgstr "上に移動"
 
-msgid "Page history"
-msgstr "ページの履歴"
+msgid "Move down"
+msgstr "下に移動"
 
-msgid "Fields"
-msgstr "フィールド"
+msgid "Comment notifications"
+msgstr "コメント通知"
 
-msgid "Changes"
-msgstr "変更"
+msgid "Add a collection permission"
+msgstr "コレクションの権限を追加"
+
+msgid "Download XLSX"
+msgstr "XLSXファイルをダウンロード"
+
+msgid "Download CSV"
+msgstr "CSVをダウンロードする"
+
+msgid "Locked"
+msgstr "ロックあり"
+
+msgid "No locked pages found."
+msgstr "ロックされたページは見つかりませんでした。"
+
+msgid "Edit this item"
+msgstr "アイテムを編集"
+
+msgid "Workflow"
+msgstr "ワークフロー"
+
+msgid "Requested by"
+msgstr "リクエストしたユーザ"
+
+msgid "Started at"
+msgstr "開始時刻"
+
+msgid "Completed at"
+msgstr "完了時刻"
+
+#, python-format
+msgid "Page %(page_num)s of %(total_pages)s."
+msgstr "%(total_pages)sページ中%(page_num)sページ目"
+
+msgid "Breadcrumb"
+msgstr "パンくず"
+
+msgid "Root"
+msgstr "ルート"
+
+msgid "Add comment"
+msgstr "コメントを追加"
+
+msgid "Filter"
+msgstr "フィルター"
+
+msgid "Apply filters"
+msgstr "フィルターを適用"
+
+msgid "Current page status:"
+msgstr "現在のページ状況："
+
+msgid "Visit the live page"
+msgstr "ライブページを訪れる。"
 
 #, python-format
 msgid "Unschedule Revision %(revision.id)s for %(title)s"
@@ -903,14 +947,8 @@ msgstr "はい、予定外です"
 msgid "No, don't unschedule"
 msgstr "いいえ、予定外にしないです"
 
-msgid "Page types"
-msgstr "ページタイプ"
-
-msgid "Enter a search term above"
-msgstr "検索語を入力"
-
-msgid "Locked"
-msgstr "ロックあり"
+msgid "Other searches"
+msgstr "他の検索結果"
 
 msgid "Unlocked"
 msgstr "ロックなし"
@@ -918,8 +956,16 @@ msgstr "ロックなし"
 msgid "Lock"
 msgstr "ロックする"
 
-msgid "No pages use"
-msgstr "この語を使用するページはありません。"
+msgid "Privacy changes apply to all children of this page too."
+msgstr "公開設定の変更はすべての孫ページに反映されます。"
+
+msgid "Usage"
+msgstr "使用法"
+
+#, python-format
+msgid "Used %(usage_count)s time"
+msgid_plural "Used %(usage_count)s times"
+msgstr[0] "%(usage_count)s回使用"
 
 msgid "Workflow history"
 msgstr "ワークフローの履歴"
@@ -927,92 +973,6 @@ msgstr "ワークフローの履歴"
 #, python-format
 msgid "Workflow history for %(title)s"
 msgstr "%(title)sのワークフロー履歴"
-
-msgid "Edit page"
-msgstr "ページを編集"
-
-msgid "Requested by"
-msgstr "リクエストしたユーザ"
-
-msgid "Started at"
-msgstr "開始時刻"
-
-#, python-format
-msgid "Add %(label)s"
-msgstr "%(label)sを追加"
-
-msgid "Move up"
-msgstr "上に移動"
-
-msgid "Move down"
-msgstr "下に移動"
-
-msgid "Add comment"
-msgstr "コメントを追加"
-
-msgid "Comment notifications"
-msgstr "コメント通知"
-
-msgid "Add a collection permission"
-msgstr "コレクションの権限を追加"
-
-msgid "Download XLSX"
-msgstr "XLSXファイルをダウンロード"
-
-msgid "Download CSV"
-msgstr "CSVをダウンロードする"
-
-msgid "Filter"
-msgstr "フィルター"
-
-msgid "Apply filters"
-msgstr "フィルターを適用"
-
-msgid "No locked pages found."
-msgstr "ロックされたページは見つかりませんでした。"
-
-msgid "Edit this item"
-msgstr "アイテムを編集"
-
-msgid "Workflow"
-msgstr "ワークフロー"
-
-msgid "Page"
-msgstr "ページ"
-
-msgid "No pages have been submitted for moderation yet"
-msgstr "承認が必要なページはありません。"
-
-msgid "Completed at"
-msgstr "完了時刻"
-
-#, python-format
-msgid "Page %(page_num)s of %(total_pages)s."
-msgstr "%(total_pages)sページ中%(page_num)sページ目"
-
-msgid "Breadcrumb"
-msgstr "パンくず"
-
-msgid "Root"
-msgstr "ルート"
-
-msgid "Home"
-msgstr "ホーム"
-
-msgid "All collections"
-msgstr "全部コレクション"
-
-msgid "History"
-msgstr "履歴"
-
-msgid "Visit the live page"
-msgstr "ライブページを訪れる。"
-
-msgid "Current page status:"
-msgstr "現在のページ状況："
-
-msgid "Other searches"
-msgstr "他の検索結果"
 
 msgid "Add a child page"
 msgstr "子ページを追加"
@@ -1023,12 +983,11 @@ msgstr "エクスプローラーに表示"
 msgid "Create"
 msgstr "作成"
 
+msgid "Page"
+msgstr "ページ"
+
 msgid "New"
 msgstr "新規作成"
-
-#, python-format
-msgid "by %(modified_by)s"
-msgstr "編集者：%(modified_by)s"
 
 msgid "Compare with live version"
 msgstr "ライブ版と比較する"
@@ -1048,20 +1007,15 @@ msgstr "'%(parent)s'内の子ページの順序を'%(label)s'で降順に並べ�
 msgid "More"
 msgstr "詳細表示"
 
+#, python-format
+msgid "%(time_period)s ago"
+msgstr "%(time_period)s前"
+
 msgid "Log out"
 msgstr "ログアウト"
 
-msgid "live"
-msgstr "公開"
-
-msgid "draft"
-msgstr "下書き"
-
-msgid "live + draft"
-msgstr "公開 + 下書き"
-
-msgid "Test"
-msgstr "テスト"
+msgid "Comments"
+msgstr "コメント"
 
 msgid "Password"
 msgstr "パスワード"
@@ -1078,13 +1032,13 @@ msgstr "1 コレクションを追加済み"
 msgid "Add collection"
 msgstr "コレクションを追加済み"
 
-#, python-brace-format
-msgid "Collection '{0}' created."
-msgstr "'{0}'コレクションを作成済み"
+#, python-format
+msgid "Collection '%(object)s' created."
+msgstr "'%(object)s'コレクションを作成済み"
 
-#, python-brace-format
-msgid "Collection '{0}' updated."
-msgstr "'{0}'コレクションを更新済み"
+#, python-format
+msgid "Collection '%(object)s' updated."
+msgstr "'%(object)s'コレクションを更新済み"
 
 msgid "The collection could not be saved due to errors."
 msgstr "エラーが発生したため、コレクションを保存できませんでした。"
@@ -1092,9 +1046,9 @@ msgstr "エラーが発生したため、コレクションを保存できませ
 msgid "Delete collection"
 msgstr "コレクションを削除します"
 
-#, python-brace-format
-msgid "Collection '{0}' deleted."
-msgstr "'{0}'コレクションを削除済み"
+#, python-format
+msgid "Collection '%(object)s' deleted."
+msgstr "'%(object)s'コレクションを削除済み"
 
 msgid "Are you sure you want to delete this collection?"
 msgstr "コレクションを完全に削除しますか"
@@ -1102,13 +1056,40 @@ msgstr "コレクションを完全に削除しますか"
 msgid "Editing"
 msgstr "編集中"
 
-#, python-brace-format
-msgid "Page '{0}' and {1} subpages copied."
-msgstr "ページ：'{0}' とサブページ：'{1}'が複製されました。 "
+msgid "Earliest"
+msgstr "最も早い"
 
-#, python-brace-format
-msgid "Page '{0}' copied."
-msgstr "ページ：'{0}' がコピーされました。"
+msgid "Latest"
+msgstr "最新"
+
+msgid "Usage of"
+msgstr "使用"
+
+#, python-format
+msgid "Edit this %(object)s"
+msgstr "%(object)sを編集"
+
+msgid "Dashboard"
+msgstr "ダッシュボード"
+
+msgid "Delete selected pages"
+msgstr "選択したページを削除"
+
+msgid "Move selected pages"
+msgstr "選択したページを移動"
+
+msgid "Publish selected pages"
+msgstr "選択したページを公開"
+
+#, python-format
+msgid "Page '%(page_title)s' and %(subpages_count)s subpages copied."
+msgstr ""
+"ページ：'%(page_title)s' とサブページ：'%(subpages_count)s'が複製されまし"
+"た。 "
+
+#, python-format
+msgid "Page '%(page_title)s' copied."
+msgstr "ページ：'%(page_title)s' がコピーされました。"
 
 msgid "View draft"
 msgstr "下書きを閲覧"
@@ -1116,49 +1097,47 @@ msgstr "下書きを閲覧"
 msgid "View live"
 msgstr "閲覧"
 
-#, python-brace-format
-msgid "Page '{0}' created."
-msgstr "ページ：'{0}' が作成されました。"
+#, python-format
+msgid "Page '%(page_title)s' created."
+msgstr "ページ：'%(page_title)s' が作成されました。"
 
-#, python-brace-format
-msgid "Page '{0}' created and scheduled for publishing."
-msgstr "ページ'{0}' が作成され、公開予定が設定されました。"
+#, python-format
+msgid "Page '%(page_title)s' created and scheduled for publishing."
+msgstr "ページ'%(page_title)s' が作成され、公開予定が設定されました。"
 
-#, python-brace-format
-msgid "Page '{0}' created and published."
-msgstr "ページ：'{0}' が作成され、公開されました。"
+#, python-format
+msgid "Page '%(page_title)s' created and published."
+msgstr "ページ：'%(page_title)s' が作成され、公開されました。"
 
-#, python-brace-format
-msgid "Page '{0}' created and submitted for moderation."
-msgstr "'{0}' が作成され、承認待ちです。"
+#, python-format
+msgid "Page '%(page_title)s' created and submitted for moderation."
+msgstr "'%(page_title)s' が作成され、承認待ちです。"
 
 msgid "The page could not be created due to validation errors"
 msgstr "このページはエラーにより作成できませんでした。"
 
-#, python-brace-format
-msgid "Page '{0}' deleted."
-msgstr "ページ：'{0}' が削除されました。"
+#, python-format
+msgid "Page '%(page_title)s' deleted."
+msgstr "ページ：'%(page_title)s' が削除されました。"
 
 msgid "This page is currently awaiting moderation"
 msgstr "このページは現在承認待ちです。"
 
-#, python-brace-format
-msgid "Page '{0}' has been updated."
-msgstr "ページ：'{0}' の更新が完了しました。"
+#, python-format
+msgid "Page '%(page_title)s' has been updated."
+msgstr "ページ：'%(page_title)s' の更新が完了しました。"
 
-#, python-brace-format
-msgid "Page '{0}' has been scheduled for publishing."
-msgstr "ページ'{0}'の公開が予定されました。"
+#, python-format
+msgid "Page '%(page_title)s' has been scheduled for publishing."
+msgstr "ページ'%(page_title)s'の公開が予定されました。"
 
-#, python-brace-format
-msgid "Page '{0}' has been published."
-msgstr "ページ：'{0}' が公開されました。"
+#, python-format
+msgid "Page '%(page_title)s' has been published."
+msgstr "ページ：'%(page_title)s' が公開されました。"
 
-#, python-brace-format
-msgid "Page '{0}' has been submitted for moderation."
-msgstr ""
-"88%match\n"
-"ページ：'{0}' が調整のために提出されました。"
+#, python-format
+msgid "Page '%(page_title)s' has been submitted for moderation."
+msgstr "ページ：'%(page_title)s' が調整のために提出されました。"
 
 msgid "The page could not be saved as it is locked"
 msgstr "このページはロックされているため、保存できませんでした。"
@@ -1166,53 +1145,46 @@ msgstr "このページはロックされているため、保存できません
 msgid "The page could not be saved due to validation errors"
 msgstr "このページはエラーにより保存できませんでした。"
 
-#, python-brace-format
-msgid "Page '{0}' is now unlocked."
-msgstr "ページ：'{0}' のロックが解除されました。"
+msgid "Page history"
+msgstr "ページの履歴"
 
-#, python-brace-format
-msgid "The page '{0}' is not currently awaiting moderation."
-msgstr "ページ：'{0}' は現在承認待ちではありません。"
+#, python-format
+msgid "Page '%(page_title)s' is now unlocked."
+msgstr "ページ：'%(page_title)s' のロックが解除されました。"
 
-#, python-brace-format
-msgid "Page '{0}' published."
-msgstr "ページ：'{0}' が公開されました。"
+#, python-format
+msgid "The page '%(page_title)s' is not currently awaiting moderation."
+msgstr "ページ：'%(page_title)s' は現在承認待ちではありません。"
+
+#, python-format
+msgid "Page '%(page_title)s' published."
+msgstr "ページ：'%(page_title)s' が公開されました。"
 
 msgid "Failed to send approval notifications"
 msgstr "承認通信を送信できない"
 
-#, python-brace-format
-msgid "Page '{0}' rejected for publication."
-msgstr "ページ：'{0}' の公開が拒否されました。"
+#, python-format
+msgid "Page '%(page_title)s' rejected for publication."
+msgstr "ページ：'%(page_title)s' の公開が拒否されました。"
 
 msgid "Failed to send rejection notifications"
 msgstr "拒否通信を送信できない"
 
-#, python-brace-format
+#, python-format
 msgid ""
-"The slug '{0}' is already in use at the selected parent page. Make sure the "
-"slug is unique and try again"
+"The slug '%(page_slug)s' is already in use at the selected parent page. Make "
+"sure the slug is unique and try again"
 msgstr ""
-"スラッグ '{0}' は既に選択した親ページで使用されています。 スラッグが重複しな"
-"いことを確認したのち、再度操作を行ってください。"
+"スラッグ '%(page_slug)s' は既に選択した親ページで使用されています。 スラッグ"
+"が重複しないことを確認したのち、再度操作を行ってください。"
 
-#, python-brace-format
-msgid "Page '{0}' moved."
-msgstr "ページ：'{0}' が除去されました。"
+#, python-format
+msgid "Page '%(page_title)s' moved."
+msgstr "ページ：'%(page_title)s' が除去されました。"
 
-msgid "Earliest"
-msgstr "最も早い"
-
-msgid "Latest"
-msgstr "最新"
-
-#, python-brace-format
-msgid "revision {0} of \"{1}\""
-msgstr "\"{1}\"のリビジョン{0}"
-
-#, python-brace-format
-msgid "Page '{0}' unpublished."
-msgstr "ページ：'{0}' が非公開に設定されました。"
+#, python-format
+msgid "Page '%(page_title)s' unpublished."
+msgstr "ページ：'%(page_title)s' が非公開に設定されました。"
 
 msgid "Site history"
 msgstr "サイトの履歴"
@@ -1228,9 +1200,6 @@ msgstr "自分のレビュー待ち"
 
 msgid "Workflows"
 msgstr "ワークフロー"
-
-msgid "Page Title"
-msgstr "ページタイトル"
 
 msgid "Workflow tasks"
 msgstr "ワークフローのタスク"
@@ -1250,9 +1219,9 @@ msgstr "ワークフローの編集"
 msgid "Disable workflow"
 msgstr "ワークフローを無効化"
 
-#, python-brace-format
-msgid "Workflow removed from Page '{0}'."
-msgstr "ページ '{0}'から削除されたワークフロー"
+#, python-format
+msgid "Workflow removed from Page '%(page_title)s'."
+msgstr "ページ '%(page_title)s'から削除されたワークフロー"
 
 msgid "New workflow task"
 msgstr "ワークフローの新規タスク"
@@ -1260,11 +1229,12 @@ msgstr "ワークフローの新規タスク"
 msgid "Editing workflow task"
 msgstr "ワークフローのタスクを編集"
 
-msgid "Server Error"
-msgstr "サーバーエラー"
-
 msgid "Pages"
 msgstr "ページ"
+
+#, python-format
+msgid "Edit '%(title)s'"
+msgstr "'%(title)s'を編集します"
 
 msgid "Add child page"
 msgstr "子ページを追加"
@@ -1298,9 +1268,6 @@ msgstr "取り消し線"
 
 msgid "Code"
 msgstr "コード"
-
-msgid "Locked Pages"
-msgstr "ロックされたページ"
 
 msgid "Reports"
 msgstr "レポート"
